@@ -22,6 +22,7 @@ patient_safety.csv
 tpm_gtex_filter_samples.rds
 counts_gtex_filter_samples.rds
 drug_ae_df.rds
+metadata_gtex_filter_samples.rds
 
  # Example code in package build process
 *-Ex.R
@@ -60,3 +61,4 @@ drug_ae_df.rds
 
 # R Environment Variables
 .Renviron
+.DS_Store
