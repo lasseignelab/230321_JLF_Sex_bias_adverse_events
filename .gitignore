@@ -21,6 +21,7 @@ medDRA_test.csv
 patient_safety.csv
 tpm_gtex_filter_samples.rds
 counts_gtex_filter_samples.rds
+drug_ae_df.rds
 
  # Example code in package build process
 *-Ex.R
