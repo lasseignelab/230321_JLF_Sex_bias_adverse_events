@@ -9,8 +9,9 @@
 
 # User-specific files
 .Ruserdata
-
-
+drug_ae_list.rds
+drug_bank_1_5_8_df.RDS
+drugbank_5.1.8.db
 
  # Example code in package build process
 *-Ex.R
