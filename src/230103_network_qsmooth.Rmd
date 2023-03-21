@@ -1,0 +1,1304 @@
+---
+title: "230103_network_qsmooth"
+author: "Jennifer Fisher"
+date: "2023-01-04"
+output:
+  html_document:
+    toc: true
+    theme: united
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# START 
+    Goal/Purpose of operations: 
+    Need to normalize the expression data for the network analysis (lioness aka edge differences and panda/alpaca-communities differences.)
+    
+    Finished psedocode on:
+    230103
+    
+    System which operations were done on: 
+    Cheaha
+    
+    GitHub Repo:
+    Sex_Bias_Adverse_Events
+    
+    Docker/Singularity: 
+    rstudio_sex_bias_drugs
+    
+    Directory of operations: 
+    "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events"
+    
+    Scripts being edited for operations:
+    created a new function gtex_qsmooth_function in the sex_bias_functions.R for the data wrangling 
+    
+    Data being used: 
+    gene expression and meta data from the 210806_GTEx_Age_Sex.Rmd script
+    
+    Papers and tools:
+    qsmooth from the YARN R package 
+
+# STEPS
+### Set working directory 
+```{r}
+source("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/script/sex_bias_functions.R")
+library(Biobase)
+library(netZooR)
+```
+
+
+### load in data
+
+```{r}
+counts_gtex <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/counts_gtex_filter_samples.rds")
+metadata <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/metadata_gtex_filter_samples.rds")
+```
+
+
+### Analysis
+
+```{r}
+tissues <- unique(metadata$gtex.smtsd)
+#remove cell tissues
+tissues<- tissues[! grepl("Cell", tissues)]
+```
+
+
+```{r}
+counts_gtex<- as.matrix(counts_gtex)
+```
+
+
+```{r}
+# code for checking the function
+#gtex_qsmooth_function(counts_gtex, metadata, tissues[43] , file_filtered_expression= "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/test_gtex_filtered_expression_set.rds", file_norm= "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/test_gtex_qsmooth_expression.rds", file_meta="/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/tissue_gtex_metadata.rds" )
+```
+
+
+```{r eval =FALSE}
+for (i in 1:length(tissues)){
+  file_fe<- paste("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/", tissues[i], "_gtex_filtered_expression_set.rds", sep = "")
+  file_n<- paste("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/", tissues[i], "_gtex_qsmooth_expression.rds", sep = "")
+  file_m <- paste("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/", tissues[i], "_gtex_metadata.rds", sep = "")
+  print(tissues[i])
+  gtex_qsmooth_function(counts_gtex, metadata, tissues[i] , file_filtered_expression=file_fe, file_norm=file_n, file_meta=file_m )
+}
+```
+
+#### Output:
+[1] "Adipose - Subcutaneous"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      724 
+
+[1] "after"
+
+Features  Samples 
+
+   20043      724 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Adipose - Visceral (Omentum)"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      562 
+
+[1] "after"
+
+Features  Samples 
+   20453      562 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Muscle - Skeletal"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      875 
+
+[1] "after"
+
+Features  Samples 
+
+   17382      875 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Artery - Tibial"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      686 
+
+[1] "after"
+
+Features  Samples 
+
+   19163      686 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Artery - Aorta"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      452 
+
+[1] "after"
+
+Features  Samples 
+
+   19530      452 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Artery - Coronary"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      252 
+
+[1] "after"
+
+Features  Samples 
+
+   19893      252 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Heart - Atrial Appendage"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+Features  Samples 
+
+   63856      449 
+
+[1] "after"
+
+Features  Samples 
+
+   19202      449 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Heart - Left Ventricle"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      488 
+
+[1] "after"
+
+Features  Samples 
+
+   17997      488 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Breast - Mammary Tissue"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      481 
+
+[1] "after"
+
+Features  Samples 
+
+   21131      481 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Skin - Sun Exposed (Lower leg)"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      775 
+
+[1] "after"
+
+Features  Samples 
+
+   20587      775 
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Skin - Not Sun Exposed (Suprapubic)"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      637 
+
+[1] "after"
+
+Features  Samples 
+
+   20720      637 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Minor Salivary Gland"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      178 
+
+[1] "after"
+
+Features  Samples 
+
+   21314      178 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Brain - Hippocampus"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+
+
+Features  Samples 
+
+   63856      220 
+
+[1] "after"
+
+Features  Samples 
+
+   20285      220 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Brain - Cortex"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      282 
+
+[1] "after"
+
+Features  Samples 
+
+   20293      282 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Brain - Putamen (basal ganglia)"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      221 
+
+[1] "after"
+
+Features  Samples 
+
+   20080      221 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Brain - Anterior cingulate cortex (BA24)"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      201 
+
+[1] "after"
+
+Features  Samples 
+
+   20118      201 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Brain - Cerebellar Hemisphere"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      246 
+
+[1] "after"
+
+Features  Samples 
+
+   20418      246 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Brain - Frontal Cortex (BA9)"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      221 
+
+[1] "after"
+
+Features  Samples 
+
+   20237      221 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Brain - Spinal cord (cervical c-1)"
+[1] "check the metadata and count data match"
+
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      171 
+[1] "after"
+
+Features  Samples 
+
+   19807      171 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Brain - Substantia nigra"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+Features  Samples 
+
+   63856      154 
+
+[1] "after"
+
+Features  Samples 
+
+   20130      154 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Brain - Nucleus accumbens (basal ganglia)"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      262 
+
+[1] "after"
+
+Features  Samples 
+
+   20552      262 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Brain - Hypothalamus"
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      221 
+
+[1] "after"
+
+Features  Samples 
+
+   20923      221 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Brain - Cerebellum"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      279 
+
+[1] "after"
+
+Features  Samples 
+
+   20512      279 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Brain - Caudate (basal ganglia)"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      273 
+
+[1] "after"
+
+Features  Samples 
+
+   20480      273 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Brain - Amygdala"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      162 
+
+[1] "after"
+
+Features  Samples 
+
+   19989      162 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Adrenal Gland"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      274 
+
+[1] "after"
+
+Features  Samples 
+
+   19644      274 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Thyroid"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      700 
+
+[1] "after"
+
+Features  Samples 
+
+   21306      700 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Lung"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      640 
+
+[1] "after"
+
+Features  Samples 
+
+   21518      640 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Spleen"
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      254 
+
+[1] "after"
+
+Features  Samples 
+
+   20787      254 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Pancreas"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+   63856      355 
+
+[1] "after"
+
+Features  Samples 
+
+   18591      355 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Esophagus - Muscularis"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      553 
+
+[1] "after"
+
+Features  Samples 
+
+   19670      553 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Esophagus - Mucosa"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      624 
+
+[1] "after"
+
+Features  Samples 
+
+   20035      624 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+
+[1] "save metadata"
+
+[1] "Esophagus - Gastroesophageal Junction"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      399 
+
+[1] "after"
+
+Features  Samples 
+
+   19938      399 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Stomach"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      384 
+
+[1] "after"
+
+
+Features  Samples 
+   20199      384 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Colon - Transverse"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      432 
+
+[1] "after"
+
+Features  Samples 
+
+   21117      432 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Colon - Sigmoid"
+
+[1] "check the metadata and count data match"
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      389 
+
+[1] "after"
+Features  Samples 
+
+
+   20073      389 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Small Intestine - Terminal Ileum"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      193 
+
+[1] "after"
+Features  Samples 
+
+   21726      193 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Nerve - Tibial"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      658 
+
+[1] "after"
+
+Features  Samples 
+
+   20864      658 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Pituitary"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+   63856      301 
+
+[1] "after"
+
+Features  Samples 
+
+   22343      301 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Whole Blood"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      840 
+
+[1] "after"
+
+Features  Samples 
+   16474      840 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Liver"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856      251 
+
+[1] "after"
+
+Features  Samples 
+
+   18654      251 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Kidney - Cortex"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856       94 
+
+[1] "after"
+
+Features  Samples 
+
+   21294       94 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+[1] "Bladder"
+
+[1] "check the metadata and count data match"
+
+[1] TRUE
+
+[1] "make expression set object"
+
+[1] "filter lowly expressed genes"
+
+[1] "before"
+
+Features  Samples 
+
+   63856       21 
+
+[1] "after"
+
+Features  Samples 
+
+   21213       21 
+
+[1] "save filtered expression"
+
+[1] "run and save results for qsmooth from YARN R package"
+
+[1] "save metadata"
+
+### Save Data
+done within the script 
+
+### Save Figures
+done within the script 
+    
+# END
+    Location of final scripts:
+    script 
+    
+    Location of data produced:
+    ./data/gtex_qsmooth/
+    
+    Dates when operations were done:
+    230104
+    
+## Versions
+```{r}
+sessionInfo()
+```

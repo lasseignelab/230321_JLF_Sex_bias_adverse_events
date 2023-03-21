@@ -1,0 +1,112 @@
+---
+title: "230109_sex_networks_alpaca"
+author: "Jennifer Fisher"
+date: "2023-01-09"
+output:
+  html_document:
+    toc: true
+    theme: united
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# START 
+    Goal/Purpose of operations: 
+    To compare the communities between two sexes. I need to create sex-specific networks for each tissue and then compare the networks with Alpaca
+    
+    Finished psedocode on:
+    230109
+    
+    System which operations were done on: 
+    Cheaha
+    
+    GitHub Repo:
+    Sex_Bias_Adverse_Events
+    
+    Docker/Singularity: 
+    rstudio_sex_bias_drugs
+    
+    Directory of operations: 
+    "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events"
+    
+    Scripts being edited for operations:
+    created a new function xx in the sex_bias_functions.R for the data wrangling 
+    
+    Data being used: 
+    the proccessed gene expression from the ./output/proccessed_normalized_expression and meta data from the 210806_GTEx_Age_Sex.Rmd script
+    
+    Papers and tools:
+    panda and alpaca from the netzzor package
+
+# STEPS
+### Set working directory 
+```{r}
+source("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/script/sex_bias_functions.R")
+library(Biobase)
+library(netZooR)
+```
+
+
+### load in data
+the transcription factor and protein-protein interaction networks for panda 
+```{r}
+motif_table <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data/230104_symbol_motif_table.rds")
+ppi_net <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data/230104_symbol_numeric_ppi_network_11_5_0.rds")
+```
+
+loading in test data (liver tissue)
+```{r}
+#Liver_data <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/processed_normalized_expression/Liver_gtex_processed_expression.rds")
+#Liver_gtex_metadata <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/Liver_gtex_metadata.rds")
+```
+
+
+```{r}
+#test run 
+#sex_networks(Liver_data, Liver_gtex_metadata, "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/alpaca/sex_specific_networks/Liver_test_M_panda.rds","/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/alpaca/sex_specific_networks/Liver_test_F_panda.rds" )
+```
+
+
+### Analysis
+
+```{r}
+metadata <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/metadata_gtex_filter_samples.rds")
+
+tissues <- unique(metadata$gtex.smtsd)
+#remove cell tissues
+tissues<- tissues[! grepl("Cell", tissues)]
+```
+note processed data had the white sapce removed 
+```{r}
+tissues_wo_ws <- gsub(" ", "_", tissues, fixed = TRUE)
+```
+
+
+```{r}
+for (i in 1:length(tissues_wo_ws)){
+  
+  print(tissues[i])
+  file_name<- paste("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/processed_normalized_expression/", tissues_wo_ws[i], "_gtex_processed_expression.rds",sep = "")
+  #print(file_name)
+  expression <- readRDS(file_name)
+  
+  tisssue_meta_file<- paste("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/", tissues[i], "_gtex_metadata.rds", sep = "")
+  tisssue_meta<-readRDS(tisssue_meta_file)
+  
+  file_male <- paste("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/alpaca/sex_specific_networks/", tissues_wo_ws[i], "_M_panda.rds", sep = "")
+  
+  file_female <- paste("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/alpaca/sex_specific_networks/", tissues_wo_ws[i], "_F_panda.rds", sep = "")
+  
+  try(sex_networks(expression, 
+                   tisssue_meta, 
+                   file_male,
+                   file_female))
+}
+```
+
+
+
+
+

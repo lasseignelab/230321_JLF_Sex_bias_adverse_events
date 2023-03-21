@@ -1,0 +1,691 @@
+---
+title: "230308_drugbank_info"
+author: "Jennifer Fisher"
+date: "2023-03-08"
+output:
+  html_document:
+    toc: true
+    theme: united
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# START 
+    Goal/Purpose of operations: 
+    I am going to be looking at the results from FARES sex-bias adverse event but with the addition of the drug bank infomation
+    
+    Finished psedocode on:
+    230308
+    
+    System which operations were done on: 
+    my laptop
+    
+    GitHub Repo:
+    Sex_Bias_Adverse_Events
+    
+    Directory of operations:
+    ~/Documents/Sex_Bias_Adverse_Events
+    
+    Scripts being edited for operations:
+    NA
+    
+    Data being used:
+    output/alpaca/alpaca_runs
+    
+    Papers and tools: 
+    NA
+
+# STEPS
+
+### Set working directory 
+```{r}
+library(ggplot2)
+library(circlize)
+library(ComplexHeatmap)
+library(drugbankR)
+library(DBI)
+library(hash)
+library(org.Hs.eg.db)
+```
+
+```{r}
+drug_ae_res_info <- readRDS("~/output/FARES_plots/drug_ae_res_info.rds")
+```
+
+## Analysis
+
+```{r eval=FALSE}
+drugbank_dataframe <- dbxml2df(xmlfile="~/data/full database.xml", version="5.1.8")
+```
+Extracting data for column names. This may take 20 minutes.
+Successfully convert DrugBank database (xml file) into dataframe.
+
+```{r eval=FALSE}
+saveRDS(drugbank_dataframe, "~/data/drug_bank_1_5_8_df.rds")
+```
+
+```{r eval=FALSE}
+drugbank_dataframe[1:10,]
+```
+
+
+```{r eval=FALSE}
+setwd("~/data")
+df2SQLite(dbdf=drugbank_dataframe, version="5.1.8")
+```
+
+
+
+```{r}
+getAll2 <- function(db_path){
+    conn <- dbConnect(RSQLite::SQLite(), db_path)
+	dbdf <- dbGetQuery(conn,'SELECT * FROM dbdf')
+	dbDisconnect(conn)
+	return(dbdf)
+}
+getEnzymes <- function(ids, db_path){
+	len <- length(ids)
+	dbdf <- getAll2(db_path)
+	#print(res)
+	list<- rep(NA, length(ids))
+	for ( i in 1:length(ids)){
+	  tartxt <- dbdf[dbdf$"drugbank-id" %in% ids[i],"enzymes"]
+	  res <- str_match_all(tartxt, "UniProtKB\\s*(.*?)\\s*UniProt")
+	  #print(res)
+	  res<- res[[1]]
+  	uni_gnsym <- tryCatch(suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys=res[,2], columns=c("UNIPROT", "SYMBOL"), keytype="UNIPROT")), error=function(e){})
+	  if (is.null(uni_gnsym)){
+	        #do it for each symbol incase of missing
+	    uni_gnsym2<- c()
+	    for (j in 1:length(res[,2])){
+	      uni_gnsym3 <- tryCatch(suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys=res[j,2], columns=c("UNIPROT", "SYMBOL"), keytype="UNIPROT")), error=function(e){NA})
+	      if(! is.na(uni_gnsym3)){
+	      uni_gnsym2<- c(uni_gnsym2, uni_gnsym3[,2])
+	      }
+	    }
+	    list[i] <-paste(uni_gnsym2, collapse =";")
+	  }else{
+	  list[i] <-paste(uni_gnsym[,2], collapse =";")
+  	}
+	  uni_gnsym <- NULL
+	}
+	names(list)<- ids
+	return(list)
+}
+
+getTransporter <- function(ids, db_path){
+	len <- length(ids)
+	dbdf <- getAll2(db_path)
+	#print(res)
+	list<- rep(NA, length(ids))
+	for ( i in 1:length(ids)){
+	  tartxt <- dbdf[dbdf$"drugbank-id" %in% ids[i],"transporters"]
+	  res <- str_match_all(tartxt, "UniProtKB\\s*(.*?)\\s*UniProt")
+	  #print(res)
+	  res<- res[[1]]
+  	uni_gnsym <- tryCatch(suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys=res[,2], columns=c("UNIPROT", "SYMBOL"), keytype="UNIPROT")), error=function(e){NULL})
+  	if (is.null(uni_gnsym)){
+  	  	    #do it for each symbol incase of missing
+	    uni_gnsym2<- c()
+	    for (j in 1:length(res[,2])){
+	      print(i)
+	      uni_gnsym3 <- tryCatch(suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys=res[j,2], columns=c("UNIPROT", "SYMBOL"), keytype="UNIPROT")), error=function(e){NA})
+	      if(! is.na(uni_gnsym3)){
+	      uni_gnsym2<- c(uni_gnsym2, uni_gnsym3[,2])
+	      }
+	    }
+	    list[i] <-paste(uni_gnsym2, collapse =";")
+  	}else{
+	  list[i] <-paste(uni_gnsym[,2], collapse =";")
+  	}
+	}
+	names(list)<- ids
+	return(list)
+}
+
+getCarriers <- function(ids, db_path){
+	len <- length(ids)
+	dbdf <- getAll2(db_path)
+	#print(res)
+	list<- rep(NA, length(ids))
+	for ( i in 1:length(ids)){
+	  tartxt <- dbdf[dbdf$"drugbank-id" %in% ids[i],"carriers"]
+	  res <- str_match_all(tartxt, "UniProtKB\\s*(.*?)\\s*UniProt")
+	  #print(res)
+	  res<- res[[1]]
+  	uni_gnsym <- tryCatch(suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys=res[,2], columns=c("UNIPROT", "SYMBOL"), keytype="UNIPROT")), error=function(e){NULL})
+	  if (is.null(uni_gnsym)){
+	    #do it for each symbol incase of missing
+	    uni_gnsym2<- c()
+	    for (j in 1:length(res[,2])){
+	      uni_gnsym3 <- tryCatch(suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys=res[j,2], columns=c("UNIPROT", "SYMBOL"), keytype="UNIPROT")), error=function(e){NA})
+	      if(! is.na(uni_gnsym3)){
+	      uni_gnsym2<- c(uni_gnsym2, uni_gnsym3[,2])
+	      }
+	    }
+	    list[i] <-paste(uni_gnsym2, collapse =";")
+	  }else{
+	  list[i] <-paste(uni_gnsym[,2], collapse =";")
+  	}
+	  
+	}
+	names(list)<- ids
+	return(list)
+}
+
+getDrugAll<- function(ids, db_path){
+  print("done target")
+  targets <- queryDB(ids ,type = "getTargets", db_path) [,5]
+  print("done enzymes")
+  enzyme <- getEnzymes(ids, db_path)
+  print("done carrier")
+  carrier<- getCarriers(ids, db_path)
+  print("done transporter")
+  transporter<- getTransporter(ids, db_path)
+  
+  drug_info<- cbind(ids, targets, enzyme, transporter, carrier )
+}
+```
+
+```{r}
+#test<- getDrugAll(ids = c("DB00641", "DB00218", "DB00068", "DB00061") ,db_path="~/data/drugbank_5.1.8.db")
+```
+
+
+identify drug information on only the signficant drugs 
+```{r}
+drug_ae_res_info_sig <- drug_ae_res_info[drug_ae_res_info$BH < 0.05 & abs(drug_ae_res_info$logROR) >1,]
+```
+
+```{r}
+drug_ids <- unique(drug_ae_res_info_sig$drug)
+```
+
+```{r}
+  
+  targets <- queryDB(drug_ids ,type = "getTargets", db_path="~/data/drugbank_5.1.8.db") [,5]
+print("done target")
+  
+
+  carrier<- getCarriers(drug_ids, db_path="~/data/drugbank_5.1.8.db")
+  print("done carrier")
+  
+  transporter<- getTransporter(drug_ids, db_path="~/data/drugbank_5.1.8.db")
+  print("done transporter")
+  
+  enzyme <- getEnzymes(drug_ids, db_path="~/data/drugbank_5.1.8.db")
+  print("done enzymes")
+  
+  drug_info<- cbind(drug_ids, targets, enzyme, transporter, carrier )
+```
+
+```{r}
+drug_info<- as.data.frame(drug_info)
+```
+
+```{r}
+drug_ae_df_inital <- readRDS("~/data/drug_ae_df.rds")
+```
+
+
+```{r}
+inital_drug_list <- unique(drug_ae_df_inital$drug)
+```
+
+
+```{r}
+  
+  targets <- queryDB(inital_drug_list ,type = "getTargets", db_path="~/data/drugbank_5.1.8.db") [,5]
+print("done target")
+  
+
+  carrier<- getCarriers(inital_drug_list, db_path="~/data/drugbank_5.1.8.db")
+  print("done carrier")
+  
+  transporter<- getTransporter(inital_drug_list, db_path="~/data/drugbank_5.1.8.db")
+  print("done transporter")
+  
+  enzyme <- getEnzymes(inital_drug_list, db_path="~/data/drugbank_5.1.8.db")
+  print("done enzymes")
+  
+  drug_info_all<- cbind(inital_drug_list, targets, enzyme, transporter, carrier )
+```
+
+```{r}
+drug_info_all<- as.data.frame(drug_info_all)
+```
+
+going to combine both targets and drug metabolism genes and then remove 
+
+
+
+count table of drug target
+```{r}
+sbae_targets <- unlist(str_split(drug_info[,2], ";"))
+sbae_targets <- sbae_targets[!is.na(sbae_targets )]
+sbae_targets <- sbae_targets[!sbae_targets == "NA"]
+```
+
+```{r}
+sbae_targets_df<- as.data.frame(table(sbae_targets))
+```
+
+matrix for each adverse event and drug target
+```{r}
+drug_gene_test<- function(gene_name, count, index_test, drug_info_others, seed= 101){
+  res<- c()
+  set.seed(seed)
+  for (i in 1:1000){
+    #t<- table(grepl("",))
+    sub<- sample( drug_info_others[,index_test], 416, replace = FALSE)
+    genes <- unlist(str_split(sub, ";"))
+    genes <- genes[!is.na(genes )]
+    genes <- genes[!genes == "NA"]
+    genes <- genes[!genes == ""]
+    genes_df<- as.data.frame(table(genes))
+    t2<-genes_df$Freq[genes_df$genes == gene_name]
+    if (length(t2) ==1){
+      res[i]<-genes_df$Freq[genes_df$genes == gene_name]
+    }else{
+      res[i]<- 0
+    }
+    
+  }
+  #print(res)
+  test<- wilcox.test(res, mu= count, alternative = "less")
+  #print(count)
+  #print(hist(res))
+  plot_data<- as.data.frame(cbind(1:1000, res))
+  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() + geom_vline(xintercept = count)
+  
+  res_list<- list(test$p.value, plot1, res)
+  return(res_list)
+}
+```
+
+
+```{r}
+all_targets <- unlist(str_split(drug_info_all[,2], ";"))
+all_targets <- all_targets[!is.na(all_targets )]
+all_targets <- all_targets[!all_targets == "NA"]
+```
+
+```{r}
+all_targets_df<- as.data.frame(table(all_targets))
+```
+
+
+```{r}
+length(all_targets_df$all_targets)
+```
+2082- total targets
+
+```{r}
+not_sbae_targets_list <- all_targets_df$all_targets[!all_targets_df$all_targets %in% sbae_targets_df$sbae_targets]
+```
+
+```{r}
+count<- rep(0, length(not_sbae_targets_list ))
+other_targets<- cbind(as.character(not_sbae_targets_list), count)
+colnames(other_targets)<- colnames(sbae_targets_df)
+```
+
+
+```{r}
+#colnames(sbae_targets_df)<- NULL
+sbae_targets_test_df<- rbind(sbae_targets_df, other_targets)
+```
+
+
+
+```{r}
+pvalue<- c()
+plots<- list()
+test<- list()
+for ( j in 1:nrow(sbae_targets_test_df)){ #
+  print(j)
+  res <- drug_gene_test(as.character(sbae_targets_test_df[j,1]),as.numeric(sbae_targets_test_df[j,2]), 2, drug_info_all )
+  pvalue[j]<- res[1]
+  plots[j]<- res[2]
+  test[j]<- res[3]
+}
+```
+
+```{r}
+names(test)<- sbae_targets_test_df[,1]
+```
+
+```{r}
+test_df<- as.data.frame(test)
+```
+
+```{r}
+test_long_df <- pivot_longer(test_df, cols=everything(), names_to = "Drug_Target", values_to = "Count")
+```
+
+```{r}
+sbae_targets_test_df$p_adj<-  p.adjust(pvalue, method= "BH")
+```
+
+```{r}
+table(sbae_targets_test_df$p_adj < 0.001)
+```
+
+
+
+```{r}
+sbae_targets_df_filter <- sbae_targets_test_df[as.numeric(sbae_targets_test_df$Freq) > 5,]
+```
+
+```{r}
+dim(sbae_targets_df_filter)
+```
+
+
+```{r}
+sbae_targets_df_top <-sbae_targets_df_filter[sbae_targets_df_filter$p_adj< 0.001,]
+```
+
+```{r}
+dim(sbae_targets_df)
+```
+
+```{r}
+dim(sbae_targets_df_top)
+```
+
+
+
+
+```{r}
+ggplot(test_long_df , aes(x=Count, y= Drug_Target ))+ geom_boxplot()
+```
+
+
+
+
+
+```{r}
+test_long_df_top <- test_long_df[test_long_df$Drug_Target %in%sbae_targets_df_top$sbae_targets,]
+```
+
+
+
+
+```{r}
+sbae_targets_df_top<- sbae_targets_df_top[order(-sbae_targets_df_top$Freq),]
+sbae_targets_df_top$sbae_targets<- factor(sbae_targets_df_top$sbae_targets, levels= sbae_targets_df_top$sbae_targets)
+```
+
+```{r}
+test_long_df_top$Drug_Target<- factor(test_long_df_top$Drug_Target, levels= sbae_targets_df_top$sbae_targets)
+```
+
+```{r}
+sbae_counts<- c()
+for(i in 1:nrow(test_long_df_top)){
+  sbae_counts[i] <- sbae_targets_df_top$Freq[sbae_targets_df_top$sbae_targets == test_long_df_top$Drug_Target[i]]
+}
+```
+
+
+```{r}
+test_long_df_top$sbae_number<- sbae_counts
+```
+
+
+```{r}
+ggplot(test_long_df_top, aes(x=Count, y= Drug_Target ))+ geom_boxplot() +geom_point( aes(y=Drug_Target,x= sbae_number ), color= "forestgreen",size =5) + xlab("Number of drugs with drug target after random selection" ) +theme(text = element_text(size = 20,  face="bold")) + ylab("Drug Target")
+ggsave("~/output/FARES_plots/230313_drug_target_box_plot.png", height=20, width = 10)
+```
+
+
+
+```{r}
+sbae_targets_df_top$neg_log_p <- -log(sbae_targets_df_top$p_adj)
+```
+
+
+```{r}
+sbae_targets_df_top<- sbae_targets_df_top[order(-as.numeric(sbae_targets_df_top$Freq)),]
+sbae_targets_df_top$sbae_targets<- factor(sbae_targets_df_top$sbae_targets, levels= sbae_targets_df_top$sbae_targets)
+```
+
+
+
+```{r}
+all_counts<- c()
+for (i in 1:nrow(sbae_targets_df_top)){
+  all_counts[i] <- all_targets_df$Freq[ unfactor(all_targets_df$all_targets) == sbae_targets_df_top$sbae_targets[i]]
+}
+```
+
+```{r}
+sbae_targets_df_top$all_count<- all_counts
+```
+
+```{r}
+sbae_targets_df_top$fraction <- as.numeric(sbae_targets_df_top$Freq)/sbae_targets_df_top$all_count
+```
+
+```{r}
+sbae_targets_df_top$sbae_fraction <- as.numeric(sbae_targets_df_top$Freq)/416 # number of sbae drugs 
+```
+
+
+```{r}
+sbae_targets_df_top$all_fraction <- as.numeric(sbae_targets_df_top$all_count)/2945 # number of all. drugs
+```
+
+
+```{r}
+table(sbae_targets_df_top$sbae_fraction > sbae_targets_df_top$all_fraction )
+```
+
+
+```{r}
+ggplot(sbae_targets_df_top[1:30,], aes(y=sbae_targets, x= fraction , label= text))+ geom_bar(stat="identity",color= "black", fill= "white") + 
+    geom_text(size = 8, position = position_stack(vjust = 0.8)) + ylab("Drug Target") + xlab("The fraction of SBAE drugs over all drugs\nwith same target" ) +theme(text = element_text(size = 20,  face="bold")) 
+```
+
+
+```{r}
+sbae_targets_df_top<- sbae_targets_df_top[order(-sbae_targets_df_top$fraction),]
+sbae_targets_df_top$sbae_targets<- factor(sbae_targets_df_top$sbae_targets, levels= sbae_targets_df_top$sbae_targets)
+```
+
+```{r}
+sbae_targets_df_top$text <- paste0(sbae_targets_df_top$Freq, "/", sbae_targets_df_top$all_count)
+```
+
+
+```{r}
+ggplot(sbae_targets_df_top[1:30,], aes(y=sbae_targets, x= fraction , label= text))+ geom_bar(stat="identity",color= "black", fill= "white") + 
+    geom_text(size = 8, position = position_stack(vjust = 0.8)) + ylab("Drug Target") + xlab("The fraction of SBAE drugs over all drugs\nwith same target" ) +theme(text = element_text(size = 20,  face="bold")) 
+#ggsave("~/output/FARES_plots/230313_drug_target_barplot.png", height=15, width = 10)
+```
+
+
+count table of drug enzymes
+```{r}
+sbae_enz <- unlist(str_split(drug_info[,3], ";"))
+sbae_enz <- sbae_enz[!is.na(sbae_enz )]
+sbae_enz <- sbae_enz[!sbae_enz == "NA"]
+sbae_enz <- sbae_enz[!sbae_enz == ""]
+```
+
+```{r}
+sbae_enz_df<- as.data.frame(table(sbae_enz))
+```
+
+
+matrix for each adverse event and drug target
+```{r}
+pvalue<- c()
+plots2<- list()
+test2<- list()
+for ( j in 1:nrow(sbae_enz_df)){ #
+   res <- drug_gene_test(as.character(sbae_enz_df[j,1]),as.numeric(sbae_enz_df[j,2]), 3, drug_info_all )
+  pvalue[j]<- res[1]
+  plots2[j]<- res[2]
+  test2[j]<- res[3]
+  }
+```
+
+```{r}
+sbae_enz_df$p_adj<-  p.adjust(pvalue, method= "BH")
+```
+
+```{r}
+sbae_enz_df_top <- sbae_enz_df[sbae_enz_df$p_adj< 0.001,]
+```
+
+```{r}
+names(test2)<- sbae_enz_df[,1]
+```
+
+```{r}
+test2_df<- as.data.frame(test2)
+```
+
+```{r}
+test2_long_df <- pivot_longer(test2_df, cols=everything(), names_to = "Drug_Enzyme", values_to = "Count")
+```
+
+```{r}
+test2_long_df$Drug_Enzyme<- ifelse(test2_long_df$Drug_Enzyme== "CYP3A7.CYP3A51P", "CYP3A7-CYP3A51P",test2_long_df$Drug_Enzyme)
+```
+
+
+```{r}
+sbae_counts<- c()
+for(i in 1:nrow(test2_long_df)){
+  sbae_counts[i] <- sbae_enz_df$Freq[sbae_enz_df$sbae_enz == test2_long_df$Drug_Enzyme[i]]
+}
+```
+
+
+```{r}
+test2_long_df$sbae_number<- sbae_counts
+```
+
+
+```{r}
+sbae_enz_df_top<- sbae_enz_df_top[order(-sbae_enz_df_top$Freq),]
+test2_long_df$Drug_Enzyme<- factor(test2_long_df$Drug_Enzyme, levels= sbae_enz_df_top$sbae_enz)
+```
+
+
+
+```{r}
+ggplot(test2_long_df, aes(x=Count, y= Drug_Enzyme ))+ geom_boxplot() +geom_point( aes(y=Drug_Enzyme,x= sbae_number ), color= "forestgreen",size =5) + xlab("Number of drugs with drug enzyme\nafter random selection" ) +theme(text = element_text(size = 20,  face="bold")) + ylab("Drug Enzyme")
+ggsave("~/output/FARES_plots/230313_drug_enzyme_box_plot.png", height=20, width = 10)
+```
+
+
+```{r}
+all_enz <- unlist(str_split(drug_info_all[,3], ";"))
+all_enz <- all_enz[!is.na(all_enz )]
+all_enz <- all_enz[!all_enz == "NA"]
+```
+
+```{r}
+all_enz_df<- as.data.frame(table(all_enz))
+```
+
+```{r}
+all_counts<- c()
+for (i in 1:nrow(sbae_enz_df_top)){
+  all_counts[i] <- all_enz_df$Freq[ unfactor(all_enz_df$all_enz) == sbae_enz_df_top$sbae_enz[i]]
+}
+```
+
+```{r}
+sbae_enz_df_top$all_count<- all_counts
+```
+
+```{r}
+sbae_enz_df_top$fraction <- sbae_enz_df_top$Freq/sbae_enz_df_top$all_count
+```
+
+```{r}
+sbae_enz_df_top<- sbae_enz_df_top[order(-sbae_enz_df_top$fraction),]
+sbae_enz_df_top$sbae_enz<- factor(sbae_enz_df_top$sbae_enz, levels= sbae_enz_df_top$sbae_enz)
+```
+
+```{r}
+sbae_enz_df_top$text <- paste0(sbae_enz_df_top$Freq, "/", sbae_enz_df_top$all_count)
+```
+
+
+```{r}
+ggplot(sbae_enz_df_top, aes(y=sbae_enz, x= fraction , label= text))+ geom_bar(stat="identity",color= "black", fill= "white") + 
+    geom_text(size = 8, position = position_stack(vjust = 0.7)) + ylab("Drug Metabolism Enzyme") + xlab("The fraction of SBAE drugs over all drugs\nwith same drug metabolism enzyme" ) +theme(text = element_text(size = 20,  face="bold")) 
+ggsave("~/output/FARES_plots/230313_drug_metabolism_enzyme_barplot.png", height=15, width = 10)
+```
+
+save everything here... 
+```{r}
+saveRDS(sbae_targets_df_top, "~/output/FARES_plots/sbae_targets_df_top.rds")
+saveRDS(sbae_enz_df_top, "~/output/FARES_plots/sbae_enz_df_top.rds")
+saveRDS(drug_info_all,"~/output/FARES_plots/drug_info_all.rds" )
+saveRDS(drug_info, "~/output/FARES_plots/drug_info_sbae_drugs.rds")
+```
+
+```{r}
+saveRDS(plots,"~/output/FARES_plots/sbae_targets_plots.rds" )
+saveRDS(test,"~/output/FARES_plots/sbae_targets_test.rds" )
+saveRDS(plots2,"~/output/FARES_plots/sbae_enzyme_plots.rds" )
+saveRDS(test2,"~/output/FARES_plots/sbae_enzyme_test.rds" )
+```
+
+
+further testing 
+
+```{r}
+drug_info_all<- readRDS("~/output/FARES_plots/drug_info_all.rds" )
+```
+
+```{r}
+set.seed(120)
+sub<- sample( drug_info_all[,1], 416, replace = FALSE)
+```
+```{r}
+drug_info_random <- drug_info_all[drug_info_all[,1] %in% sub,]
+```
+
+
+```{r}
+random <- unlist(str_split(drug_info_random[,2], ";"))
+random <- random[!is.na(random )]
+random <- random[!random == "NA"]
+```
+
+```{r}
+random_df<- as.data.frame(table(random))
+```
+
+
+
+```{r}
+pvalue4<- c()
+plots4<- list()
+test4<- list()
+for ( j in 1:100){ #nrow(random)
+  res <- drug_gene_test(as.character(random_df[j,1]),as.numeric(random_df[j,2]), 2, drug_info_all )
+  pvalue4[j]<- res[1]
+  plots4[j]<- res[2]
+  test4[j]<- res[3]
+}
+```
+
+```{r}
+names(test4)<- random_df[,1]
+```
+
+
+
+

@@ -1,0 +1,325 @@
+---
+title: "230124_fares_sbae_drugs"
+author: "Jennifer Fisher"
+date: "2023-01-24"
+output:
+  html_document:
+    toc: true
+    theme: united
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# START 
+    Goal/Purpose of operations: 
+    To determine the drugs with associations to sex-bias adverse events, we need to calulate the reporting odds ratio for each drug to determine if it is more likely for a certain drug and adverse event combination is more likely to coccur in one sex or the other. 
+    
+    Finished psedocode on:
+    230124
+    
+    System which operations were done on: 
+    my laptop
+    
+    GitHub Repo:
+    Sex_Bias_Adverse_Events
+    
+    Directory of operations:
+    /data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events
+    
+    Scripts being edited for operations:
+    NA
+    
+    Data being used:
+    patient_safety.csv - https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/G9SHDA - Curated FAERS dataset containing reports from 2013Q1 to 2020Q3. A primary source of post-marketing pharmacovigilance. The reports in FAERS mainly contain demographic information (such as age and sex, no personal identifiers), drugs (drug substances), and adverse events (preferred terms in MedDRA). https://www.nature.com/articles/s43588-021-00138-4 
+    
+    Papers and tools: 
+    NA
+
+# STEPS
+
+### Set working directory 
+```{r}
+library(readr)
+library(MASS)
+library(parallel)
+library(BiocParallel)
+library(stringr)
+library(dplyr)
+```
+
+### load in data
+```{r}
+patient_safety <- read_csv("~/data/patient_safety.csv")
+```
+```{r}
+#filter data
+#us only
+patient_safety<- patient_safety[patient_safety$country == "US",]
+#qualification 1=physician, 2=pharmacist, 3= other helath professional
+patient_safety<- patient_safety[patient_safety$qualify %in% c(1,2,3),]
+#gender 1- male 2- female 
+patient_safety<- patient_safety[patient_safety$gender %in% c(1,2),]
+#must have adverse event
+patient_safety<- patient_safety[ !patient_safety$SE == "[]" ,]
+#must have a drug 
+patient_safety<- patient_safety[ !patient_safety$drugs == "[]" ,]
+```
+
+```{r}
+#check for repeating cases
+identical(nrow(patient_safety), length(unique(patient_safety$report_id)))
+
+```
+
+```{r}
+#look at the duplicated cases
+patient_safety$report_id[duplicated(patient_safety$report_id)]
+```
+
+```{r}
+patient_safety[patient_safety$report_id == 10521631,]
+```
+different
+```{r}
+patient_safety[patient_safety$report_id == 10432254,]
+```
+different 
+```{r}
+patient_safety[patient_safety$report_id == 15431328,]
+```
+different
+
+there is an earlier and later versions. I should remove the ealrier entry. note this 
+```{r}
+patient_safety <- patient_safety[! (patient_safety$report_id == 10521631 & patient_safety$receipt_date == "2015-04-17"),]
+patient_safety <- patient_safety[! (patient_safety$report_id == 10432254 & patient_safety$receipt_date == "2014-08-15"),]
+patient_safety <- patient_safety[! (patient_safety$report_id == 15431328 & patient_safety$receipt_date == "2018-09-21"),]
+```
+
+
+```{r}
+saveRDS(patient_safety, "~/data/patient_safety_filtered.rds")
+```
+
+### Analysis
+
+
+
+```{r}
+nrow(patient_safety)
+```
+
+
+
+
+
+```{r}
+test_ae<- str_replace_all(patient_safety$SE, "[[:punct:]]", "")
+test_ae<- strsplit(test_ae, " ")
+test_drug <- str_replace_all(patient_safety$drugs, "[[:punct:]]", "")
+test_drug<- strsplit(test_drug, " ")
+```
+
+```{r}
+drug_ae_events<- function(index){
+  
+  case_df <- expand.grid(test_drug[[index]], test_ae[[index]])
+  case_df<- case_df[ !duplicated(case_df),]
+  colnames(case_df)<- c("drug", "adverse_event")
+  return(case_df)
+}
+
+parallel_runs<- mclapply(1:nrow(patient_safety),drug_ae_events)
+
+saveRDS(parallel_runs, "~/data/drug_ae_list.rds")
+```
+
+
+```{r}
+N <- length(parallel_runs)
+sz <- 50000 #small enough for the short queue
+sample_list <- split(1:N, ceiling(seq_along(1:N)/sz))
+```
+
+
+```{r}
+combine_sub_data_frames<- function(index, list_samples, data_frame_list ){
+  group1<-unlist(list_samples[index])
+  #print(group1)
+  drug_ae_df<- bind_rows(data_frame_list[group1])
+  drug_ae_df1<- drug_ae_df[!duplicated(drug_ae_df),]
+  return(drug_ae_df1)
+}
+```
+
+```{r}
+combine_parallel_runs <- mclapply(1:40,combine_sub_data_frames, sample_list, parallel_runs)
+```
+
+```{r}
+drug_ae_df<- bind_rows(combine_parallel_runs)
+```
+```{r}
+drug_ae_df2<- drug_ae_df[!duplicated(drug_ae_df),]
+```
+
+```{r}
+saveRDS(drug_ae_df2, "~/data/drug_ae_df.rds")
+```
+
+
+```{r}
+sex_bias_adverse_event_test<- function( index, drug_event_df ){
+  #event and drug
+  event<- drug_event_df[index,2]
+  drug<- drug_event_df[index,1]
+  #a: the number of female patients with target drug-events combinations.
+  a_count <- nrow(patient_safety_females[ (grepl(event,patient_safety_females$SE ) & grepl(drug,patient_safety_females$drugs )), ] )
+  #b: the number of female patients with target drugs but not target events.
+  b_count <- nrow(patient_safety_females[ ( !grepl(event,patient_safety_females$SE ) &  grepl(drug,patient_safety_females$drugs )), ] )
+  #c: the number of male patients with target drug-events combinations.
+  c_count <- nrow(patient_safety_males[ (grepl(event,patient_safety_males$SE ) & grepl(drug,patient_safety_males$drugs )), ] )
+  #d: the number of male patients with target drugs but not target events.
+  d_count <- nrow(patient_safety_males[ ( !grepl(event,patient_safety_males$SE ) &  grepl(drug,patient_safety_males$drugs )), ] )
+  
+  #contingency table
+  con_table<- matrix( c(a_count, c_count, b_count, d_count), nrow= 2, dimnames = list(c("Female", "Male"), c("Target Adverse Events", "All other Adverse Events")))
+  
+  #fisher's exact test
+  res<- fisher.test(con_table)
+  
+  table_info <- c(a_count, b_count, c_count, d_count, res$p.value, res$estimate, res$conf.int[1], res$conf.int[2])
+  
+  return(table_info)
+
+}
+```
+
+```{r}
+patient_safety_males <- patient_safety[patient_safety$gender == 1,]
+patient_safety_females <- patient_safety[patient_safety$gender == 2,]
+```
+
+```{r}
+additional_col <- matrix(nrow= nrow(drug_ae_df2), ncol=8)
+```
+
+```{r}
+drug_ae_df<- cbind(drug_ae_df2, additional_col)
+```
+
+
+```{r}
+date()
+parallel_test_1<- mclapply(1:2000,sex_bias_adverse_event_test, drug_ae_df)
+date()
+```
+
+```{r}
+group1_res <- t(as.data.frame(parallel_test_1))
+saveRDS(group1_res, "~/data/fishers_res_group1.rds")
+```
+
+
+t(as.data.frame(parallel_test))
+next 
+```{r}
+date()
+parallel_test_1<- mclapply(2001:4000,sex_bias_adverse_event_test, drug_ae_df)
+date()
+group2_res <- t(as.data.frame(parallel_test_1))
+saveRDS(group2_res, "~/data/fishers_res_group2.rds")
+```
+move to cheaha
+
+#additional code
+
+
+```{r}
+test<- str_replace_all(patient_safety$SE, "[[:punct:]]", "")
+test2<- unlist(strsplit(test, " "))
+test2<- test2[table(test2) >5]
+adverse_event_list<- unique(test2)
+```
+```{r}
+test<- str_replace_all(patient_safety$drugs, "[[:punct:]]", "")
+test2<- unlist(strsplit(test, " "))
+test2<- test2[table(test2) >30]
+drug_list<- unique(test2)
+```
+
+```{r}
+length(adverse_event_list)
+length(drug_list)
+```
+
+to make a contingency table
+a: the number of female patients with target drug-events combinations. b: the number of female patients with target drugs but not target events. c: the number of male patients with target drug-events combinations. d: the number of male patients with target drugs but not target events.
+
+DB00641- Simvastatin
+	
+10028411- pt for myalgia
+
+filter male and female reports
+
+```{r}
+patient_safety_males <- patient_safety[patient_safety$gender == 1,]
+patient_safety_females <- patient_safety[patient_safety$gender == 2,]
+```
+a: the number of female patients with target drug-events combinations.
+```{r}
+a_count <- nrow(patient_safety_females[ (grepl("10028411",patient_safety_females$SE ) & grepl("DB00641",patient_safety_females$drugs )), ] )
+```
+b: the number of female patients with target drugs but not target events.
+```{r}
+b_count <- nrow(patient_safety_females[ ( !grepl("10028411",patient_safety_females$SE ) &  grepl("DB00641",patient_safety_females$drugs )), ] )
+```
+c: the number of male patients with target drug-events combinations.
+````{r}
+c_count <- nrow(patient_safety_males[ (grepl("10028411",patient_safety_males$SE ) & grepl("DB00641",patient_safety_males$drugs )), ] )
+```
+d: the number of male patients with target drugs but not target events.
+```{r}
+d_count <- nrow(patient_safety_males[ ( !grepl("10028411",patient_safety_males$SE ) &  grepl("DB00641",patient_safety_males$drugs )), ] )
+```
+
+```{r}
+con_table<- matrix( c(a_count, c_count, b_count, d_count), nrow= 2, dimnames = list(c("Female", "Male"), c("Target Adverse Events", "All other Adverse Events")))
+```
+
+```{r}
+res<- fisher.test(con_table)
+```
+
+```{r}
+res$p.value
+res$estimate
+res$conf.int[1]
+res$conf.int[2]
+```
+
+
+### Save Data
+Done in script
+
+
+    
+# END
+    Location of final scripts:
+   
+  
+    Location of data produced:
+
+    
+    Dates when operations were done:
+
+    
+## Versions
+```{r}
+sessionInfo()
+```
+
+
