@@ -12,6 +12,14 @@
 drug_ae_list.rds
 drug_bank_1_5_8_df.RDS
 drugbank_5.1.8.db
+full database.xml
+gtex_lv_files
+gtex_qsmooth
+lv_gtex_filter_samples.rds
+MedDRA_25_0_English
+medDRA_test.csv
+patient_safety.csv
+tpm_gtex_filter_samples.rds
 
  # Example code in package build process
 *-Ex.R
