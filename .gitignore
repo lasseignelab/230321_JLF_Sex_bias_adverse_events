@@ -30,6 +30,7 @@ patient_safety_filtered.rds
 
 #results not in manuscript
 lioness
+gtex_lvs_sex
 
  # Output files from R CMD build
 /*.tar.gz
