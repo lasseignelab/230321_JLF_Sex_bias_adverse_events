@@ -1,0 +1,2 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0250019410414416;3;85;2;0,0235294117647059;0,666666666666667;"GO:0018636";"GO:MF";"phenanthrene 9,10-monooxygenase activity";20171;3410;"Pancreas_female_8_community"

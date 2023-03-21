@@ -1,0 +1,8 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,00583907207411942;850;89;15;0,168539325842697;0,0176470588235294;"GO:0045597";"GO:BP";"positive regulation of cell differentiation";21128;12222;"Skin_-_Sun_Exposed_(Lower_leg)_female_5_community"
+"2";"query_1";TRUE;0,0129055978836259;228;89;8;0,0898876404494382;0,0350877192982456;"GO:0001649";"GO:BP";"osteoblast differentiation";21128;388;"Skin_-_Sun_Exposed_(Lower_leg)_female_5_community"
+"3";"query_1";TRUE;0,0209851175489263;410;89;10;0,112359550561798;0,024390243902439;"GO:1903706";"GO:BP";"regulation of hemopoiesis";21128;24477;"Skin_-_Sun_Exposed_(Lower_leg)_female_5_community"
+"4";"query_1";TRUE;0,00040425244014459;1363;88;19;0,215909090909091;0,0139398385913426;"GO:0000785";"GO:CC";"chromatin";22112;92;"Skin_-_Sun_Exposed_(Lower_leg)_female_5_community"
+"5";"query_1";TRUE;0,00151482924730078;49;91;5;0,0549450549450549;0,102040816326531;"GO:0070888";"GO:MF";"E-box binding";20171;8856;"Skin_-_Sun_Exposed_(Lower_leg)_female_5_community"
+"6";"query_1";TRUE;0,0249038225857095;6861;92;52;0,565217391304348;0,00757907010639848;"TF:M07249";"TF";"Factor: ctcf; motif: CCNCNAGRKGGCRSTN";20012;1154;"Skin_-_Sun_Exposed_(Lower_leg)_female_5_community"
+"7";"query_1";TRUE;0,0478489856881541;101;48;5;0,104166666666667;0,0495049504950495;"WP:WP2064";"WP";"Neural crest differentiation";7899;8;"Skin_-_Sun_Exposed_(Lower_leg)_female_5_community"

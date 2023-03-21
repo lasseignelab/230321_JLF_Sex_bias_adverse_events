@@ -1,0 +1,5 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,000693521019585816;4353;59;41;0,694915254237288;0,00941879163795084;"HPA:0330222";"HPA";"oral mucosa; squamous epithelial cells[≥Medium]";11006;490;"Kidney_-_Cortex_male_8_community"
+"2";"query_1";TRUE;0,00655217028394641;1550;59;21;0,355932203389831;0,0135483870967742;"HPA:0090163";"HPA";"cerebellum; Purkinje cells[High]";11006;118;"Kidney_-_Cortex_male_8_community"
+"3";"query_1";TRUE;0,0100697508079661;4042;59;37;0,627118644067797;0,00915388421573479;"HPA:0620222";"HPA";"vagina; squamous epithelial cells[≥Medium]";11006;858;"Kidney_-_Cortex_male_8_community"
+"4";"query_1";TRUE;0,0202576093445088;3981;59;36;0,610169491525424;0,00904295403165034;"HPA:0340461";"HPA";"ovary; ovarian stroma cells[≥Low]";11006;496;"Kidney_-_Cortex_male_8_community"

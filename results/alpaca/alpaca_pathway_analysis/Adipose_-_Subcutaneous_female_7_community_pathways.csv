@@ -1,0 +1,2 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0391627197744548;9353;88;61;0,693181818181818;0,0065219715599273;"TF:M12721";"TF";"Factor: ZNFPT1; motif: YCNNCNCWGCCNY";20012;11600;"Adipose_-_Subcutaneous_female_7_community"

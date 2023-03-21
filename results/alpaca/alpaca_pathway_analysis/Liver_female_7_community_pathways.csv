@@ -1,0 +1,2 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,00399469383586539;825;85;14;0,164705882352941;0,016969696969697;"GO:0008289";"GO:MF";"lipid binding";20171;1650;"Liver_female_7_community"

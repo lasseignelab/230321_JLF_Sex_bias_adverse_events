@@ -1,0 +1,7 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,00381212570515446;12321;77;61;0,792207792207792;0,00495089684278873;"GO:0005737";"GO:CC";"cytoplasm";22112;309;"Minor_Salivary_Gland_male_11_community"
+"2";"query_1";TRUE;0,00369059658300098;705;52;13;0,25;0,0184397163120567;"HPA:0271131";"HPA";"kidney; distal tubules[≥Low]";11006;420;"Minor_Salivary_Gland_male_11_community"
+"3";"query_1";TRUE;0,00953797723737742;554;52;11;0,211538461538462;0,01985559566787;"HPA:0271132";"HPA";"kidney; distal tubules[≥Medium]";11006;421;"Minor_Salivary_Gland_male_11_community"
+"4";"query_1";TRUE;0,0123836450531442;27;33;3;0,0909090909090909;0,111111111111111;"KEGG:00650";"KEGG";"Butanoate metabolism";8091;113;"Minor_Salivary_Gland_male_11_community"
+"5";"query_1";TRUE;0,0325546993267132;1532;33;15;0,454545454545455;0,0097911227154047;"KEGG:01100";"KEGG";"Metabolic pathways";8091;181;"Minor_Salivary_Gland_male_11_community"
+"6";"query_1";TRUE;0,0257447624711185;5;37;2;0,0540540540540541;0,4;"WP:WP5175";"WP";"Disorders in ketone body synthesis";7899;758;"Minor_Salivary_Gland_male_11_community"

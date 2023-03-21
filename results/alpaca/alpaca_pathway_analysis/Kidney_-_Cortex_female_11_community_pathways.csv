@@ -1,0 +1,5 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0165093817863878;2;17;2;0,117647058823529;1;"CORUM:6682";"CORUM";"MKS1-TMEM67 complex";3383;2300;"Kidney_-_Cortex_female_11_community"
+"2";"query_1";TRUE;0,0199513092328146;88;30;4;0,133333333333333;0,0454545454545455;"KEGG:05323";"KEGG";"Rheumatoid arthritis";8091;478;"Kidney_-_Cortex_female_11_community"
+"3";"query_1";TRUE;0,0386726144008919;11329;91;71;0,78021978021978;0,00626710212728396;"TF:M12227";"TF";"Factor: ZIC4; motif: NNCCNCCCRYNGYGN";20012;9372;"Kidney_-_Cortex_female_11_community"
+"4";"query_1";TRUE;0,0474915894062986;10886;91;69;0,758241758241758;0,00633841631453243;"TF:M09729";"TF";"Factor: LUMAN; motif: CYCAGCYYCY";20012;4828;"Kidney_-_Cortex_female_11_community"

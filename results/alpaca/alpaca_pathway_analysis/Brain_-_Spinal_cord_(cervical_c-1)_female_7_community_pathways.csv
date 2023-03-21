@@ -1,0 +1,2 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,00209505114919369;12321;85;67;0,788235294117647;0,00543787030273517;"GO:0005737";"GO:CC";"cytoplasm";22112;309;"Brain_-_Spinal_cord_(cervical_c-1)_female_7_community"

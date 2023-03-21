@@ -1,0 +1,3 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0225735460974963;13404;88;77;0,875;0,00574455386451805;"TF:M11058";"TF";"Factor: Hey1; motif: NGCRCGYGYN";20012;3378;"Brain_-_Amygdala_male_11_community"
+"2";"query_1";TRUE;0,0460152604967535;12713;88;74;0,840909090909091;0,0058208133406749;"TF:M00333_1";"TF";"Factor: ZF5; motif: NRNGNGCGCGCWN; match class: 1";20012;9235;"Brain_-_Amygdala_male_11_community"

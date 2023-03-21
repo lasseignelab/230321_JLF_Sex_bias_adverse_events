@@ -1,0 +1,4 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0166096058830426;12321;85;65;0,764705882352941;0,00527554581608636;"GO:0005737";"GO:CC";"cytoplasm";22112;309;"Brain_-_Putamen_(basal_ganglia)_female_13_community"
+"2";"query_1";TRUE;0,000146168524721183;14778;82;78;0,951219512195122;0,00527811611855461;"GO:0005515";"GO:MF";"protein binding";20171;1498;"Brain_-_Putamen_(basal_ganglia)_female_13_community"
+"3";"query_1";TRUE;0,0320592031004507;7238;48;43;0,895833333333333;0,0059408676429953;"HPA:0460000";"HPA";"skin 1";11006;621;"Brain_-_Putamen_(basal_ganglia)_female_13_community"

@@ -1,0 +1,4 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0116633186414339;12321;83;64;0,771084337349398;0,00519438357276195;"GO:0005737";"GO:CC";"cytoplasm";22112;309;"Kidney_-_Cortex_male_9_community"
+"2";"query_1";TRUE;0,0131427170456553;1693;83;18;0,216867469879518;0,0106320141760189;"GO:0005739";"GO:CC";"mitochondrion";22112;310;"Kidney_-_Cortex_male_9_community"
+"3";"query_1";TRUE;0,033843606761898;13014;81;70;0,864197530864197;0,0053788228062087;"TF:M08441_1";"TF";"Factor: AP-2gamma:Elk-1; motif: NGCCKNRGGSGRCGGAAGTG; match class: 1";20012;8589;"Kidney_-_Cortex_male_9_community"

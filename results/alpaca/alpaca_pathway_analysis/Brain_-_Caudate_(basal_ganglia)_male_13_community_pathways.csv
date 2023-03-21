@@ -1,0 +1,4 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0331465164367865;2;83;2;0,0240963855421687;1;"GO:0014718";"GO:BP";"positive regulation of satellite cell activation involved in skeletal muscle regeneration";21128;4803;"Brain_-_Caudate_(basal_ganglia)_male_13_community"
+"2";"query_1";TRUE;0,00189383874918978;5440;80;38;0,475;0,00698529411764706;"GO:0005829";"GO:CC";"cytosol";22112;380;"Brain_-_Caudate_(basal_ganglia)_male_13_community"
+"3";"query_1";TRUE;0,00367169740861522;12321;80;63;0,7875;0,00511322132943755;"GO:0005737";"GO:CC";"cytoplasm";22112;309;"Brain_-_Caudate_(basal_ganglia)_male_13_community"

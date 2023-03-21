@@ -1,0 +1,6 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,000205361381251043;2109;90;28;0,311111111111111;0,0132764343290659;"TF:M04442";"TF";"Factor: UNCX; motif: NTAATNNAATTAN";20012;8856;"Brain_-_Hippocampus_male_12_community"
+"2";"query_1";TRUE;0,00571314117673298;4100;90;38;0,422222222222222;0,00926829268292683;"TF:M08202";"TF";"Factor: CDP:HOXB13; motif: SYMRTAAANATYGATY";20012;1170;"Brain_-_Hippocampus_male_12_community"
+"3";"query_1";TRUE;0,00933357696612392;617;90;13;0,144444444444444;0,0210696920583468;"TF:M04281_1";"TF";"Factor: ALX4; motif: NTAATYNAATTAN; match class: 1";20012;57;"Brain_-_Hippocampus_male_12_community"
+"4";"query_1";TRUE;0,0101867456694299;1826;90;23;0,255555555555556;0,0125958378970427;"TF:M10928";"TF";"Factor: Prop-1; motif: TAATTNNRTTA";20012;6980;"Brain_-_Hippocampus_male_12_community"
+"5";"query_1";TRUE;0,0465329663513728;717;90;13;0,144444444444444;0,0181311018131102;"TF:M04281";"TF";"Factor: ALX4; motif: NTAATYNAATTAN";20012;56;"Brain_-_Hippocampus_male_12_community"
