@@ -27,6 +27,7 @@ drug_ae_df.rds
 metadata_gtex_filter_samples.rds
 patient_safety_filtered.rds
 drug_ae_res.rds
+alpaca/alpaca_run
 
  # Example code in package build process
 *-Ex.R
