@@ -28,6 +28,8 @@ patient_safety_filtered.rds
  # Example code in package build process
 *-Ex.R
 
+#results not in manuscript
+lioness
 
  # Output files from R CMD build
 /*.tar.gz
