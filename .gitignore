@@ -27,7 +27,12 @@ drug_ae_df.rds
 metadata_gtex_filter_samples.rds
 patient_safety_filtered.rds
 drug_ae_res.rds
-alpaca/alpaca_run
+results/alpaca/alpaca_run
+results/alpaca/alpaca_com_gene_list/
+results/alpaca/alpaca_core_gene_lists/
+results/alpaca/alpaca_run/
+results/alpaca/panda_long_outputs/
+results/alpaca/sex_specific_networks/
 
  # Example code in package build process
 *-Ex.R
