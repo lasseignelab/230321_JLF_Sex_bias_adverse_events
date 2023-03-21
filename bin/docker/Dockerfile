@@ -1,79 +1,16 @@
 FROM bioconductor/bioconductor_docker:RELEASE_3_16
 
-##----------------------------------------------------------------------------##
-##  R PACKAGES
-##----------------------------------------------------------------------------##
-
-#### Leave the top line the same for each new project. Uncomment lines to add ####
-RUN R -e 'install.packages(c("tidyverse", "remotes",  "BiocManager", "devtools", "knitr", "lintr", "styler", "here", "markdown", "rmarkdown"))' \
-#  && R -e 'install.packages(c("< insert GitHub repos here >")' \
-#  && R -e 'devtools::install_github("< insert GitHub repos here >")' \
-#  && R -e 'remotes::install_github("< insert GitHub repos here >")' \
-#  && R -e 'BiocManager::install(c("< insert Biconductor repos here >"))'
+# location for mounting
+#RUN mkdir /home/rstudio/data
 
 
-##----------------------------------------------------------------------------##
-## SYSTEM PACKAGES
-##----------------------------------------------------------------------------##
+RUN R -e 'BiocManager::install(c("DESeq2", "pasilla", "SummarizedExperiment", "TFEA.ChIP", "ensembldb", "EnsDb.Hsapiens.v75", "AnnotationDbi", "org.Hs.eg.db", "cogena", "BgeeDB", "projectR", "GEOquery", "recount3", "ComplexHeatmap", "factoextra", "limma", "ChemmineR", "customCMPdb", "fmcsR", "PharmacoGx" ))'
 
-RUN apt-get update --yes && \
-  apt-get upgrade --yes
+RUN R -e 'install.packages(c("readr","tidyverse","ggforce", "plotly", "devtools", "ProliferativeIndex", "gprofiler2","gplots","RColorBrewer", "car", "VennDiagram", "DrInsight", "FactoMineR", "viridis", "ComplexUpset","tidymodels", "caret", "stats", "MASS", "gbm", "rpart", "RWeka", "LogitBoost", "pamr", "naivebayes", "knn", "klaR",  "xgboost", "glm", "kernlab",  "LiblineaR", "discrim", "ranger", "randomForest", "partykit" , "nnet", "earth", "igraph", "mashr", "broom.mixed", "dotwhisker", "skimr", "visNetwork" ))'
 
-RUN apt-get install --yes \
-  python3-pip \
-  python3-dev \
-  python3-pip \
-  python3-tk
-
-
-RUN apt-get install --yes \
-  libcurl4-openssl-dev \
-  libssl-dev \
-  libcairo2-dev libxt-dev \
-  libxml2-dev \
-  libudunits2-dev \
-  libhdf5-dev \
-  libv8-dev \
-  libgdal-dev \
-  xorg libx11-dev libglu1-mesa-dev \
-  samtools libboost-all-dev \
-  libgsl-dev
-
-RUN apt-get install -y \
-	wget \
-	unzip \
-	git
-
-
-##----------------------------------------------------------------------------##
-## PYTHON PACKAGES
-##----------------------------------------------------------------------------##
-
-
-# RUN pip3 install <Insert Python packages here>
-
-
-##----------------------------------------------------------------------------##
-## 3RD PARTY PROGRAMS
-##----------------------------------------------------------------------------##
-
-#### Uncomment these lines if you need a conda env in your docker ####
-
-# Install miniconda
-# ENV CONDA_DIR /opt/conda
-# RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
-#     /bin/bash ~/miniconda.sh -b -p /opt/conda
-# ENV PATH=$CONDA_DIR/bin:$PATH
-
-
-##----------------------------------------------------------------------------##
-## CONDA ENV
-##----------------------------------------------------------------------------##
-
-#### Uncomment these lines if you need a conda env in your docker ####
-
-#RUN conda config --set channel_priority false && \
-#    conda env create -f opt/BLAZE-1.1.0/conda_env/environment.yml
-
-#SHELL ["conda", "run", "-n", "blaze", "/bin/bash", "-c"]
-
+RUN R -e 'devtools::install_github("wgmao/PLIER")'
+RUN R -e 'devtools::install_github("yduan004/signatureSearch", build_vignettes=FALSE)'
+RUN R -e 'BiocManager::install("signatureSearchData")'
+RUN R -e 'devtools::install_github("netZoo/netZooR")' 
+RUN R -e 'devtools::install_github("yduan004/drugbankR")'
+RUN R -e 'utils::install.packages("markdown", repos = "https://packagemanager.rstudio.com/cran/__linux__/jammy/latest")'
