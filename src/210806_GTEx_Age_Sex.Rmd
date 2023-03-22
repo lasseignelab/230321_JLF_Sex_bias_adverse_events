@@ -16,16 +16,16 @@ knitr::opts_chunk$set(echo = TRUE)
 # START 
 
     Goal/Purpose of operations: 
-    Checking GTEx samples for cofounders
+    Checking GTEx samples for cofounders and exploratory data analysis 
 
     Finished psedocode on: 
     210806
 
     System which operations were done on: 
-    my lab mac 
+    Jen lab mac 
 
     GitHub Repo:
-    Sex_Bias_Adverse_Events
+    230321_JLF_Sex_bias_adverse_events
 
 
     Directory of operations:
@@ -35,7 +35,7 @@ knitr::opts_chunk$set(echo = TRUE)
     NA
 
     Docker:
-    jenfisher7/rstudio_cancer_dr 
+    jenfisher7/rstudio_sex_bias_drugs
 
     Data being used: 
     GTEx
@@ -44,7 +44,8 @@ knitr::opts_chunk$set(echo = TRUE)
       downloaded from https://gtexportal.org/home/datasets on 210517
 
     Papers and tools:
-    ggplot2 and tidyverse packages
+    Main- ggplot2 and tidyverse packages
+    additional tools starting at line 59.
 
 # STEPS
 ### Set working directory 
@@ -65,38 +66,36 @@ library(viridis)
 library(RColorBrewer)
 ```
 
+get Gtex data from recount3
 ```{r}
 human_projects <- readRDS("~/data/human_recount3_projects.rds")
 ```
-
-
 
 ```{r}
 gtex_proj_info <- subset(human_projects, file_source == "gtex")
 ```
 
-
 ```{r}
-for (i in seq_len(nrow(gtex_proj_info))){
+for (i in seq_len(nrow(gtex_proj_info))) {
   name <- paste(gtex_proj_info[i, 1], "rse", sep = "_")
   assign(name, create_rse(gtex_proj_info[i, ]))
 }
 ```
 
 ```{r}
-name <- paste(gtex_proj_info[, 1], "rse",  sep = "_")
-gtex_coldata <-  colData(get(name[1]))
-for (i in 2:length(name)){
-  coldata <-  colData(get(name[i]))
-  gtex_coldata <- rbind(gtex_coldata,  coldata)
+name <- paste(gtex_proj_info[, 1], "rse", sep = "_")
+gtex_coldata <- colData(get(name[1]))
+for (i in 2:length(name)) {
+  coldata <- colData(get(name[i]))
+  gtex_coldata <- rbind(gtex_coldata, coldata)
 }
 ```
 
 ### Analysis
+look at metadata of samples
 ```{r}
 gtex_coldata <- as.data.frame(gtex_coldata)
 ```
-
 
 ```{r}
 table(is.na(gtex_coldata$gtex.age))
@@ -120,47 +119,60 @@ How many sample per tissue?
 ```{r}
 as.data.frame(table(gtex_coldata$gtex.smts))
 ```
+
 substructures of tissues
 ```{r}
 as.data.frame(table(gtex_coldata$gtex.smtsd))
 ```
 
-
-
+adjust the data labels 
 ```{r}
 gtex_coldata$gtex.sex <- factor(ifelse(gtex_coldata$gtex.sex == 1, "M", "F"),
-                                levels = c("M", "F"))
+  levels = c("M", "F")
+)
 
 gtex_coldata$gtex.dthhrdy <- ifelse(gtex_coldata$gtex.dthhrdy == 0,
-                                    "Ventilator_Case",
-                                    ifelse(gtex_coldata$gtex.dthhrdy == 1,
-                                           "Violent_and_Fast_Death",
-                                           ifelse(
-                                             gtex_coldata$gtex.dthhrdy == 2,
-                                             "Fast_Death_of_Natural_Causes",
-                                             ifelse(
-                                               gtex_coldata$gtex.dthhrdy == 3,
-                                               "Intermediate_Death",
-                                               ifelse(
-                                                 gtex_coldata$gtex.dthhrdy == 4,
-                                                 "Slow_Death",
-                                                 "Not Reported")))))
+  "Ventilator_Case",
+  ifelse(gtex_coldata$gtex.dthhrdy == 1,
+    "Violent_and_Fast_Death",
+    ifelse(
+      gtex_coldata$gtex.dthhrdy == 2,
+      "Fast_Death_of_Natural_Causes",
+      ifelse(
+        gtex_coldata$gtex.dthhrdy == 3,
+        "Intermediate_Death",
+        ifelse(
+          gtex_coldata$gtex.dthhrdy == 4,
+          "Slow_Death",
+          "Not Reported"
+        )
+      )
+    )
+  )
+)
 ```
 
+look at age and sex
 ```{r}
 gtex_coldata$SEX_AGE <- paste(gtex_coldata$gtex.sex,
-                              gtex_coldata$gtex.age, sep = "_")
+  gtex_coldata$gtex.age,
+  sep = "_"
+)
 ```
 
+look at age, sex, and type of death
 ```{r}
 gtex_coldata$SEX_AGE_DEATH <- paste(gtex_coldata$SEX_AGE,
-                                    gtex_coldata$gtex.dthhrdy, sep = "_")
+  gtex_coldata$gtex.dthhrdy,
+  sep = "_"
+)
 ```
 
 ```{r}
 table(gtex_coldata$SEX_AGE_DEATH)
 ```
 
+Remove one sample (GTEX-11 ILO) that was identified in previous literature to be an individual who completed a sex change (Paulson et al. 2017). We also focused on samples from the TRUSeq.v1 chemistry. 
 ```{r}
 gtex_coldata2 <- gtex_coldata[!is.na(gtex_coldata$gtex.smgebtcht), ]
 gtex_coldata3 <- gtex_coldata2[gtex_coldata2$gtex.smgebtcht == "TruSeq.v1", ]
@@ -172,419 +184,497 @@ gtex_coldata <- gtex_coldata4
 
 ```{r}
 # for each tissue count each
-#i and J llops
+# i and J loops
 tissue <- unique(gtex_coldata$gtex.smts)
 sub_tissues <- unique(gtex_coldata$gtex.smtsd)
 tissue_data <- paste(tissue, "data", sep = "_")
-  # Sex
-  sex_table <- as.data.frame(table(gtex_coldata[c(14, 6)]))
+# Sex
+sex_table <- as.data.frame(table(gtex_coldata[c(14, 6)]))
 
-  #Age
-  age_table <-  as.data.frame(table(gtex_coldata[c(14, 7)]))
+# Age
+age_table <- as.data.frame(table(gtex_coldata[c(14, 7)]))
 
-  #Death
-  death_table <- as.data.frame(table(gtex_coldata[c(14, 8)]))
+# Death
+death_table <- as.data.frame(table(gtex_coldata[c(14, 8)]))
 
-  #AGE_Sex
-  age_sex_table <- as.data.frame(table(gtex_coldata[c(14, 199)]))
+# AGE_Sex
+age_sex_table <- as.data.frame(table(gtex_coldata[c(14, 199)]))
 
-  age_sex_table_v2 <- as.data.frame(table(gtex_coldata[c(14, 6, 7)]))
+age_sex_table_v2 <- as.data.frame(table(gtex_coldata[c(14, 6, 7)]))
 
-    #AGE_Sex_Death
-  age_sex_death_table <- as.data.frame(table(gtex_coldata[c(14, 200)]))
+# AGE_Sex_Death
+age_sex_death_table <- as.data.frame(table(gtex_coldata[c(14, 200)]))
 
-  age_sex_death_table_v2 <- as.data.frame(table(gtex_coldata[c(14, 6, 7, 8)]))
+age_sex_death_table_v2 <- as.data.frame(table(gtex_coldata[c(14, 6, 7, 8)]))
 ```
 
-
+plot the number of samples for each sex across the tissues
 ```{r}
-ggplot(sex_table,  aes(fill = gtex.sex,  y = Freq,  x = gtex.smts)) +
-    geom_bar(position = "stack",  stat = "identity") +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Count") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90,  size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Sex for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_sex_tissue_GTEx.pdf")
+ggplot(sex_table, aes(fill = gtex.sex, y = Freq, x = gtex.smts)) +
+  geom_bar(position = "stack", stat = "identity") +
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Count") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Sex for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_sex_tissue_GTEx.pdf")
 ```
 
+plot the number of samples for each sex across the tissues(with the precentage)
 ```{r}
-ggplot(sex_table,  aes(fill = gtex.sex,  y = Freq,  x = gtex.smts)) +
-    geom_bar(position = "fill",  stat = "identity") +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Fraction") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90,  size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Sex for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_sex_tissue_GTEx_percent.pdf")
+ggplot(sex_table, aes(fill = gtex.sex, y = Freq, x = gtex.smts)) +
+  geom_bar(position = "fill", stat = "identity") +
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Fraction") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Sex for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_sex_tissue_GTEx_percent.pdf")
 ```
 
-
+plot the number of samples for each age groups across the tissues
 ```{r}
-ggplot(age_table,  aes(fill = gtex.age,  y = Freq,  x = gtex.smts)) +
-    geom_bar(position = "stack",  stat = "identity") +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Count") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90,  size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Age for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_age_tissue_GTEx.pdf")
+ggplot(age_table, aes(fill = gtex.age, y = Freq, x = gtex.smts)) +
+  geom_bar(position = "stack", stat = "identity") +
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Count") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Age for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_age_tissue_GTEx.pdf")
 ```
 
+plot the number of samples for each age group across the tissues (precentage)
 ```{r}
-ggplot(age_table,  aes(fill = gtex.age,  y = Freq,  x = gtex.smts)) +
-    geom_bar(position = "fill",  stat = "identity") +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Fraction") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90,  size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Age for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_age_tissue_GTEx_precent.pdf")
+ggplot(age_table, aes(fill = gtex.age, y = Freq, x = gtex.smts)) +
+  geom_bar(position = "fill", stat = "identity") +
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Fraction") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Age for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_age_tissue_GTEx_precent.pdf")
 ```
 
-
+plot the number of samples for each sex/age groups across the tissues
 ```{r}
-ggplot(age_sex_table,  aes(fill = SEX_AGE,  y = Freq,  x = gtex.smts)) +
-    geom_bar(position = "stack",  stat = "identity") +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Count") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90,  size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Sex and Age for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_sex_age_tissue_GTEx.pdf")
+ggplot(age_sex_table, aes(fill = SEX_AGE, y = Freq, x = gtex.smts)) +
+  geom_bar(position = "stack", stat = "identity") +
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Count") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Sex and Age for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_sex_age_tissue_GTEx.pdf")
 ```
 
+plot the number of samples for each sex/ages across the tissues (percentage)
 ```{r}
-ggplot(age_sex_table,  aes(fill = SEX_AGE,  y = Freq,  x = gtex.smts)) +
-    geom_bar(position = "fill",  stat = "identity") +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Fraction") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90,  size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Sex and Age for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_sex_age_tissue_GTEx_precent.pdf")
+ggplot(age_sex_table, aes(fill = SEX_AGE, y = Freq, x = gtex.smts)) +
+  geom_bar(position = "fill", stat = "identity") +
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Fraction") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Sex and Age for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_sex_age_tissue_GTEx_precent.pdf")
 ```
 
+plot the number of samples for each type of death across the tissues
 ```{r}
-ggplot(death_table,  aes(fill = gtex.dthhrdy,  y = Freq,  x = gtex.smts)) +
-    geom_bar(position = "fill",  stat = "identity") +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Fraction") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90,  size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Type of Death for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_death_tissue_GTEx_precent.pdf")
+ggplot(death_table, aes(fill = gtex.dthhrdy, y = Freq, x = gtex.smts)) +
+  geom_bar(position = "fill", stat = "identity") +
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Fraction") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Type of Death for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_death_tissue_GTEx_precent.pdf")
 ```
 
 
-
+what types of tissues do I have?
 ```{r}
 tissue
 ```
 
-
+for each tissue plot the sex and age 
 ```{r}
-for (i in seq_along(tissue)){
+for (i in seq_along(tissue)) {
   data <- age_sex_table_v2[age_sex_table_v2$gtex.smts == tissue[i], ]
-  title <- paste("Sex and Age for GTEx",  tissue[i])
-  plot <- ggplot(data = data,  aes(x = gtex.age,
-                                   y = Freq,  group = gtex.sex)) +
-      geom_line(aes(linetype = gtex.sex)) +
-      geom_point() +
-      theme_classic() +
-      ggtitle(title)
+  title <- paste("Sex and Age for GTEx", tissue[i])
+  plot <- ggplot(data = data, aes(
+    x = gtex.age,
+    y = Freq, group = gtex.sex
+  )) +
+    geom_line(aes(linetype = gtex.sex)) +
+    geom_point() +
+    theme_classic() +
+    ggtitle(title)
   print(plot)
-  nfile <- paste("~/output/GTEx_plots/210806_age_sex_GTEx_",
-                 tissue[i], ".pdf", sep = "")
+  nfile <- paste("~/results/GTEx_plots/210806_age_sex_GTEx_",
+    tissue[i], ".pdf",
+    sep = ""
+  )
   ggsave(nfile)
 }
 ```
 
-
+combine the results together
 ```{r}
-ggplot(data = age_sex_table_v2,  aes(x = gtex.age,
-                                     y = Freq,
-                                     group = interaction(gtex.sex,
-                                     gtex.smts))) +
-      geom_line(aes(color = interaction(gtex.sex, gtex.smts))) +
-      geom_point() +
-      theme_classic() +
-      ggtitle("Sex and Age GTEx Tissues")
-ggsave("~/output/GTEx_plots/210806_sex_age_all_tissue_GTEx.pdf")
+ggplot(data = age_sex_table_v2, aes(
+  x = gtex.age,
+  y = Freq,
+  group = interaction(
+    gtex.sex,
+    gtex.smts
+  )
+)) +
+  geom_line(aes(color = interaction(gtex.sex, gtex.smts))) +
+  geom_point() +
+  theme_classic() +
+  ggtitle("Sex and Age GTEx Tissues")
+ggsave("~/results/GTEx_plots/210806_sex_age_all_tissue_GTEx.pdf")
 ```
 
-
+Look at the sub tissues
 ```{r}
-    # Sex
-  sex_sub_table <- as.data.frame(table(gtex_coldata[c(15, 6)]))
+# Sex
+sex_sub_table <- as.data.frame(table(gtex_coldata[c(15, 6)]))
 
-  #Age
-  age_sub_table <-  as.data.frame(table(gtex_coldata[c(15, 7)]))
+# Age
+age_sub_table <- as.data.frame(table(gtex_coldata[c(15, 7)]))
 
-  #Death
-  death_sub_table <- as.data.frame(table(gtex_coldata[c(15, 8)]))
+# Death
+death_sub_table <- as.data.frame(table(gtex_coldata[c(15, 8)]))
 
-  #AGE_Sex
-  age_sex_sub_table <- as.data.frame(table(gtex_coldata[c(15, 199)]))
+# AGE_Sex
+age_sex_sub_table <- as.data.frame(table(gtex_coldata[c(15, 199)]))
 
-  age_sex_sub_table_v2 <- as.data.frame(table(gtex_coldata[c(15, 6, 7)]))
+age_sex_sub_table_v2 <- as.data.frame(table(gtex_coldata[c(15, 6, 7)]))
 
-    #AGE_Sex_Death
-  age_sex_death_sub_table <- as.data.frame(table(gtex_coldata[c(15, 200)]))
+# AGE_Sex_Death
+age_sex_death_sub_table <- as.data.frame(table(gtex_coldata[c(15, 200)]))
 
-  age_sex_death_sub_table_v2 <- as.data.frame(table(
-    gtex_coldata[c(15, 6, 7, 8)]))
+age_sex_death_sub_table_v2 <- as.data.frame(table(
+  gtex_coldata[c(15, 6, 7, 8)]
+))
 ```
 
+Plot the number of samples for each sex across the sub-tissue groups
 ```{r}
-ggplot(sex_sub_table,  aes(fill = gtex.sex,  y = Freq,  x = gtex.smtsd)) +
-    geom_bar(position = "stack", stat = "identity") +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Count") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90,  size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Sex for GTEx tissue")
-ggsave("~/output/210806_sex_tissue_structures_GTEx.pdf")
+ggplot(sex_sub_table, aes(fill = gtex.sex, y = Freq, x = gtex.smtsd)) +
+  geom_bar(position = "stack", stat = "identity") +
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Count") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Sex for GTEx tissue")
+ggsave("~/results/210806_sex_tissue_structures_GTEx.pdf")
 ```
 
+Plot the number of samples for each sex across the sub-tissue groups
 ```{r}
-ggplot(sex_sub_table,  aes(fill = gtex.sex,  y = Freq,  x = gtex.smtsd)) +
-    geom_bar(position = "fill",  stat = "identity") +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Fraction") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90,  size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Sex for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_sex_tissue_structures_GTEx_precent.pdf")
+ggplot(sex_sub_table, aes(fill = gtex.sex, y = Freq, x = gtex.smtsd)) +
+  geom_bar(position = "fill", stat = "identity") +
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Fraction") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Sex for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_sex_tissue_structures_GTEx_precent.pdf")
 ```
 
+Plot the number of samples for each age group across the sub-tissue groups
 ```{r}
-ggplot(age_sub_table,  aes(fill = gtex.age,  y = Freq, x = gtex.smtsd)) +
-    geom_bar(position = "stack",  stat = "identity") +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Count") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90,  size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Age for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_age_tissue_structures_GTEx.pdf")
+ggplot(age_sub_table, aes(fill = gtex.age, y = Freq, x = gtex.smtsd)) +
+  geom_bar(position = "stack", stat = "identity") +
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Count") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Age for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_age_tissue_structures_GTEx.pdf")
 ```
 
+Plot the number of samples for each sex across the sub-tissue groups
 ```{r}
-ggplot(age_sub_table,  aes(fill = gtex.age,  y = Freq,  x = gtex.smtsd)) +
-    geom_bar(position = "fill",  stat = "identity") +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Fraction") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90,  size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Age for GTEx tissue")
-ggsave("~/output/210806_age_tissue_structures_GTEx.pdf")
+ggplot(age_sub_table, aes(fill = gtex.age, y = Freq, x = gtex.smtsd)) +
+  geom_bar(position = "fill", stat = "identity") +
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Fraction") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Age for GTEx tissue")
+ggsave("~/results/210806_age_tissue_structures_GTEx.pdf")
 ```
 
+Plot the number of samples for each sex/age across the sub-tissue groups
 ```{r}
-ggplot(age_sex_sub_table,  aes(fill = SEX_AGE,  y = Freq,  x = gtex.smtsd)) +
-    geom_bar(position = "stack",  stat = "identity") +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Count") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90,  size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Sex and Age for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_sex_age_tissue_structures_GTEx.pdf")
+ggplot(age_sex_sub_table, aes(fill = SEX_AGE, y = Freq, x = gtex.smtsd)) +
+  geom_bar(position = "stack", stat = "identity") +
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Count") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Sex and Age for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_sex_age_tissue_structures_GTEx.pdf")
 ```
 
+Plot the number of samples for each sex/age across the sub-tissue groups
 ```{r}
-ggplot(age_sex_sub_table,  aes(fill = SEX_AGE,  y = Freq,  x = gtex.smtsd)) +
-    geom_bar(position = "fill",  stat = "identity") +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Fraction") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90,  size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Sex and Age for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_sex_age_tissue_structures_GTEx_precent.pdf")
+ggplot(age_sex_sub_table, aes(fill = SEX_AGE, y = Freq, x = gtex.smtsd)) +
+  geom_bar(position = "fill", stat = "identity") +
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Fraction") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Sex and Age for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_sex_age_tissue_structures_GTEx_precent.pdf")
 ```
 
+Plot the number of samples for each type of death across the sub-tissue groups
 ```{r}
-ggplot(death_sub_table,  aes(fill = gtex.dthhrdy,  y = Freq,  x = gtex.smtsd)) +
-    geom_bar(position = "fill",  stat = "identity") +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Fraction") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90, size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Type of Death for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_death_tissue_structures_GTEx_precent.pdf")
+ggplot(death_sub_table, aes(fill = gtex.dthhrdy, y = Freq, x = gtex.smtsd)) +
+  geom_bar(position = "fill", stat = "identity") +
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Fraction") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Type of Death for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_death_tissue_structures_GTEx_precent.pdf")
 ```
 
+Plot the RIN score for each sex across the sub-tissue groups
 ```{r}
 ggplot(gtex_coldata, aes(x = gtex.smts, y = gtex.smrin, fill = gtex.sex)) +
   geom_boxplot(position = position_dodge(1)) +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("RIN Score") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90, size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("RIN for GTEx tissue") +
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("RIN Score") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("RIN for GTEx tissue") +
   geom_hline(yintercept = 5, linetype = "dashed", color = "red")
-ggsave("~/output/210806_RIN_tissue_GTEx.pdf")
+ggsave("~/results/210806_RIN_tissue_GTEx.pdf")
 ```
 
+Plot the autolysis score.
+
+The autolysis score was assigned by a pathologist during a visual inspection of the histology image. The assigned values ranged from 0 to 3 (None, Mild, Moderate, and Severe).
 ```{r}
 autolysis_score <- as.data.frame(table(gtex_coldata[c(14, 10)]))
 ggplot(autolysis_score, aes(fill = gtex.smatsscr, y = Freq, x = gtex.smts)) +
-   geom_bar(position = "fill", stat = "identity") +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Fraction") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90, size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Autolysis Score for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_autolysis_score_tissue_GTEx_precent.pdf")
+  geom_bar(position = "fill", stat = "identity") +
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Fraction") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Autolysis Score for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_autolysis_score_tissue_GTEx_precent.pdf")
 ```
 
-The autolysis score was assigned by a pathologist during a visual inspection of the histology image. The assigned values ranged from 0 to 3 (None, Mild, Moderate, and Severe).
-
+Plot the total number of reads aligned/map 
 ```{r}
 ggplot(gtex_coldata, aes(x = gtex.smts, y = gtex.smmppd, fill = gtex.sex)) +
   geom_boxplot(position = position_dodge(1)) +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Total number of reads aligned/map") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90, size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Total number of reads aligned/map for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_ALIGNED_tissue_GTEx.pdf")
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Total number of reads aligned/map") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Total number of reads aligned/map for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_ALIGNED_tissue_GTEx.pdf")
 ```
 
+Plot the ischemic time for the samples
 ```{r}
 ggplot(gtex_coldata, aes(x = gtex.smts, y = gtex.smtsisch, fill = gtex.sex)) +
   geom_boxplot(position = position_dodge(1)) +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Ischemic Time") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90, size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Ischemic Time for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_Ischemic_Time_tissue_GTEx.pdf")
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Ischemic Time") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Ischemic Time for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_Ischemic_Time_tissue_GTEx.pdf")
 ```
 
-
+Plot the mapping rate for the samples
 ```{r}
 ggplot(gtex_coldata, aes(x = gtex.smts, y = gtex.smmaprt, fill = gtex.sex)) +
   geom_boxplot(position = position_dodge(1)) +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Mapping Rate") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90, size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Mapping Rate for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_mapping_rate_tissue_GTEx.pdf")
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Mapping Rate") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Mapping Rate for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_mapping_rate_tissue_GTEx.pdf")
 ```
 
+look at the sub tissue groups
+
+Plot the RIn score 
+
+High-quality RNA will contain an RIN of at least 8, where partially fragmented RNA will contain an RIN within the range of 6–8. Any RNA sample that has a RIN below 5 should not be subjected to further fragmentation during the ScriptSeq protocol, as it will generate smaller than desired fragments.
 ```{r}
 ggplot(gtex_coldata, aes(x = gtex.smtsd, y = gtex.smrin, fill = gtex.sex)) +
   geom_boxplot(position = position_dodge(1)) +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("RIN Score") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90, size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("RIN for GTEx tissue") +
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("RIN Score") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("RIN for GTEx tissue") +
   geom_hline(yintercept = 5, linetype = "dashed", color = "red")
-ggsave("~/output/GTEx_plots/210806_RIN_tissue_structures_GTEx.pdf")
+ggsave("~/results/GTEx_plots/210806_RIN_tissue_structures_GTEx.pdf")
 ```
-High-quality RNA will contain an RIN of at least 8, where partially fragmented RNA will contain an RIN within the range of 6–8. Any RNA sample that has a RIN below 5 should not be subjected to further fragmentation during the ScriptSeq protocol, as it will generate smaller than desired fragments.
 
-
+Plot the autolysis score
 ```{r}
 autolysis_score <- as.data.frame(table(gtex_coldata[c(15, 10)]))
 ggplot(autolysis_score, aes(fill = gtex.smatsscr, y = Freq, x = gtex.smtsd)) +
-   geom_bar(position = "fill", stat = "identity") +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Fraction") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90, size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Autolysis Score for GTEx tissue")
+  geom_bar(position = "fill", stat = "identity") +
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Fraction") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Autolysis Score for GTEx tissue")
 ggsave(
-  "~/output/GTEx_plots/210806_autolysis_score_tissue_structure_GTEx_precent.pdf"
-  )
+  "~/results/GTEx_plots/210806_autolysis_score_tissue_structure_GTEx_precent.pdf"
+)
 ```
 
-
+Plot the number of reads aligned
 ```{r}
 ggplot(gtex_coldata, aes(x = gtex.smtsd, y = gtex.smmppd, fill = gtex.sex)) +
   geom_boxplot(position = position_dodge(1)) +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Total number of reads aligned/map") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90, size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Total number of reads aligned/map for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_aligned_tissue_structures_GTEx.pdf")
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Total number of reads aligned/map") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Total number of reads aligned/map for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_aligned_tissue_structures_GTEx.pdf")
 ```
 
+plot the ischemic time
+Interval between actual death, presumed death, or cross clamp application and final tissue stabilization
 ```{r}
 ggplot(gtex_coldata, aes(x = gtex.smtsd, y = gtex.smtsisch, fill = gtex.sex)) +
   geom_boxplot(position = position_dodge(1)) +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Ischemic Time (mins)") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90, size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Ischemic Time for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_ischemic_time_tissue_structures_GTEx.pdf")
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Ischemic Time (mins)") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Ischemic Time for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_ischemic_time_tissue_structures_GTEx.pdf")
 ```
-Interval between actual death, presumed death, or cross clamp application and final tissue stabilization
 
+Plot the Mapping Rate: Ratio of total mapped reads to total reads
 ```{r}
 ggplot(gtex_coldata, aes(x = gtex.smtsd, y = gtex.smmaprt, fill = gtex.sex)) +
   geom_boxplot(position = position_dodge(1)) +
-    theme_classic() +
-    xlab("Tissue") +
-    ylab("Mapping Rate") +
-    scale_fill_viridis(discrete = TRUE) +
-    theme(axis.text.x = element_text(angle = 90, size = 3.5),
-          axis.ticks = element_blank()) +
-    ggtitle("Mapping Rate for GTEx tissue")
-ggsave("~/output/GTEx_plots/210806_mapping_rate_tissue_structures_GTEx.pdf")
+  theme_classic() +
+  xlab("Tissue") +
+  ylab("Mapping Rate") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 3.5),
+    axis.ticks = element_blank()
+  ) +
+  ggtitle("Mapping Rate for GTEx tissue")
+ggsave("~/results/GTEx_plots/210806_mapping_rate_tissue_structures_GTEx.pdf")
 ```
-Mapping Rate: Ratio of total mapped reads to total reads
 
+Look at all the tissue/sex that have less than 10 samples
 ```{r}
 sex_sub_table[sex_sub_table$Freq < 10, ]
 ```
@@ -593,22 +683,27 @@ sex_sub_table[sex_sub_table$Freq < 10, ]
 unique(sex_sub_table$gtex.smtsd[sex_sub_table$Freq < 10])
 ```
 
+remove all the tissues with less than 10, but bladder
+
+aka. sex-specific tissue or low numbers of samples of one sex: cervix-ectocervix, cervix-endocervix, fallopian tube, kidney-medulla, ovary, uterus, vagina, prostate, and testis.
 ```{r}
-#keep bladder aka number 8
+# keep bladder aka number 8
 remove_tissues <- unique(sex_sub_table$gtex.smtsd[sex_sub_table$Freq < 10])[-8]
 ```
 
+I also removed samples with a RIN score less than or equal to 5
 ```{r}
-gtex_coldata_v2 <- gtex_coldata[! gtex_coldata$gtex.smtsd %in% remove_tissues, ]
+gtex_coldata_v2 <- gtex_coldata[!gtex_coldata$gtex.smtsd %in% remove_tissues, ]
 gtex_coldata_v2 <- gtex_coldata_v2[gtex_coldata_v2$gtex.smrin > 5, ]
 as.data.frame(table(gtex_coldata_v2[c(15, 6)]))
 ```
 
+comibne the count and metadata data together of the filtered samples
 ```{r}
 name <- paste(gtex_proj_info[, 1], "rse", sep = "_")
 gtex_counts <- as.data.frame(assay(get(name[1])))
-for (i in 2:length(name)){
-  counts <-  as.data.frame(assay(get(name[i])))
+for (i in 2:length(name)) {
+  counts <- as.data.frame(assay(get(name[i])))
   gtex_counts <- cbind(gtex_counts, counts)
 }
 ```
@@ -623,7 +718,7 @@ gtex_coldata_v2$external_id[duplicated(gtex_coldata_v2$external_id)]
 ```
 
 ```{r eval =FALSE}
-saveRDS(gtex_coldata_v2,  "~/data/metadata_gtex_filter_samples.rds")
+saveRDS(gtex_coldata_v2, "~/data/metadata_gtex_filter_samples.rds")
 ```
 
 ```{r eval = FALSE}
@@ -634,7 +729,7 @@ saveRDS(gtex_counts_v2, "~/data/counts_gtex_filter_samples.rds")
 table(gtex_coldata_v2$gtex.smnabtcht)
 ```
 
-covariates to look at it in PCA: ischemic time, RIN, age, and batch
+covariates to look at it in PCA: ischemic time, RIN, age, and batch in just liver tissue
 
 ```{r}
 unique(gtex_coldata_v2$gtex.smtsd)
@@ -650,38 +745,45 @@ pca_sub <- prcomp(t(counts_sub))
 the lighter the color the higher the value. 
 ```{r}
 fun <- colorRamp(c("black", "#FDE725FF"))
+mpg <- with(
+  col_data_sub,
+  (gtex.smrin - min(gtex.smrin)) / diff(range(gtex.smrin))
+)
+mycolors <- rgb(fun(mpg), maxColorValue = 256)
+par(cex = 1.0, cex.axis = 0.8, cex.main = 0.8)
+pairs(pca_sub$x[, 1:5], col = mycolors,
+      main = "Principal components analysis bi-plot\nPCs 1-5",
+      pch = 16)
+```
+
+```{r}
 mpg <- with(col_data_sub,
-            (gtex.smrin - min(gtex.smrin)) / diff(range(gtex.smrin)))
-mycolors <- rgb(fun(mpg), maxColorValue=256)
-par(cex=1.0, cex.axis=0.8, cex.main=0.8)
-pairs(pca_sub$x[,1:5], col=mycolors, main="Principal components analysis bi-plot\nPCs 1-5", pch=16)
+            (gtex.smtsisch - min(gtex.smtsisch)) / diff(range(gtex.smtsisch)))
+mycolors <- rgb(fun(mpg), maxColorValue = 256)
+par(cex = 1.0, cex.axis = 0.8, cex.main = 0.8)
+pairs(pca_sub$x[, 1:5], col = mycolors,
+      main = "Principal components analysis bi-plot\nPCs 1-5",
+      pch = 16)
 ```
 
 ```{r}
-mpg <- with(col_data_sub, (gtex.smtsisch - min(gtex.smtsisch)) / diff(range(gtex.smtsisch)))
-mycolors = rgb(fun(mpg), maxColorValue=256)
-par(cex=1.0, cex.axis=0.8, cex.main=0.8)
-pairs(pca_sub$x[,1:5], col=mycolors, main="Principal components analysis bi-plot\nPCs 1-5", pch=16)
-```
-
-```{r}
-cor(col_data_sub$gtex.smtsisch ,col_data_sub$gtex.smrin , method= "spearman")
+cor(col_data_sub$gtex.smtsisch, col_data_sub$gtex.smrin, method = "spearman")
 ```
 somewhat of a relationship but not strong. 
 
 
 ```{r}
+age <- col_data_sub$gtex.age
 
-age<- col_data_sub$gtex.age
-
-age<- ifelse(age == "20-29", "#440154FF",age)
-age<- ifelse(age == "30-39", "#414487FF",age)
-age<- ifelse(age == "40-49", "#2A788EFF",age)
-age <- ifelse(age == "50-59", "#22A884FF",age)
-age <- ifelse(age == "60-69", "#7AD151FF",age)
-age <- ifelse(age == "70-79", "#FDE725FF",age)
-par(cex=1.0, cex.axis=0.8, cex.main=0.8)
-pairs(pca_sub$x[,1:5], col=age, main="Principal components analysis bi-plot\nPCs 1-5", pch=16)
+age <- ifelse(age == "20-29", "#440154FF", age)
+age <- ifelse(age == "30-39", "#414487FF", age)
+age <- ifelse(age == "40-49", "#2A788EFF", age)
+age <- ifelse(age == "50-59", "#22A884FF", age)
+age <- ifelse(age == "60-69", "#7AD151FF", age)
+age <- ifelse(age == "70-79", "#FDE725FF", age)
+par(cex = 1.0, cex.axis = 0.8, cex.main = 0.8)
+pairs(pca_sub$x[, 1:5], col = age,
+      main = "Principal components analysis bi-plot\nPCs 1-5", pch = 16)
 ```
 some grouping by age but it is mostly RIN and Ischemic time; using all the investigated covariates for downstream models
 
@@ -706,7 +808,7 @@ Done in script
     "/home/rstudio/script"
 
     Location of data produced:
-    "/home/rstudio/output/GTEx_plots/"
+    "/home/rstudio/results/GTEx_plots/"
 
     Dates when operations were done:
     210810 and again on 220803 for project
