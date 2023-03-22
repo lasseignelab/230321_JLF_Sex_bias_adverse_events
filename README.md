@@ -1,4 +1,4 @@
-# Sex Bias Adverse Events Proj
+# Sex Bias Adverse Events Project
 
 Future Abstract
 
@@ -54,8 +54,8 @@ documentation within this repository for more details.
 
 add in the future 
 
-remove in the future but noting here for now
 **Old scripts**
+remove in the future but noting here for now
 - 210603_open_fda_download.sh
 - 210806_GTEx_Age_Sex.html
 - 220519_FDA_open_drug.sh
