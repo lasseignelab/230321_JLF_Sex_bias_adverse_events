@@ -79,23 +79,12 @@ Counts_to_tpm <- function(counts, featureLength) {
   return(tpm)
 }
 
+
 gtex_qsmooth_function<- function(count, metadata, tissue , file_filtered_expression= "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/tissue_gtex_filtered_expression_set.rds", file_norm= "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/tissue_gtex_qsmooth_expression.rds", file_meta="/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/tissue_gtex_metadata.rds" ){
   #This function is used to gsmooth normalize based on https://academic.oup.com/biostatistics/article/19/2/185/3949169
   #which was used in the YARN netZoo R package 
   #inputs
-<<<<<<< HEAD
-    #count- the count gtex metrics with all the samples 
-    #metadata- the metadata for all the samples 
-    #tissue- the specific tissue for subset for the normalization 
-    #file_filtered_expression- the the file path and name for the filtered expression 
-    #file_norm- the file path and name for the file for the normalized expression 
-    #file_meta- the file path and name for the file for the subset of metadata
   
-  #output
-    #filtered expression (cpm < 1 are removed)
-    #normlized table of expression 
-    #subsetted metadata
-=======
   #count- the count gtex metrics with all the samples 
   #metadata- the metadata for all the samples 
   #tissue- the specific tissue for subset for the normalization 
@@ -107,7 +96,19 @@ gtex_qsmooth_function<- function(count, metadata, tissue , file_filtered_express
   #filtered expression (cpm < 1 are removed)
   #normlized table of expression 
   #subsetted metadata
->>>>>>> bf8151362ff122e4bbf42c52f3a5c20deb8c0bcf
+  
+  #count- the count gtex metrics with all the samples 
+  #metadata- the metadata for all the samples 
+  #tissue- the specific tissue for subset for the normalization 
+  #file_filtered_expression- the the file path and name for the filtered expression 
+  #file_norm- the file path and name for the file for the normalized expression 
+  #file_meta- the file path and name for the file for the subset of metadata
+  
+  #output
+  #filtered expression (cpm < 1 are removed)
+  #normlized table of expression 
+  #subsetted metadata
+  
   
   metadata_v2 <- metadata[metadata$gtex.smtsd == tissue,]
   metadata_v2<- metadata_v2[complete.cases(metadata_v2$gtex.smtsd),]
@@ -184,15 +185,120 @@ sex_networks<-  function(processed_expression,
   print("check to make sure the samples are in the correct order")
   print(identical(colnames(processed_expression), metadata$external_id))
   
+  #motif table should only have transcription factors and genes expressed in the tissue 
+  motif_table_v2<- motif_table[motif_table[,1] %in% rownames(processed_expression),]
+  motif_table_v2<- motif_table_v2[motif_table_v2[,2] %in% rownames(processed_expression),]
+  # ppi_net should only have transcription factors and genes expressed in the tissue 
+  ppi_net_v2<- ppi_net[ppi_net[,1] %in% rownames(processed_expression),]
+  ppi_net_v2<- ppi_net_v2[ppi_net_v2[,2] %in% rownames(processed_expression),]
+  
   #divide the male and female samples 
   male<- processed_expression[, metadata$gtex.sex == "M"]
+  print(dim(male))
   female <- processed_expression[, metadata$gtex.sex == "F"]
+  print(dim(female))
   
   print("creating male network")
-  male_network <- panda(expr = as.data.frame(male), motif = motif_table, ppi = ppi_net, progress=TRUE, mode="intersection")
+  male_network <- panda(expr = as.data.frame(male), motif = motif_table_v2, ppi = ppi_net_v2, progress=TRUE, mode="intersection")
   saveRDS(male_network, male_network_file)
   
   print("creating female network")
-  female_network <- panda(expr = as.data.frame(male), motif = motif_table, ppi = ppi_net, progress=TRUE, mode="intersection")
+  female_network <- panda(expr = as.data.frame(female), motif = motif_table_v2, ppi = ppi_net_v2, progress=TRUE, mode="intersection")
   saveRDS(female_network, female_network_file)
+}
+
+
+create_alpaca_input<- function(file_path_name_female, file_path_name_male, tissue_name){
+  
+  #make a longer dataframe for the male network
+  panda_M <- readRDS(paste0(paste0(dir_path, "/output/alpaca/sex_specific_networks/"),  file_path_name_male, sep = ""))
+  regNet_panda_intersection_male <- panda_M@regNet
+  topNet_male <- topedges( panda_M , cutoff = 2)
+  topNET_male_regnet <- as.data.frame(topNet_male@regNet)
+  topNET_male_regnet$TF<- rownames(topNET_male_regnet)
+  topNET_male_regnet_long <- topNET_male_regnet  %>%  pivot_longer(!TF, names_to = "gene", values_to = "male") 
+  
+  #make a longer dataframe for the female network
+  panda_F <- readRDS(paste0(paste0(dir_path, "/output/alpaca/sex_specific_networks/"),  file_path_name_female, sep = ""))
+  regNet_panda_intersection_female <- panda_F@regNet
+  topNet_female <- topedges( panda_F , cutoff = 2)
+  topNET_female_regnet <- as.data.frame(topNet_female@regNet)
+  topNET_female_regnet$TF<- rownames(topNET_female_regnet)
+  topNET_female_regnet_long <- topNET_female_regnet  %>%  pivot_longer(!TF, names_to = "gene", values_to = "female")
+  
+  #check the tf and genes are in the same order
+  print("TF")
+  print(identical(topNET_female_regnet_long$TF, topNET_male_regnet_long$TF))
+  print("gene")
+  print(identical(topNET_female_regnet_long$gene, topNET_male_regnet_long$gene))
+  #add together
+  topNet_regnet_male_female_long<- cbind(topNET_male_regnet_long, topNET_female_regnet_long$female)
+  
+  colnames(topNet_regnet_male_female_long)<- c("TF", "gene", "male", "female")
+  
+  file_name<- paste0(paste0(dir_path, "/output/alpaca/alpaca_adjusted_inputs/"),  tissue_name, "_topNet_regnet_male_female_long.rds")
+  
+  saveRDS(topNet_regnet_male_female_long, file_name )
+}
+
+sex_bias_adverse_event_test<- function( index, drug_event_df ){
+  #event and drug
+  event<- drug_event_df[index,2]
+  drug<- drug_event_df[index,1]
+  #a: the number of female patients with target drug-events combinations.
+  a_count <- nrow(patient_safety_females[ (grepl(event,patient_safety_females$SE ) & grepl(drug,patient_safety_females$drugs )), ] )
+  #b: the number of female patients with target drugs but not target events.
+  b_count <- nrow(patient_safety_females[ ( !grepl(event,patient_safety_females$SE ) &  grepl(drug,patient_safety_females$drugs )), ] )
+  #c: the number of male patients with target drug-events combinations.
+  c_count <- nrow(patient_safety_males[ (grepl(event,patient_safety_males$SE ) & grepl(drug,patient_safety_males$drugs )), ] )
+  #d: the number of male patients with target drugs but not target events.
+  d_count <- nrow(patient_safety_males[ ( !grepl(event,patient_safety_males$SE ) &  grepl(drug,patient_safety_males$drugs )), ] )
+  
+  #contingency table
+  con_table<- matrix( c(a_count, c_count, b_count, d_count), nrow= 2, dimnames = list(c("Female", "Male"), c("Target Adverse Events", "All other Adverse Events")))
+  
+  #fisher's exact test
+  res<- fisher.test(con_table)
+  
+  table_info <- c(a_count, b_count, c_count, d_count, res$p.value, res$estimate, res$conf.int[1], res$conf.int[2])
+  
+  return(table_info)
+  
+}
+
+
+#old functions no longer used in main project
+lioness_output_adjustment<- function(index){
+  #need to determine the number the lioness subsets
+  num_files <- length(lioness_output_files[agrep(tissues_wo_ws[index], lioness_output_files)])
+  print(num_files)
+  lion_file<- paste(paste0(dir_path, "output/lioness/lioness_jobs_output/"), tissues_wo_ws[index], "_", 1:num_files, "_lioness_res.rds", sep = "")
+  
+  for (j in 1:num_files){
+    print(lion_file[j])
+    lioness_res <- readRDS(lion_file[j])
+    
+    
+    for (i in 1:length(lioness_res)){
+      
+      if (j == 1 & i == 1){
+        test_df <- as.data.frame(lioness_res[j])
+        test_df$Gene <- rownames(test_df)
+        test_long <- pivot_longer(test_df, cols=!Gene, names_to = "TF")
+        rownames(test_long) <- paste(test_long$TF, test_long$Gene, sep = "_")
+        inital_df <- test_long
+      }else{
+        
+        test_df <- as.data.frame(lioness_res[i])
+        test_df$Gene <- rownames(test_df)
+        test_long <- pivot_longer(test_df, cols=!Gene, names_to = "TF")
+        inital_df <- cbind(inital_df, test_long[,3])
+      }
+      
+    }
+    print(j)
+    print("Done")
+  }
+  df_file<-paste(paste0(dir_path, "output/lioness/adjusted_lioness_output/"), tissues_wo_ws[index], "_lioness_res_all.rds", sep = "")
+  saveRDS(inital_df, df_file)
 }

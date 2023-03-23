@@ -15,8 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # START 
     Goal/Purpose of operations: 
-    For the gene regulatory analysis, I need to data wrangle the protein protein interaction data from STRING and the motif infromation that was created by Kimberly Class lab (https://sites.google.com/a/channing.harvard.edu/kimberlyglass/tools/resources?pli=1
-). 
+    For the gene regulatory analysis, I need to data wrangle the protein protein interaction data from STRING and the motif infromation that was created by Kimberly Class lab (https://sites.google.com/a/channing.harvard.edu/kimberlyglass/tools/resources?pli=1). 
     
     Finished psedocode on:
     230104
@@ -44,15 +43,21 @@ knitr::opts_chunk$set(echo = TRUE)
 # STEPS
 
 ### Set working directory 
+```{r}
+#change this path to match your paths 
+dir_path <- "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/"
+```
+
 ### load in data
+Done within the script
 ### Analysis
 
 ```{r eval= FALSE}
-download.file('https://stringdb-static.org/download/protein.links.v11.5/9606.protein.links.v11.5.txt.gz', destfile = "./data/panda_input_data/stringi_database_11_5_9606.txt.gz", method = "wget", extra= "--no-check-certificate")
+download.file('https://stringdb-static.org/download/protein.links.v11.5/9606.protein.links.v11.5.txt.gz', destfile = paste0(dir_path, "data/panda_input_data/stringi_database_11_5_9606.txt.gz"), method = "wget", extra= "--no-check-certificate")
 ```
-
+make sure to unzip the file outside of the script
 ```{r}
-ppi_table<- read.delim("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data/stringi_database_11_5_9606.txt", sep= " ", header = TRUE)
+ppi_table<- read.delim(paste0(dir_path, "data/panda_input_data/stringi_database_11_5_9606.txt"), sep= " ", header = TRUE)
 ```
 
 ```{r}
@@ -78,8 +83,10 @@ hist(ppi_table$combined_score)
 ```
 
 ```{r eval= FALSE}
-download.file('https://stringdb-static.org/download/protein.info.v11.5/9606.protein.info.v11.5.txt.gz', destfile = "./data/panda_input_data/9606.protein.info.v11.5.txt.gz", method = "wget", extra= "--no-check-certificate")
+download.file('https://stringdb-static.org/download/protein.info.v11.5/9606.protein.info.v11.5.txt.gz', destfile = paste0(dir_path, "data/panda_input_data/9606.protein.info.v11.5.txt.gz"), method = "wget", extra= "--no-check-certificate")
 ```
+
+make sure to unzip file outside the script
 
 ```{r}
 ppi_protein_info<- t(as.data.frame( strsplit(readLines("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data/9606.protein.info.v11.5.txt"), "\t")))
@@ -131,7 +138,7 @@ head(symbol_ppi_table)
 good
 
 ```{r}
-motif_info_table<- read.table("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data/Homo_sapiens_motifinfo.txt", sep= "\t", header = TRUE)
+motif_info_table<- read.table(paste0(dir_path,"data/panda_input_data/Homo_sapiens_motifinfo.txt"), sep= "\t", header = TRUE)
 ```
 ```{r}
 head(motif_info_table)
@@ -139,7 +146,7 @@ head(motif_info_table)
 
 
 ```{r}
-motif_table<- read.table("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data/hg38_refseq_-750_250_1e-4", sep= "\t")
+motif_table<- read.table(paste0(dir_path,"data/panda_input_data/hg38_refseq_-750_250_1e-4"), sep= "\t")
 ```
 
 ```{r}
@@ -184,7 +191,7 @@ symbol_motif_table$V3 <- as.numeric(symbol_motif_table$V3)
 ```
 
 ```{r eval =FALSE}
-saveRDS(symbol_motif_table, "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data/230104_symbol_motif_table.rds")
+saveRDS(symbol_motif_table, paste0(dir_path, "data/panda_input_data/230104_symbol_motif_table.rds"))
 ```
 ### Save Data
 Done in script

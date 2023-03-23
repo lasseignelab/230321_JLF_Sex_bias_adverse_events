@@ -42,6 +42,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Set working directory 
 ```{r}
+#change this path to match your paths 
+dir_path <- "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/"
+```
+
+
+```{r}
+source(paste0(dir_path, "script/sex_bias_drug_functions.R"))
+library(tidyverse)
 library(readr)
 library(MASS)
 library(parallel)
@@ -52,8 +60,10 @@ library(dplyr)
 
 ### load in data
 ```{r}
-patient_safety <- read_csv("~/data/patient_safety.csv")
+patient_safety <- read_csv(paste0(dir_path, "data/patient_safety.csv"))
 ```
+
+
 ```{r}
 #filter data
 #us only
@@ -101,8 +111,9 @@ patient_safety <- patient_safety[! (patient_safety$report_id == 15431328 & patie
 
 
 ```{r}
-saveRDS(patient_safety, "~/data/patient_safety_filtered.rds")
+saveRDS(patient_safety, paste0(dir_path, "data/patient_safety_filtered.rds"))
 ```
+
 
 ### Analysis
 
@@ -111,10 +122,6 @@ saveRDS(patient_safety, "~/data/patient_safety_filtered.rds")
 ```{r}
 nrow(patient_safety)
 ```
-
-
-
-
 
 ```{r}
 test_ae<- str_replace_all(patient_safety$SE, "[[:punct:]]", "")
@@ -134,7 +141,7 @@ drug_ae_events<- function(index){
 
 parallel_runs<- mclapply(1:nrow(patient_safety),drug_ae_events)
 
-saveRDS(parallel_runs, "~/data/drug_ae_list.rds")
+saveRDS(parallel_runs, paste0(dir_path, "data/drug_ae_list.rds"))
 ```
 
 
@@ -167,8 +174,72 @@ drug_ae_df2<- drug_ae_df[!duplicated(drug_ae_df),]
 ```
 
 ```{r}
-saveRDS(drug_ae_df2, "~/data/drug_ae_df.rds")
+saveRDS(drug_ae_df2, paste0(dir_path, "data/drug_ae_df.rds"))
 ```
+
+
+make adjustment to the lowere level terms to be the PT term. 
+
+```{r}
+MedDRA_mapping<- readRDS(paste0(dir_path, "data/MedDRA_mapping_llt_pt_soc.rds"))
+```
+
+
+```{r}
+lower_terms <- unique(drug_ae_df2$adverse_event[! drug_ae_df2$adverse_event %in% MedDRA_mapping$pt_id])
+saveRDS(lower_terms,paste0(dir_path, "data/FARES_lower_terms.rds") )
+```
+
+
+lower_terms
+```{r}
+ae_info<- as.data.frame(matrix(nrow= length(lower_terms), ncol= 2))
+ae_info[,1]<- lower_terms
+for (i in 1:length(lower_terms)){
+  ae_info[i,2] <- MedDRA_mapping$pt_id[grep(lower_terms[i], MedDRA_mapping$llt_id )]
+}
+
+```
+
+```{r}
+saveRDS(ae_info,paste0(dir_path, "data/FARES_lower_terms_df.rds") )
+```
+
+
+```{r}
+drug_ae_df2$drug<- as.character(drug_ae_df2$drug)
+drug_ae_df2$adverse_event<- as.character(drug_ae_df2$adverse_event)
+for (i in 1:nrow(drug_ae_df2)){
+  ae_id <- as.character(drug_ae_df2[i,2])
+  if (ae_id %in% lower_terms){
+    drug_ae_df2[i,2]<- ae_info$V2[grep(ae_id, ae_info$V1, fixed=TRUE)]
+  }
+}
+```
+
+
+```{r}
+drug_ae_df2<- drug_ae_df2[!duplicated(drug_ae_df2),]
+```
+
+```{r}
+saveRDS(drug_ae_df2, paste0(dir_path, "data/drug_ae_df.rds"))
+```
+
+fixed the patient_saftey 
+```{r}
+#10083123 ->10085121
+#est<- "['10013709', '10028314', '10083123', '10041349', '10049816', '10050031', '10053156', '10069296']" 
+#stri_replace_all_fixed(test, ae_info$V1, ae_info$V2, vectorize_all=FALSE)
+library(stringi)
+patient_safety$SE <- stri_replace_all_fixed(patient_safety$SE , ae_info$V1, ae_info$V2, vectorize_all=FALSE)
+```
+
+
+```{r}
+saveRDS(patient_safety, paste0(dir_path, "data/patient_safety_filtered_pt.rds"))
+```
+
 
 
 ```{r}
@@ -212,28 +283,37 @@ drug_ae_df<- cbind(drug_ae_df2, additional_col)
 ```
 
 
-```{r}
+```{r eval=FALSE}
 date()
 parallel_test_1<- mclapply(1:2000,sex_bias_adverse_event_test, drug_ae_df)
 date()
 ```
 
-```{r}
+```{r eval=FALSE}
 group1_res <- t(as.data.frame(parallel_test_1))
-saveRDS(group1_res, "~/data/fishers_res_group1.rds")
+saveRDS(group1_res, paste0(dir_path, "data/fishers_res_group1.rds"))
 ```
 
 
 t(as.data.frame(parallel_test))
 next 
-```{r}
+```{r eval=FALSE}
 date()
-parallel_test_1<- mclapply(2001:4000,sex_bias_adverse_event_test, drug_ae_df)
+parallel_test_1<- mclapply(2001:4000,sex_bias_adverse_event_test, drug_ae_df, mc.cores = detectCores())
 date()
 group2_res <- t(as.data.frame(parallel_test_1))
-saveRDS(group2_res, "~/data/fishers_res_group2.rds")
+saveRDS(group2_res, paste0(dir_path, "data/fishers_res_group2.rds"))
 ```
 move to cheaha
+
+```{r}
+date()
+parallel_all<- mclapply(1:nrow(drug_ae_df),sex_bias_adverse_event_test, drug_ae_df, mc.cores = detectCores())
+date()
+parallel_all_res <- t(as.data.frame(parallel_all))
+saveRDS(parallel_all_res, paste0(dir_path, "data/fishers_res_all.rds"))
+```
+
 
 #additional code
 
@@ -321,5 +401,3 @@ Done in script
 ```{r}
 sessionInfo()
 ```
-
-

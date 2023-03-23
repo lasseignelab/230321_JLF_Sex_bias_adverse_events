@@ -42,8 +42,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # STEPS
 ### Set working directory 
+
 ```{r}
-source("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/script/sex_bias_functions.R")
+#change this path to match your paths 
+dir_path <- "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/"
+```
+
+
+```{r}
+source(paste0(dir_path,"script/sex_bias_drug_functions.R" ))
 library(Biobase)
 library(netZooR)
 ```
@@ -52,8 +59,8 @@ library(netZooR)
 ### load in data
 
 ```{r}
-counts_gtex <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/counts_gtex_filter_samples.rds")
-metadata <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/metadata_gtex_filter_samples.rds")
+counts_gtex <- readRDS(paste0(dir_path,"data/counts_gtex_filter_samples.rds" ))
+metadata <- readRDS(paste0(dir_path,"data/metadata_gtex_filter_samples.rds" ))
 ```
 
 
@@ -79,9 +86,9 @@ counts_gtex<- as.matrix(counts_gtex)
 
 ```{r eval =FALSE}
 for (i in 1:length(tissues)){
-  file_fe<- paste("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/", tissues[i], "_gtex_filtered_expression_set.rds", sep = "")
-  file_n<- paste("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/", tissues[i], "_gtex_qsmooth_expression.rds", sep = "")
-  file_m <- paste("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/", tissues[i], "_gtex_metadata.rds", sep = "")
+  file_fe<- paste(paste0(dir_path,"data/gtex_qsmooth/" ), tissues[i], "_gtex_filtered_expression_set.rds", sep = "")
+  file_n<- paste(paste0(dir_path,"data/gtex_qsmooth/" ), tissues[i], "_gtex_qsmooth_expression.rds", sep = "")
+  file_m <- paste(paste0(dir_path,"data/gtex_qsmooth/" ), tissues[i], "_gtex_metadata.rds", sep = "")
   print(tissues[i])
   gtex_qsmooth_function(counts_gtex, metadata, tissues[i] , file_filtered_expression=file_fe, file_norm=file_n, file_meta=file_m )
 }

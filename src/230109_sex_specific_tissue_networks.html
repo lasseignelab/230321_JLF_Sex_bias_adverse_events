@@ -11,9 +11,9 @@
 
 <meta name="author" content="Jennifer Fisher" />
 
-<meta name="date" content="2023-01-04" />
+<meta name="date" content="2023-01-09" />
 
-<title>230103_network_qsmooth</title>
+<title>230109_sex_specific_tissue_networks</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -356,9 +356,9 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">230103_network_qsmooth</h1>
+<h1 class="title toc-ignore">230109_sex_specific_tissue_networks</h1>
 <h4 class="author">Jennifer Fisher</h4>
-<h4 class="date">2023-01-04</h4>
+<h4 class="date">2023-01-09</h4>
 
 </div>
 
@@ -372,7 +372,6 @@ working directory</a></li>
 <li><a href="#load-in-data" id="toc-load-in-data">load in data</a></li>
 <li><a href="#analysis" id="toc-analysis">Analysis</a></li>
 <li><a href="#save-data" id="toc-save-data">Save Data</a></li>
-<li><a href="#save-figures" id="toc-save-figures">Save Figures</a></li>
 </ul></li>
 <li><a href="#end" id="toc-end">END</a>
 <ul>
@@ -384,10 +383,10 @@ working directory</a></li>
 <div id="start" class="section level1">
 <h1>START</h1>
 <pre><code>Goal/Purpose of operations: 
-Need to normalize the expression data for the network analysis (lioness aka edge differences and panda/alpaca-communities differences.)
+To compare the communities between two sexes. I need to create sex-specific networks for each tissue and then compare the networks with Alpaca
 
 Finished psedocode on:
-230103
+230109
 
 System which operations were done on: 
 Cheaha
@@ -402,13 +401,13 @@ Directory of operations:
 &quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events&quot;
 
 Scripts being edited for operations:
-created a new function gtex_qsmooth_function in the sex_bias_functions.R for the data wrangling 
+created a new function xx in the sex_bias_functions.R for the data wrangling 
 
 Data being used: 
-gene expression and meta data from the 210806_GTEx_Age_Sex.Rmd script
+the proccessed gene expression from the ./output/proccessed_normalized_expression and meta data from the 210806_GTEx_Age_Sex.Rmd script
 
 Papers and tools:
-qsmooth from the YARN R package </code></pre>
+panda and alpaca from the netzzor package</code></pre>
 </div>
 <div id="steps" class="section level1">
 <h1>STEPS</h1>
@@ -416,7 +415,7 @@ qsmooth from the YARN R package </code></pre>
 <h3>Set working directory</h3>
 <pre class="r"><code>#change this path to match your paths 
 dir_path &lt;- &quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/&quot;</code></pre>
-<pre class="r"><code>source(paste0(dir_path,&quot;script/sex_bias_drug_functions.R&quot; ))
+<pre class="r"><code>source(paste0(dir_path, &quot;script/sex_bias_drug_functions.R&quot;))
 library(Biobase)</code></pre>
 <pre><code>## Loading required package: BiocGenerics</code></pre>
 <pre><code>## 
@@ -466,633 +465,58 @@ library(Biobase)</code></pre>
 </div>
 <div id="load-in-data" class="section level3">
 <h3>load in data</h3>
-<pre class="r"><code>counts_gtex &lt;- readRDS(paste0(dir_path,&quot;data/counts_gtex_filter_samples.rds&quot; ))
-metadata &lt;- readRDS(paste0(dir_path,&quot;data/metadata_gtex_filter_samples.rds&quot; ))</code></pre>
+<p>the transcription factor and protein-protein interaction networks for
+panda</p>
+<pre class="r"><code>motif_table &lt;- readRDS(paste0(dir_path, &quot;data/panda_input_data/230104_symbol_motif_table.rds&quot;))
+ppi_net &lt;- readRDS(paste0(dir_path, &quot;data/panda_input_data/230104_symbol_numeric_ppi_network_11_5_0.rds&quot;))</code></pre>
+<p>loading in test data (liver tissue)</p>
+<pre class="r"><code>#Liver_data &lt;- readRDS(&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/processed_normalized_expression/Liver_gtex_processed_expression.rds&quot;)
+#Liver_gtex_metadata &lt;- readRDS(&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/Liver_gtex_metadata.rds&quot;)</code></pre>
+<pre class="r"><code>#test run 
+#sex_networks(Liver_data, Liver_gtex_metadata, &quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/alpaca/sex_specific_networks/Liver_test_M_panda.rds&quot;,&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/alpaca/sex_specific_networks/Liver_test_F_panda.rds&quot; )</code></pre>
 </div>
 <div id="analysis" class="section level3">
 <h3>Analysis</h3>
-<pre class="r"><code>tissues &lt;- unique(metadata$gtex.smtsd)
+<pre class="r"><code>metadata &lt;- readRDS(paste0(dir_path, &quot;data/metadata_gtex_filter_samples.rds&quot;))
+
+tissues &lt;- unique(metadata$gtex.smtsd)
 #remove cell tissues
 tissues&lt;- tissues[! grepl(&quot;Cell&quot;, tissues)]</code></pre>
-<pre class="r"><code>counts_gtex&lt;- as.matrix(counts_gtex)</code></pre>
-<pre class="r"><code># code for checking the function
-#gtex_qsmooth_function(counts_gtex, metadata, tissues[43] , file_filtered_expression= &quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/test_gtex_filtered_expression_set.rds&quot;, file_norm= &quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/test_gtex_qsmooth_expression.rds&quot;, file_meta=&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/tissue_gtex_metadata.rds&quot; )</code></pre>
-<pre class="r"><code>for (i in 1:length(tissues)){
-  file_fe&lt;- paste(paste0(dir_path,&quot;data/gtex_qsmooth/&quot; ), tissues[i], &quot;_gtex_filtered_expression_set.rds&quot;, sep = &quot;&quot;)
-  file_n&lt;- paste(paste0(dir_path,&quot;data/gtex_qsmooth/&quot; ), tissues[i], &quot;_gtex_qsmooth_expression.rds&quot;, sep = &quot;&quot;)
-  file_m &lt;- paste(paste0(dir_path,&quot;data/gtex_qsmooth/&quot; ), tissues[i], &quot;_gtex_metadata.rds&quot;, sep = &quot;&quot;)
+<p>note processed data had the white sapce removed</p>
+<pre class="r"><code>tissues_wo_ws &lt;- gsub(&quot; &quot;, &quot;_&quot;, tissues, fixed = TRUE)</code></pre>
+<pre class="r"><code>for (i in 1:length(tissues_wo_ws)){
+  
   print(tissues[i])
-  gtex_qsmooth_function(counts_gtex, metadata, tissues[i] , file_filtered_expression=file_fe, file_norm=file_n, file_meta=file_m )
+  file_name&lt;- paste(paste0(dir_path, &quot;output/lioness/processed_normalized_expression/&quot;), tissues_wo_ws[i], &quot;_gtex_processed_expression.rds&quot;,sep = &quot;&quot;)
+  #print(file_name)
+  expression &lt;- readRDS(file_name)
+  
+  tisssue_meta_file&lt;- paste(paste0(dir_path, &quot;data/gtex_qsmooth/&quot;), tissues[i], &quot;_gtex_metadata.rds&quot;, sep = &quot;&quot;)
+  tisssue_meta&lt;-readRDS(tisssue_meta_file)
+  
+  file_male &lt;- paste(paste0(dir_path, &quot;output/alpaca/sex_specific_networks/&quot;), tissues_wo_ws[i], &quot;_M_panda.rds&quot;, sep = &quot;&quot;)
+  
+  file_female &lt;- paste(paste0(dir_path, &quot;output/alpaca/sex_specific_networks/&quot;), tissues_wo_ws[i], &quot;_F_panda.rds&quot;, sep = &quot;&quot;)
+  
+  try(sex_networks(expression, 
+                   tisssue_meta, 
+                   file_male,
+                   file_female))
 }</code></pre>
-<div id="output" class="section level4">
-<h4>Output:</h4>
-<p>[1] “Adipose - Subcutaneous”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 724</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>20043 724</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Adipose - Visceral (Omentum)”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 562</p>
-<p>[1] “after”</p>
-<p>Features Samples 20453 562</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Muscle - Skeletal”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 875</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>17382 875</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Artery - Tibial”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 686</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>19163 686</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Artery - Aorta”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 452</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>19530 452</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Artery - Coronary”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 252</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>19893 252</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Heart - Atrial Appendage”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before” Features Samples</p>
-<p>63856 449</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>19202 449</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Heart - Left Ventricle”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 488</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>17997 488</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Breast - Mammary Tissue”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 481</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>21131 481</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Skin - Sun Exposed (Lower leg)”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 775</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>20587 775 [1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Skin - Not Sun Exposed (Suprapubic)”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 637</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>20720 637</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Minor Salivary Gland”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 178</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>21314 178</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Brain - Hippocampus”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 220</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>20285 220</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Brain - Cortex”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 282</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>20293 282</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Brain - Putamen (basal ganglia)”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 221</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>20080 221</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Brain - Anterior cingulate cortex (BA24)”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 201</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>20118 201</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Brain - Cerebellar Hemisphere”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 246</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>20418 246</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Brain - Frontal Cortex (BA9)”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object” [1] “filter lowly expressed
-genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 221</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>20237 221</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Brain - Spinal cord (cervical c-1)” [1] “check the metadata and
-count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 171 [1] “after”</p>
-<p>Features Samples</p>
-<p>19807 171</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Brain - Substantia nigra”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before” Features Samples</p>
-<p>63856 154</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>20130 154</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Brain - Nucleus accumbens (basal ganglia)”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 262</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>20552 262</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Brain - Hypothalamus” [1] “check the metadata and count data
-match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 221</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>20923 221</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Brain - Cerebellum”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 279</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>20512 279</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Brain - Caudate (basal ganglia)”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 273</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>20480 273</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Brain - Amygdala”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 162</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>19989 162</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Adrenal Gland”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 274</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>19644 274</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Thyroid”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 700</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>21306 700</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Lung”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 640</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>21518 640</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Spleen” [1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 254</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>20787 254</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Pancreas”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples 63856 355</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>18591 355</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Esophagus - Muscularis”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 553</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>19670 553</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Esophagus - Mucosa”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 624</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>20035 624</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Esophagus - Gastroesophageal Junction”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 399</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>19938 399</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Stomach”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 384</p>
-<p>[1] “after”</p>
-<p>Features Samples 20199 384</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Colon - Transverse”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 432</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>21117 432</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Colon - Sigmoid”</p>
-<p>[1] “check the metadata and count data match” [1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 389</p>
-<p>[1] “after” Features Samples</p>
-<p>20073 389</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Small Intestine - Terminal Ileum”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 193</p>
-<p>[1] “after” Features Samples</p>
-<p>21726 193</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Nerve - Tibial”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 658</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>20864 658</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Pituitary”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples 63856 301</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>22343 301</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Whole Blood”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 840</p>
-<p>[1] “after”</p>
-<p>Features Samples 16474 840</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Liver”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 251</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>18654 251</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Kidney - Cortex”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 94</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>21294 94</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-<p>[1] “Bladder”</p>
-<p>[1] “check the metadata and count data match”</p>
-<p>[1] TRUE</p>
-<p>[1] “make expression set object”</p>
-<p>[1] “filter lowly expressed genes”</p>
-<p>[1] “before”</p>
-<p>Features Samples</p>
-<p>63856 21</p>
-<p>[1] “after”</p>
-<p>Features Samples</p>
-<p>21213 21</p>
-<p>[1] “save filtered expression”</p>
-<p>[1] “run and save results for qsmooth from YARN R package”</p>
-<p>[1] “save metadata”</p>
-</div>
 </div>
 <div id="save-data" class="section level3">
 <h3>Save Data</h3>
-<p>done within the script</p>
-</div>
-<div id="save-figures" class="section level3">
-<h3>Save Figures</h3>
-<p>done within the script</p>
+<p>Done in script</p>
 </div>
 </div>
 <div id="end" class="section level1">
 <h1>END</h1>
 <pre><code>Location of final scripts:
-script 
+scripts
+
 
 Location of data produced:
-./data/gtex_qsmooth/
+/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data
 
 Dates when operations were done:
 230104</code></pre>

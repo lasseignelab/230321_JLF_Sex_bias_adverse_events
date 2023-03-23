@@ -41,7 +41,17 @@ knitr::opts_chunk$set(echo = TRUE)
 # STEPS
 
 ### Set working directory 
+### Set working directory 
 ```{r}
+#change this path to match your paths 
+dir_path <- "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/"
+```
+
+
+```{r}
+source(paste0(dir_path, "script/sex_bias_drug_functions.R"))
+library(Biobase)
+library(netZooR)
 library(limma)
 library(netZooR)
 ```
@@ -285,7 +295,7 @@ network_edge_sex_differences <- function(metadata, tissue_edge_filtered, file_na
   names(RIN)<- colnames(tissue_edge_filtered)
   
   
-  test_BH <- LVTestWrapperJLF(b.matrix=tissue_edge_filtered, sample.info.df= sampleinfo, phenotype.col= "sex", blocking1= age, blocking2= RIN, file.lead= file_name, plot.dir= "~/output/lioness/differential_edge_analysis", results.dir= "~/output/lioness/differential_edge_analysis", use.bonferroni= FALSE, sig.threshold = 0.05)
+  test_BH <- LVTestWrapperJLF(b.matrix=tissue_edge_filtered, sample.info.df= sampleinfo, phenotype.col= "sex", blocking= RIN, file.lead= file_name, plot.dir= paste0(dir_path,"/output/lioness/differential_edge_analysis"), results.dir= paste0(dir_path,"/output/lioness/differential_edge_analysis"), use.bonferroni= FALSE, sig.threshold = 0.05)
   return( test_BH)
 }
 ```
@@ -294,8 +304,8 @@ test in liver
 
 
 ```{r}
-Liver_lioness_res <- readRDS("~/output/lioness/adjusted_lioness_output/Liver_lioness_res_all.rds")
-Liver_gtex_metadata <- readRDS("~/data/gtex_qsmooth/Liver_gtex_metadata.rds")
+Liver_lioness_res <- readRDS(paste0(dir_path,"output/lioness/adjusted_lioness_output/Liver_lioness_res_all.rds"))
+Liver_gtex_metadata <- readRDS(paste0(dir_path,"data/gtex_qsmooth/Liver_gtex_metadata.rds"))
 ```
 ```{r}
 Liver_lioness_res[1:5,1:5]
@@ -314,30 +324,61 @@ Liver_lioness_res<- Liver_lioness_res[,-c(1,2)]
 colnames(Liver_lioness_res)<- Liver_gtex_metadata$external_id
 ```
 
+
 ```{r}
-Liver_tissue_panda <- readRDS("~/output/lioness/tissue_panda/Liver_gtex_panda_tissue_networks.rds")
+Liver_tissue_panda_m <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/alpaca/sex_specific_networks/Liver_M_panda.rds")
+Liver_tissue_panda_f <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/alpaca/sex_specific_networks/Liver_F_panda.rds")
 ```
 
 ```{r}
-top_regNet <- as.data.frame(Liver_tissue_panda@regNet)
-```
-```{r}
-top_regNet$TF_name<- rownames(top_regNet)
-```
-```{r}
-top_regNet_long<- pivot_longer(top_regNet, cols=!TF_name, names_to = "Gene", values_to = "weight_tissue")
-```
-```{r}
-top_regNet_long$Gene<-  str_replace_all(top_regNet_long$Gene, "-", ".")
-ids<- paste(top_regNet_long$Gene, top_regNet_long$TF_name, sep= "_")
-```
-```{r}
-identical(ids, rownames(Liver_lioness_res))
+top_regNet_m  <- as.data.frame(Liver_tissue_panda_m@regNet)
+top_regNet_m$TF_name<- rownames(top_regNet_m)
+top_regNet_long_m<- pivot_longer(top_regNet_m, cols=!TF_name, names_to = "Gene", values_to = "weight_male")
+top_regNet_long_m$Gene<-  str_replace_all(top_regNet_long_m$Gene, "-", ".")
+ids_m<- paste(top_regNet_long_m$Gene, top_regNet_long_m$TF_name, sep= "_")
 ```
 
 ```{r}
-Liver_lioness_res_filter <- Liver_lioness_res[top_regNet_long$weight_tissue > 0,]
+top_regNet_f  <- as.data.frame(Liver_tissue_panda_f@regNet)
+top_regNet_f$TF_name<- rownames(top_regNet_f)
+top_regNet_long_f<- pivot_longer(top_regNet_f, cols=!TF_name, names_to = "Gene", values_to = "weight_female")
+top_regNet_long_f$Gene<-  str_replace_all(top_regNet_long_f$Gene, "-", ".")
+ids_f<- paste(top_regNet_long_f$Gene, top_regNet_long_f$TF_name, sep= "_")
 ```
+
+
+```{r}
+identical(ids_m, ids_f)
+```
+
+```{r}
+diff <- abs(top_regNet_long_f$weight_female - top_regNet_long_m$weight_male)
+filter_1 <- diff > 0.25
+
+positive_edge <- (top_regNet_long_f$weight_female > 0 | top_regNet_long_m$weight_male > 0)
+
+filter_f<- (filter_1 & positive_edge)
+
+```
+
+
+```{r}
+Liver_lioness_res_filter <- Liver_lioness_res[filter_f, ]
+```
+
+```{r}
+rm(Liver_tissue_panda_f, Liver_tissue_panda_m, Liver_lioness_res)
+gc()
+```
+
+```{r}
+limma_edge_liver <- network_edge_sex_differences(Liver_gtex_metadata, Liver_lioness_res_filter, file_name= "test14_liver_GTEX_sex")
+```
+
+
+
+
+
 
 ```{r}
 rm(Liver_lioness_res, top_regNet, top_regNet_long, Liver_tissue_panda)
@@ -352,6 +393,219 @@ gc()
 ```{r}
 limma_edge_liver <- network_edge_sex_differences(Liver_gtex_metadata, Liver_lioness_res_filter, file_name= "test_liver_GTEX_sex")
 ```
+
+
+```{r}
+#taken from the multiplier paper but added the blocking variable for GTEx vs TCGA databases
+TestLVDifferencesJLF <- function(b.matrix, phenotype, blocking,
+                                 use.bonferroni = FALSE) {
+  # This function tests for differential expression of PLIER-derived latent
+  # variables between groups specified by the phenotype argument
+  # using limma. Examples include different disease groups or disease v. 
+  # control. It takes the B matrix from a PLIER model and a factor vector with 
+  # the group labels. It will reorder the phenotype vector if control.phenotype
+  # is specified. The resulting p-values are Benjamini-Hochberg corrected by 
+  # default or Bonferroni corrected if use.bonferroni = TRUE
+  # 
+  # Args:
+  #   b.matrix: a B matrix (latent variables are rows, samples are columns) 
+  #             from a PLIER model. Can be the B element of the list 
+  #             returned by PLIER::PLIER or the output of GetNewDataB
+  #   phenotype: a named factor vector that contains group labels to be used
+  #              for contrasts
+  #   blocking: a names facotor vector that contains group labels to be used for blocking
+  #   use.bonferroni: logical - should bonferroni correction be used? if FALSE
+  #                   (default), will use "BH"
+  #   
+  # Returns:
+  #   A limma::topTable, where the first column is the latent variable name and
+  #   all pathways are returned (without filtering or sorting)
+  
+  ## error-handling ##
+  
+  if (is.null(names(phenotype))) {
+    stop("phenotype should be a named factor vector -- the names ensure that
+         the vector is correctly ordered")
+  }
+  if (is.null(names(blocking))) {
+    stop("blocking should be a named factor vector -- the names ensure that
+         the vector is correctly ordered")
+  }  
+  # no names should be "missing"
+  check.names <- all(colnames(b.matrix) %in% names(phenotype)) & 
+    all(names(phenotype) %in% colnames(b.matrix)) 
+  
+  if (!check.names) {
+    stop("Some sample(s) is missing from colnames(b.matrix) or 
+         names(phenotype)")
+  }
+  
+  # the phenotype labels should be in the same order as the b.matrix samples
+  ordered.phenotype <- as.factor(phenotype[colnames(b.matrix)])
+  
+  # the blocking labels should be in the same order as the b.matrix samples
+  ordered.blocking <- as.factor(blocking[colnames(b.matrix)])
+  
+  # get contrasts (all pairwise)  
+  num.levels <- length(levels(ordered.phenotype))
+  contrast.vector <- c()
+  for (lvl in levels(ordered.phenotype)[1:(num.levels - 1)]) {
+    for (lvl.2 in levels(ordered.phenotype)[2:num.levels]) {
+      if (lvl != lvl.2) {
+        contrast.vector <- append(contrast.vector, paste(lvl, lvl.2, sep = "-"))
+      }
+    }
+  }
+  contrast.vector <- paste(contrast.vector, collapse = ", ")
+  
+  # prep design matrix
+  design <- model.matrix(~ 0+ ordered.phenotype+ ordered.blocking )
+  colnames(design)[seq_len(nlevels(ordered.phenotype))] <- levels(ordered.phenotype)
+  
+  
+  
+  
+  #colnames(design) <- levels(ordered.phenotype)
+  
+  # fit linear model
+  fit <- limma::lmFit(b.matrix, design)
+  contrast.matrix <-
+    eval(parse(
+      text = paste0(
+        'limma::makeContrasts(', contrast.vector, ', levels = design)')))
+  fit2 <- limma::contrasts.fit(fit, contrast.matrix)
+  fit2 <- limma::eBayes(fit2)
+  
+  # extract results as a data.frame
+  if (use.bonferroni) {  # if specified, use Bonferroni correction
+    limma.result <- limma::topTable(fit2, number = nrow(b.matrix),
+                                    adjust.method = "bonferroni", 
+                                    sort.by = "none")
+  } else {  # calculate FDR
+    limma.result <- limma::topTable(fit2, number = nrow(b.matrix),
+                                    adjust.method = "BH", sort.by = "none")
+  }
+  
+  # want feature (latent variable) names as column
+  limma.result <- tibble::rownames_to_column(limma.result, var = "LV")
+  
+  return(limma.result)
+  
+}
+#taken from the multiplier paper but added the blocking variable for GTEx vs TCGA databases
+LVTestWrapperJLF <- function(b.matrix,
+                             sample.info.df,
+                             phenotype.col,
+                             blocking,
+                             file.lead,
+                             plot.dir = "plots",
+                             results.dir = "results",
+                             use.bonferroni = FALSE,
+                             significant.only = FALSE,
+                             sig.threshold = 0.05) {
+  # A wrapper function for TestLVDifferences and BoxplotDiffLV; does the 
+  # reshaping required for plotting. Produces the following files: 1) tsv of the
+  # differential expression results 2) a long form of the B matrix joined with
+  # the sample information (sample.info.df) and 3) a PDF of boxplots
+  # 
+  # Args:
+  #   b.matrix: a B matrix (latent variables are rows, samples are columns) 
+  #             from a PLIER model. Can be the B element of the list 
+  #             returned by PLIER::PLIER or the output of GetNewDataB
+  #   sample.info.df: a long form data.frame that contains sample information,
+  #                   sample names that match the B matrix sample identifiers
+  #                   must be in a "Sample" column & it also must contain
+  #                   the factor to group by for testing differential expression
+  #                   (DE) and plotting
+  #   phenotype.col: the column name of the column in sample.info.df to be used
+  #                  for DE and plotting; character
+  #   file.lead: string that designates the "beginning" of filenames
+  #   plot.dir: plot directory where the boxplots PDF should be saved
+  #   results.dir: results directory for DE results and reshaped B data.frame
+  #   use.bonferroni: logical - should bonferroni correction be used for DE? 
+  #                   if FALSE (default), will use "BH"
+  #   significant.only: logical - should only differentially expressed LVs be
+  #                     plotted? if FALSE (default), all will be plotted
+  #   sig.threshold: the adj. P cutoff to be used if only plotting significant 
+  #                  results; default is 0.05
+  #                  
+  # Returns:
+  #   A list with the following elements
+  #       limma: the results from TestLVDifferences 
+  #       b.df: sample.b.df, prior to any filtering for plotting (if applicable)
+  # 
+  #   the following files are written by this function (see above):
+  #     1) <results.dir>/<file.lead>_LV_limma_results.tsv
+  #     2) <results.dir>/<file.lead>_B_long_sample_info.tsv
+  #     3) <plot.dir>/<file.lead>_LV_boxplots.pdf
+  
+  `%>%` <- dplyr::`%>%`
+  
+  # error-handling
+  # we need to join by "Sample" column for boxplots
+  if (!("Sample" %in% colnames(sample.info.df))) {
+    stop("'Sample' must be a column in sample.info.df")
+  }
+  # phenotype.col needs to be in column names
+  if (!(phenotype.col %in% colnames(sample.info.df))) {
+    stop("phenotype.col must be a column name in sample.info.df")
+  }
+  
+  # initialize list to hold results to be returned
+  return.list <- list()
+  
+  #### Differential Expression ####
+  # get the named vector to use as the phenotype for testing differential 
+  # expression
+  phenotype.vector <- as.factor(make.names(sample.info.df[[phenotype.col]]))
+  names(phenotype.vector) <- sample.info.df$Sample
+  # test itself
+  limma.df <- TestLVDifferencesJLF(b.matrix = b.matrix,
+                                   phenotype = phenotype.vector,
+                                   blocking= blocking,
+                                   use.bonferroni = use.bonferroni)
+  # write to file
+  dlve.file <- file.path(results.dir, 
+                         paste0(file.lead, "_LV_limma_results.tsv"))
+  readr::write_tsv(limma.df, path = dlve.file)
+  # add to list to be returned
+  return.list[["limma"]] <- limma.df
+  
+  #### Reshape & join with sample information ####
+  b.df <- reshape2::melt(b.matrix)
+  colnames(b.df) <- c("LV", "Sample", "Value")
+  sample.b.df <- dplyr::inner_join(b.df, sample.info.df, by = "Sample")
+  long.file <- file.path(results.dir, 
+                         paste0(file.lead, "_B_long_sample_info.tsv"))
+  readr::write_tsv(sample.b.df, long.file)
+  # add to list to be returned
+  return.list[["b.df"]] <- sample.b.df
+  
+  #### Plotting ####
+  plot.file <- file.path(plot.dir,
+                         paste0(file.lead, "_LV_boxplots.pdf"))
+  
+  # if we only want significant LVs plotted, filter sample.b.df using the
+  # adj.P.Val cutoff sig.threshold
+  if (significant.only) {
+    sig.lvs <- limma.df$LV[which(limma.df$adj.P.Val < sig.threshold)]
+    sample.b.df <- sample.b.df %>%
+      dplyr::filter(LV %in% sig.lvs)
+  }
+  
+  BoxplotDiffLV(tidy.b.df = sample.b.df, 
+                phenotype.column = phenotype.col,
+                pdf.path = plot.file)
+  
+  
+  return(return.list)
+}
+```
+
+
+
+
+
 
 
 
