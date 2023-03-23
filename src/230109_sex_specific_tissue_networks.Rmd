@@ -1,5 +1,5 @@
 ---
-title: "230109_sex_networks_alpaca"
+title: "230109_sex_specific_tissue_networks"
 author: "Jennifer Fisher"
 date: "2023-01-09"
 output:
@@ -43,7 +43,13 @@ knitr::opts_chunk$set(echo = TRUE)
 # STEPS
 ### Set working directory 
 ```{r}
-source("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/script/sex_bias_functions.R")
+#change this path to match your paths 
+dir_path <- "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/"
+```
+
+
+```{r}
+source(paste0(dir_path, "script/sex_bias_drug_functions.R"))
 library(Biobase)
 library(netZooR)
 ```
@@ -52,8 +58,8 @@ library(netZooR)
 ### load in data
 the transcription factor and protein-protein interaction networks for panda 
 ```{r}
-motif_table <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data/230104_symbol_motif_table.rds")
-ppi_net <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data/230104_symbol_numeric_ppi_network_11_5_0.rds")
+motif_table <- readRDS(paste0(dir_path, "data/panda_input_data/230104_symbol_motif_table.rds"))
+ppi_net <- readRDS(paste0(dir_path, "data/panda_input_data/230104_symbol_numeric_ppi_network_11_5_0.rds"))
 ```
 
 loading in test data (liver tissue)
@@ -72,7 +78,7 @@ loading in test data (liver tissue)
 ### Analysis
 
 ```{r}
-metadata <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/metadata_gtex_filter_samples.rds")
+metadata <- readRDS(paste0(dir_path, "data/metadata_gtex_filter_samples.rds"))
 
 tissues <- unique(metadata$gtex.smtsd)
 #remove cell tissues
@@ -88,16 +94,16 @@ tissues_wo_ws <- gsub(" ", "_", tissues, fixed = TRUE)
 for (i in 1:length(tissues_wo_ws)){
   
   print(tissues[i])
-  file_name<- paste("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/processed_normalized_expression/", tissues_wo_ws[i], "_gtex_processed_expression.rds",sep = "")
+  file_name<- paste(paste0(dir_path, "output/lioness/processed_normalized_expression/"), tissues_wo_ws[i], "_gtex_processed_expression.rds",sep = "")
   #print(file_name)
   expression <- readRDS(file_name)
   
-  tisssue_meta_file<- paste("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/", tissues[i], "_gtex_metadata.rds", sep = "")
+  tisssue_meta_file<- paste(paste0(dir_path, "data/gtex_qsmooth/"), tissues[i], "_gtex_metadata.rds", sep = "")
   tisssue_meta<-readRDS(tisssue_meta_file)
   
-  file_male <- paste("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/alpaca/sex_specific_networks/", tissues_wo_ws[i], "_M_panda.rds", sep = "")
+  file_male <- paste(paste0(dir_path, "output/alpaca/sex_specific_networks/"), tissues_wo_ws[i], "_M_panda.rds", sep = "")
   
-  file_female <- paste("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/alpaca/sex_specific_networks/", tissues_wo_ws[i], "_F_panda.rds", sep = "")
+  file_female <- paste(paste0(dir_path, "output/alpaca/sex_specific_networks/"), tissues_wo_ws[i], "_F_panda.rds", sep = "")
   
   try(sex_networks(expression, 
                    tisssue_meta, 
@@ -108,5 +114,23 @@ for (i in 1:length(tissues_wo_ws)){
 
 
 
+### Save Data
+Done in script
+    
+# END
+    Location of final scripts:
+    scripts
+  
+    
+    Location of data produced:
+    /data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data
+    
+    Dates when operations were done:
+    230104
+    
+## Versions
+```{r}
+sessionInfo()
+```
 
 

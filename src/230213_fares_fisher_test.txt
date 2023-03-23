@@ -1,0 +1,2 @@
+#command to submitt 230213_fares_fisher_test
+sbatch --array=1-543 230213_fares_fisher_test.sh
