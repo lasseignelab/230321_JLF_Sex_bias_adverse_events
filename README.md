@@ -82,14 +82,31 @@ To run the scripts, you use the commands in 230213_fares_fisher_test.txt in the 
 ## Scripts
 **GTEx data download and exploration**
 - 210806_GTEx_Age_Sex.Rmd
+
 This is important script. Update Jen on any issues with script. 
 
 **Network analysis scripts**
 - 230103_network_qsmooth.Rmd
 - 230104_panda_network_inputs.Rmd
-
 - 230109_sex_specific_tissue_networks.Rmd
+- 230206_alpaca_results_exploration.Rmd
+- 230221_liver_sex_specific_com.Rmd
 
+**FARES scripts**
+- 220722_FDA_OPEN_FARES_Exploration.Rmd
+- 230124_fares_sbae_drugs.Rmd
+<br>
+The following 230213_fares_fisher_test scripts use the conda enviroment. 
+
+- 230213_fares_fisher_test.txt
+- 230213_fares_fisher_test.sh
+- 230213_fares_fisher_test.R
+<br>
+
+- 230216_fisher_res_exploration.Rmd
+- 230308_drugbank_info.Rmd
+- 230313_sbae_drug_target.Rmd
+- 230323_sbae_heatmaps.Rmd
 
 ## Function Scripts
 - sex_bias_drug_functions.R
@@ -99,7 +116,7 @@ This is important script. Update Jen on any issues with script.
 
 [What is Happening in the Lasseigne Lab?](https://www.lasseigne.org/)
 
-<img src="https://www.lasseigne.org/img/main/lablogo.png" width="75" height="75">
+<img src="https://www.lasseigne.org/img/main/lablogo.png" width="150" height="150">
 
 ## Funding
 
@@ -121,12 +138,21 @@ add in the future
 
 **Old scripts**
 remove in the future but noting here for now
-- 210603_open_fda_download.sh
-- 210806_GTEx_Age_Sex.html
-- 220519_FDA_open_drug.sh
-- 220722_FDA_OPEN_FARES_Exploration.Rmd
-- 220725_FDA_open_drug_long_mem.sh
-- 220725_FDA_open_drug_more_mem.sh
-- 221031_transfer_sex_diff_test.Rmd
-- drugeventscript_drug.R
+- src/vignettes
+- src/210603_open_fda_download.sh
+- src/220519_FDA_open_drug.sh
+- src/220725_FDA_open_drug_long.sh
+- src/221031_transfer_sex_diff_test.Rmd
+- src/230105_lioness_function_script.R
+- src/230105_lioness_function_script.sh
+- src/230105_lioness_set_up.Rmd
+- src/230105_lioness_set_up.html
+- src/230106_lioness_tissue_runs.txt
+- src/230112_lioness_function_script_smaller.R
+- src/230112_lioness_function_script_smaller.sh
+- src/230126_lioness_outputs_adjustment.Rmd
+- src/230126_lioness_outputs_adjustment.html
+- src/230130_differential_edges_testing.Rmd
+- src/sex_bias_functions.R
+- src/test_LV_differences.R
 
