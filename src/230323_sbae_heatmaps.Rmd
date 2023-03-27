@@ -1,0 +1,267 @@
+---
+title: "230323_sbae_heatmaps"
+author: "Jennifer Fisher"
+date: "2023-03-23"
+output:
+  html_document:
+    toc: true
+    theme: united
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# START 
+    Goal/Purpose of operations: 
+    I am going to be looking at the enriched drug targets from the SBAE drugs and looking at gene expression and core genes of sex-specific communitites. 
+    
+    Finished psedocode on:
+    230308
+    
+    System which operations were done on: 
+    my laptop
+    
+    GitHub Repo:
+    Sex_Bias_Adverse_Events
+    
+    Directory of operations:
+    ~/Documents/Sex_Bias_Adverse_Events
+    
+    Scripts being edited for operations:
+    NA
+    
+    Data being used:
+    output/alpaca/alpaca_runs
+    
+    Papers and tools: 
+    NA
+
+# STEPS
+
+### Set working directory 
+```{r}
+library(ggplot2)
+library(circlize)
+library(ComplexHeatmap)
+library(drugbankR)
+library(DBI)
+library(hash)
+library(org.Hs.eg.db)
+library(EnsDb.Hsapiens.v75)
+library(stringr)
+```
+
+```{r}
+sbae_targets_df_top <- readRDS("~/results/FARES_plots/sbae_targets_df_top.rds")
+```
+
+```{r}
+sex_bias_genes_gtex_science_paper <- read.table("~/data/GTEx_Analysis_v8_sbgenes/signif.sbgenes.txt", header=TRUE)
+```
+
+
+## Analysis
+
+
+```{r}
+#for each tissue find the male and female biased genes
+tissues<- unique(sex_bias_genes_gtex_science_paper$tissue)
+male_tissues_names <- paste("M", tissues, sep="_")
+female_tissues_names<- paste("F", tissues, sep="_")
+for (i in 1:length(tissues)){
+  assign(male_tissues_names[i], sex_bias_genes_gtex_science_paper[sex_bias_genes_gtex_science_paper$tissue ==tissues[i] & sex_bias_genes_gtex_science_paper$effsize < 0,])
+  assign(female_tissues_names[i], sex_bias_genes_gtex_science_paper[sex_bias_genes_gtex_science_paper$tissue ==tissues[i] & sex_bias_genes_gtex_science_paper$effsize > 0,])
+}
+```
+
+```{r}
+both_sex_tissue_names<- c(male_tissues_names, female_tissues_names)
+
+geneset<- data.frame(id =both_sex_tissue_names, name= both_sex_tissue_names, genes= I(rep(list(c("a","b")), 88)))
+sex_genes <- both_sex_tissue_names
+for (i in 1:length(both_sex_tissue_names)){
+  data <- get(both_sex_tissue_names[i])
+  trim_names<- strtrim(data[,1],15)
+  assign( sex_genes[i], trim_names)
+  
+}
+
+sex_gene_set <- list(M_Adipose_Subcutaneous= M_Adipose_Subcutaneous, M_Adipose_Visceral_Omentum= M_Adipose_Visceral_Omentum)
+```
+
+```{r}
+for (j in 1:88){
+  sex_gene_set[[j]]<- get(sex_genes[j])
+  #names(sex_gene_set[j])<- sex_genes[j]
+}
+names(sex_gene_set)<-sex_genes
+```
+
+```{r}
+SBAE_drug_targets_v2 <- gprofiler2::gconvert(sbae_targets_df_top$sbae_targets)
+```
+
+```{r}
+SBAE_drug_targets_v2 <- SBAE_drug_targets_v2[SBAE_drug_targets_v2$input == SBAE_drug_targets_v2$name,]
+```
+
+```{r}
+male_gene_set <- sex_gene_set[1:44]
+female_gene_set <- sex_gene_set[45:88]
+```
+
+
+```{r}
+sbae_target_exp <- matrix(nrow=84, ncol=44)
+for ( i in 1:84){
+  m_exp <- as.numeric(grepl(SBAE_drug_targets_v2$target[i], male_gene_set))
+  f_exp <- as.numeric(grepl(SBAE_drug_targets_v2$target[i], female_gene_set))
+  sbae_target_exp[i,] <- f_exp- m_exp
+}
+```
+
+```{r}
+sbae_target_exp<- as.data.frame(sbae_target_exp)
+```
+
+```{r}
+rownames(sbae_target_exp) <- SBAE_drug_targets_v2$name
+colnames(sbae_target_exp)<- tissues
+```
+
+
+```{r}
+sbae_target_exp_top <- sbae_target_exp[rowSums(sbae_target_exp==0, na.rm=TRUE)<ncol(sbae_target_exp), ]
+```
+
+
+```{r}
+
+#colors2 <- structure(1:4, names = c("-1", "0", "1", "2")) # black, red, green, blue
+colors<- 1:4
+names(colors)<- c("-1", "0", "1")
+colors[1]<- "#21908CFF"
+colors[2]<- "white"
+colors[3]<- "#440154FF"
+
+png("~/results/FARES_plots/drug_target_sex_bias_expression_heatmap.png",width=15,height=10,units="in",res=1400)
+Heatmap(t(sbae_target_exp_top), name = "Sex-bias Gene Expression", col = colors, heatmap_legend_param = list(at = c("-1", "0", "1"),labels= c("male", "not sex-bias", "female"), column_names_gp =gpar(fontsize = 18 , fontface = "bold"), labels_gp = gpar(fontsize = 12, fontface = "bold") ))
+dev.off()
+```
+
+
+look at core genes 
+
+```{r}
+files <- list.files(path = "~/results/alpaca/alpaca_core_gene_lists")
+```
+
+
+```{r}
+tissues<- str_split(files, "_female", simplify = TRUE)[,1]
+tissues<- str_split(tissues, "_male", simplify = TRUE)[,1]
+tissues<- unique(tissues)
+```
+
+
+```{r}
+SBAE_drug_targets<- SBAE_drug_targets_v2$name
+```
+
+male core genes
+```{r}
+core_gene_list <- list()
+for( i in 1:length(tissues)){
+  print(tissues[i])
+  male_core_genes <- readRDS(paste("~/results/alpaca/alpaca_core_gene_lists/", tissues[i],"_male_core_genes.rds", sep=""))
+  core_gene_list[[i]] <- unique(male_core_genes$symbol)
+}
+```
+
+```{r}
+female_core_gene_list <- list()
+for( i in 1:length(tissues)){
+  print(tissues[i])
+  female_core_genes <- readRDS(paste("~/results/alpaca/alpaca_core_gene_lists/", tissues[i],"_female_core_genes.rds", sep=""))
+  female_core_gene_list[[i]] <- unique(female_core_genes$symbol)
+}
+```
+
+```{r}
+names(female_core_gene_list)<- tissues
+names(core_gene_list)<- tissues
+```
+
+
+
+```{r}
+sbae_target_core <- matrix(nrow=84, ncol=43)
+for ( i in 1:84){
+  
+  m_core <- which(lapply(core_gene_list, function(x) grep(paste("^",SBAE_drug_targets[i],"$", sep=""), x)) !=0)
+  m_core<- 1:43 %in% m_core
+  
+  f_core <- which(lapply(female_core_gene_list, function(x) grep(paste("^",SBAE_drug_targets[i],"$", sep=""), x))!=0)
+  f_core<- 1:43 %in% f_core
+  
+  sub <- rep(0, 43)
+  
+  sub <- ifelse(m_core, -1, sub)
+  sub <- ifelse(f_core, 1, sub)
+  sbae_target_core[i,]<- ifelse(f_core & m_core, 1e-15, sub)
+
+}
+```
+
+```{r}
+rownames(sbae_target_core) <- SBAE_drug_targets_v2$name
+colnames(sbae_target_core)<- tissues
+```
+
+
+```{r}
+sbae_target_core_top <- sbae_target_core[rowSums(sbae_target_core == 0, na.rm=TRUE)<ncol(sbae_target_core), ]
+```
+
+
+```{r}
+
+#colors2 <- structure(1:4, names = c("-1", "0", "1", "2")) # black, red, green, blue
+colors<- 1:4
+names(colors)<- c("-1", "0","1e-15", "1")
+colors[1] <- "#21908CFF"
+colors[2] <- "white"
+colors[3] <- "gray"
+colors[4] <- "#440154FF"
+
+png("~/results/FARES_plots/drug_target_sex_bias_core_genes_heatmap.png",width=15,height=10,units="in",res=1400)
+Heatmap(t(sbae_target_core_top), name = "Sex-bias Core Gene", col = colors, heatmap_legend_param = list(at = c("-1", "0","1e-15", "1"),labels= c("male", "not sex-bias","both", "female"), column_names_gp =gpar(fontsize = 18 , fontface = "bold"), labels_gp = gpar(fontsize = 12, fontface = "bold") ))
+dev.off()
+```
+
+
+
+```{r}
+setdiff(rownames(sbae_target_core_top), rownames(sbae_target_exp_top))
+```
+
+```{r}
+setdiff(rownames(sbae_target_exp_top), rownames(sbae_target_core_top))
+```
+
+
+```{r}
+intersect(rownames(sbae_target_exp_top), rownames(sbae_target_core_top))
+```
+
+```{r}
+unique(c(rownames(sbae_target_exp_top), rownames(sbae_target_core_top)))
+```
+
+```{r}
+68/84
+```
+
+
