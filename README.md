@@ -16,7 +16,7 @@ In addition to the scripts here, the Docker images used for this analysis is pub
 
 **How to use the Docker on local mac:**
 
-Download the Docker image from Docker Hub
+Download the Docker image from Docker Hub (only done once)
 ````
 docker pull jenfisher7/rstudio_sex_bias_drugs
 ````
