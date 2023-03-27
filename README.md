@@ -11,7 +11,7 @@ Department of Cell, Developmental and Integrative Biology, Heersink School of Me
 
 ## Dockers and Conda Environments
 
-In addition to the scripts here, the Docker images used for this analysis is publicly available on Docker Hub ([jenfisher7/rstudio_sex_bias_drugs](https://hub.docker.com/r/jenfisher7/rstudio_sex_bias_drugs). For the network calculations, a conda environment was used (). Below are insturctions on how to set up the dockers on local machines and Cheaha and conda enviroments on Cheaha. This workflow assumes that you cloned the github for this project. 
+In addition to the scripts here, the Docker images used for this analysis is publicly available on Docker Hub ([jenfisher7/rstudio_sex_bias_drugs](https://hub.docker.com/r/jenfisher7/rstudio_sex_bias_drugs). For the network calculations, a conda environment was used (SR_TAU_CELL_environment.yml). Below are insturctions on how to set up the dockers on local machines and Cheaha and conda enviroments on Cheaha. This workflow assumes that you cloned the github for this project. 
 
 
 **How to use the Docker on local mac:**
@@ -56,7 +56,7 @@ open firefox and go to http://localhost:8787/
 Note that scripts that run on cheaha have the following line of code at the top of the script:
 
 ````
-dir_path <- "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/"
+dir_path <- "/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/"
 ````
 Please change to the correct path to the github directory on Cheaha. 
 
@@ -82,6 +82,7 @@ To run the scripts, you use the commands in 230213_fares_fisher_test.txt in the 
 ## Scripts
 **GTEx data download and exploration**
 - 210806_GTEx_Age_Sex.Rmd
+This is important script. Update Jen on any issues with script. 
 
 **Network analysis scripts**
 - 230103_network_qsmooth.Rmd
