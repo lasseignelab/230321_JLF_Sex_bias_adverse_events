@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # START 
     Goal/Purpose of operations: 
-    Need to normalize the expression data for the network analysis (lioness aka edge differences and panda/alpaca-communities differences.)
+    Need to normalize the expression data for the network analysis.
     
     Finished psedocode on:
     230103
@@ -23,13 +23,13 @@ knitr::opts_chunk$set(echo = TRUE)
     Cheaha
     
     GitHub Repo:
-    Sex_Bias_Adverse_Events
+    230321_JLF_Sex_bias_adverse_events
     
     Docker/Singularity: 
     rstudio_sex_bias_drugs
     
     Directory of operations: 
-    "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events"
+    "/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events"
     
     Scripts being edited for operations:
     created a new function gtex_qsmooth_function in the sex_bias_functions.R for the data wrangling 
@@ -45,7 +45,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 #change this path to match your paths 
-dir_path <- "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/"
+dir_path <- "/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/"
 ```
 
 
@@ -60,7 +60,7 @@ library(netZooR)
 
 ```{r}
 counts_gtex <- readRDS(paste0(dir_path,"data/counts_gtex_filter_samples.rds" ))
-metadata <- readRDS(paste0(dir_path,"data/metadata_gtex_filter_samples.rds" ))
+metadata <- readRDS(paste0(dir_path, "data/metadata_gtex_filter_samples.rds" ))
 ```
 
 
@@ -69,20 +69,13 @@ metadata <- readRDS(paste0(dir_path,"data/metadata_gtex_filter_samples.rds" ))
 ```{r}
 tissues <- unique(metadata$gtex.smtsd)
 #remove cell tissues
-tissues<- tissues[! grepl("Cell", tissues)]
+tissues <- tissues[! grepl("Cell", tissues)]
 ```
 
 
 ```{r}
-counts_gtex<- as.matrix(counts_gtex)
+counts_gtex <- as.matrix(counts_gtex)
 ```
-
-
-```{r}
-# code for checking the function
-#gtex_qsmooth_function(counts_gtex, metadata, tissues[43] , file_filtered_expression= "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/test_gtex_filtered_expression_set.rds", file_norm= "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/test_gtex_qsmooth_expression.rds", file_meta="/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/tissue_gtex_metadata.rds" )
-```
-
 
 ```{r eval =FALSE}
 for (i in 1:length(tissues)){
@@ -1297,7 +1290,7 @@ done within the script
     
 # END
     Location of final scripts:
-    script 
+    scr
     
     Location of data produced:
     ./data/gtex_qsmooth/
