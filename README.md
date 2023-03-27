@@ -56,7 +56,7 @@ open firefox and go to http://localhost:8787/
 Note that scripts that run on cheaha have the following line of code at the top of the script:
 
 ````
-dir_path <- "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/"
+dir_path <- "/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/"
 ````
 Please change to the correct path to the github directory on Cheaha. 
 
