@@ -82,6 +82,7 @@ To run the scripts, you use the commands in 230213_fares_fisher_test.txt in the 
 ## Scripts
 **GTEx data download and exploration**
 - 210806_GTEx_Age_Sex.Rmd
+This is important script. Update Jen on any issues with script. 
 
 **Network analysis scripts**
 - 230103_network_qsmooth.Rmd
