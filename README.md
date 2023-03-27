@@ -11,7 +11,7 @@ Department of Cell, Developmental and Integrative Biology, Heersink School of Me
 
 ## Dockers and Conda Environments
 
-In addition to the scripts here, the Docker images used for this analysis is publicly available on Docker Hub ([jenfisher7/rstudio_sex_bias_drugs](https://hub.docker.com/r/jenfisher7/rstudio_sex_bias_drugs). For the network calculations, a conda environment was used (). Below are insturctions on how to set up the dockers on local machines and Cheaha and conda enviroments on Cheaha. This workflow assumes that you cloned the github for this project. 
+In addition to the scripts here, the Docker images used for this analysis is publicly available on Docker Hub ([jenfisher7/rstudio_sex_bias_drugs](https://hub.docker.com/r/jenfisher7/rstudio_sex_bias_drugs). For the network calculations, a conda environment was used (SR_TAU_CELL_environment.yml). Below are insturctions on how to set up the dockers on local machines and Cheaha and conda enviroments on Cheaha. This workflow assumes that you cloned the github for this project. 
 
 
 **How to use the Docker on local mac:**
