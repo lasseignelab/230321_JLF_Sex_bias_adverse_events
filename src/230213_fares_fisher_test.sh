@@ -16,7 +16,7 @@ cd /data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/
 module load intel/2017a
 module load Anaconda3/5.3.1
 source activate
-conda activate netzoo
+conda activate SR_TAU_CELL
 
 echo $SLURM_ARRAY_TASK_ID 
 
