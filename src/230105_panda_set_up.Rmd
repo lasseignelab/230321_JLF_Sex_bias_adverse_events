@@ -1,5 +1,5 @@
 ---
-title: "230105_lioness_set_up"
+title: "230105_panda_set_up"
 author: "Jennifer Fisher"
 date: "2023-01-05"
 output:
@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # START 
     Goal/Purpose of operations: 
-
+    Adjusting all the inputs for the panda sex-specific networks
     
     Finished psedocode on:
     230105
@@ -24,16 +24,21 @@ knitr::opts_chunk$set(echo = TRUE)
     my laptop(on cheaha)
     
     GitHub Repo:
-    Sex_Bias_Adverse_Events
+    230321_JLF_Sex_bias_adverse_events
     
     Directory of operations:
-    /data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events
+    /data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events
+    
+    Docker: 
+    jenfisher7/rstudio_sex_bias_drugs
     
     Scripts being edited for operations:
-    sex_bias_functions.R 
+    sex_bias_drug_functions.R 
     
     Data being used:
- 
+    data/panda_input_data/230104_symbol_motif_table.rds
+    data/panda_input_data/230104_symbol_ppi_network_11_5_0.rds
+    
     
     Papers and tools: 
     NA
@@ -42,20 +47,27 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Set working directory 
 ```{r}
-source("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/script/sex_bias_functions.R")
+#change this path to match your paths 
+dir_path <- "/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/"
+```
+
+
+```{r}
+source(paste0(dir_path, "src/sex_bias_drug_functions.R" ))
 library(netZooR)
 ```
 
 ### load in data
 going to load in the ppi and transcription factor networks
 ```{r}
-motif_table <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data/230104_symbol_motif_table.rds")
-ppi_net <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data/230104_symbol_ppi_network_11_5_0.rds")
+motif_table <- readRDS(paste0(dir_path, "data/panda_input_data/230104_symbol_motif_table.rds"))
+ppi_net <- readRDS(paste0(dir_path, "data/panda_input_data/230104_symbol_ppi_network_11_5_0.rds"))
 ```
-make a gene feature object from recount3
 
+
+make a gene feature object from recount3 with info about genes
 ```{r}
-#SRP118922
+#SRP118922- random recount3 project
 library(recount3)
 human_projects<- available_projects()
 test<- create_rse(human_projects[(human_projects$project == "SRP118922"),])
@@ -64,7 +76,7 @@ rm(test)
 ```
 
 ```{r}
-saveRDS(feature_info, "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/recount3_feature_info.rds")
+saveRDS(feature_info, paste0(dir_path, "data/recount3_feature_info.rds"))
 ```
 
 
@@ -78,47 +90,33 @@ fix the gene ids to match
 ```{r}
 #gene_ids<- feature_info$gene_id[feature_info$gene_id %in% rownames(Liver_gtex_qsmooth_expression)]
 #gene_symbols<- feature_info$gene_name[feature_info$gene_id %in% rownames(Liver_gtex_qsmooth_expression)]
-```
-
-```{r}
 #identical(rownames(Liver_gtex_qsmooth_expression), gene_ids)
-```
-```{r}
 #rownames(Liver_gtex_qsmooth_expression)<- gene_symbols
-```
-
-```{r}
 #liver_express_rm <- keep_max_duplicate(Liver_gtex_qsmooth_expression)
-```
-
-
-```{r}
 #liver_qsmooth_expr_set <- ExpressionSet(assayData=liver_express_rm)
 ```
 
 ```{r}
-ppi_net<- as.data.frame(ppi_net)
-ppi_net[,3]<- as.numeric(ppi_net[,3])
+ppi_net <- as.data.frame(ppi_net)
+ppi_net[,3] <- as.numeric(ppi_net[, 3])
 ```
 
 ```{r}
-saveRDS( ppi_net, "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data/230104_symbol_numeric_ppi_network_11_5_0.rds")
+saveRDS(ppi_net, paste0(dir_path, "data/panda_input_data/230104_symbol_numeric_ppi_network_11_5_0.rds"))
 ```
 
 
 ```{r}
 #reload to test function
 #Liver_test_expression <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/Liver_gtex_qsmooth_expression.rds")
-```
-
-```{r eval =FALSE}
 #panda_tissue_run(Liver_test_expression,
 #                expression_file="/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/processed_normalized_expression/test.rds",  
 #                network_file= "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/tissue_panda/test.rds")
 ```
 
+Filter normalized expression for each tissue for symbols that don't replicate
 ```{r}
-metadata <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/metadata_gtex_filter_samples.rds")
+metadata <- readRDS(paste0(dir_path, "data/metadata_gtex_filter_samples.rds"))
 
 tissues <- unique(metadata$gtex.smtsd)
 #remove cell tissues
@@ -129,14 +127,11 @@ tissues<- tissues[! grepl("Cell", tissues)]
 for( i in 1:length(tissues)){
   
   print(tissues[i])
-  file_name<- paste("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/", tissues[i], "_gtex_qsmooth_expression.rds", sep = "")
+  file_name<- paste(dir_path, "data/gtex_qsmooth/", tissues[i], "_gtex_qsmooth_expression.rds", sep = "")
   expression <- readRDS(file_name)
-  file_expression <- paste("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/processed_normalized_expression/", tissues[i], "_gtex_processed_expression.rds", sep = "")
-  file_network <- paste("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/tissue_panda/", tissues[i], "_gtex_panda_tissue_networks.rds", sep = "")
+  file_expression <- paste(dir_path, "results/lioness/processed_normalized_expression/", tissues[i], "_gtex_processed_expression.rds", sep = "")
   
-  try(panda_tissue_run(expression,
-                expression_file=file_expression,  
-                network_file= file_network))
+  panda_tissue_fix(expression, expression_file = file_expression)
 }
 ```
 
@@ -146,11 +141,10 @@ Done in script
     
 # END
     Location of final scripts:
-    scripts
-  
+    src
     
     Location of data produced:
-    /data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data
+    /data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/results/lioness
     
     Dates when operations were done:
     230104
