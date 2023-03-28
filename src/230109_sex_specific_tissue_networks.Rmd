@@ -23,13 +23,13 @@ knitr::opts_chunk$set(echo = TRUE)
     Cheaha
     
     GitHub Repo:
-    Sex_Bias_Adverse_Events
+    230321_JLF_Sex_bias_adverse_events
     
     Docker/Singularity: 
     rstudio_sex_bias_drugs
     
     Directory of operations: 
-    "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events"
+    "/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events"
     
     Scripts being edited for operations:
     created a new function xx in the sex_bias_functions.R for the data wrangling 
@@ -44,7 +44,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Set working directory 
 ```{r}
 #change this path to match your paths 
-dir_path <- "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/"
+dir_path <- "/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/"
 ```
 
 
@@ -82,7 +82,7 @@ metadata <- readRDS(paste0(dir_path, "data/metadata_gtex_filter_samples.rds"))
 
 tissues <- unique(metadata$gtex.smtsd)
 #remove cell tissues
-tissues<- tissues[! grepl("Cell", tissues)]
+tissues <- tissues[! grepl("Cell", tissues)]
 ```
 note processed data had the white sapce removed 
 ```{r}
@@ -94,12 +94,12 @@ tissues_wo_ws <- gsub(" ", "_", tissues, fixed = TRUE)
 for (i in 1:length(tissues_wo_ws)){
   
   print(tissues[i])
-  file_name<- paste(paste0(dir_path, "output/lioness/processed_normalized_expression/"), tissues_wo_ws[i], "_gtex_processed_expression.rds",sep = "")
+  file_name <- paste(paste0(dir_path, "output/lioness/processed_normalized_expression/"), tissues_wo_ws[i], "_gtex_processed_expression.rds",sep = "")
   #print(file_name)
   expression <- readRDS(file_name)
   
-  tisssue_meta_file<- paste(paste0(dir_path, "data/gtex_qsmooth/"), tissues[i], "_gtex_metadata.rds", sep = "")
-  tisssue_meta<-readRDS(tisssue_meta_file)
+  tisssue_meta_file <- paste(paste0(dir_path, "data/gtex_qsmooth/"), tissues[i], "_gtex_metadata.rds", sep = "")
+  tisssue_meta <- readRDS(tisssue_meta_file)
   
   file_male <- paste(paste0(dir_path, "output/alpaca/sex_specific_networks/"), tissues_wo_ws[i], "_M_panda.rds", sep = "")
   
@@ -123,7 +123,7 @@ Done in script
   
     
     Location of data produced:
-    /data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data
+    /data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/data/panda_input_data
     
     Dates when operations were done:
     230104
