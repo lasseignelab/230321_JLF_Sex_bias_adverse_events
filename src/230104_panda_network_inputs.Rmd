@@ -24,10 +24,10 @@ knitr::opts_chunk$set(echo = TRUE)
     my laptop(on cheaha)
     
     GitHub Repo:
-    Sex_Bias_Adverse_Events
+    230321_JLF_Sex_bias_adverse_events
     
     Directory of operations:
-    /data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events
+    /data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events
     
     Scripts being edited for operations:
     NA
@@ -45,7 +45,11 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Set working directory 
 ```{r}
 #change this path to match your paths 
-dir_path <- "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/"
+dir_path <- "/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/"
+```
+
+```{r}
+library(stringr)
 ```
 
 ### load in data
@@ -67,10 +71,10 @@ head(ppi_table)
 ```{r}
 hist(ppi_table$combined_score)
 ```
-need to change to symbols and divide scores and self = 1
+need to change the protei-protein interactions to gene symbols and divide scores by 1000 and self interactions to  1
 
 ```{r}
-ppi_table$combined_score<- ppi_table$combined_score /1000
+ppi_table$combined_score <- ppi_table$combined_score /1000
 ```
 
 
@@ -89,12 +93,12 @@ download.file('https://stringdb-static.org/download/protein.info.v11.5/9606.prot
 make sure to unzip file outside the script
 
 ```{r}
-ppi_protein_info<- t(as.data.frame( strsplit(readLines("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data/9606.protein.info.v11.5.txt"), "\t")))
+ppi_protein_info <- t(as.data.frame(strsplit(readLines(paste0(dir_path, "data/panda_input_data/9606.protein.info.v11.5.txt")), "\t")))
 ppi_protein_info <- as.data.frame(ppi_protein_info)
 ```
-
+filter the 
 ```{r}
-ppi<- ppi_table[ppi_table$combined_score >0.7,]
+ppi <- ppi_table[ppi_table$combined_score >0.7, ]
 ```
 
 
@@ -121,7 +125,7 @@ symbol_ppi_table$scores <- as.numeric(symbol_ppi_table$scores)
 
 
 ```{r eval =FALSE}
-saveRDS(symbol_ppi_table, "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data/230104_symbol_ppi_network_11_5_0.rds")
+saveRDS(symbol_ppi_table, paste0(dir_path,"data/panda_input_data/230104_symbol_ppi_network_11_5_0.rds"))
 ```
 
 ```{r}
@@ -137,16 +141,18 @@ head(symbol_ppi_table)
 
 good
 
+Adjust the motif info from  https://sites.google.com/a/channing.harvard.edu/kimberlyglass/tools/resources?pli=1
+    
 ```{r}
-motif_info_table<- read.table(paste0(dir_path,"data/panda_input_data/Homo_sapiens_motifinfo.txt"), sep= "\t", header = TRUE)
+motif_info_table <- read.table(paste0(dir_path,"data/panda_input_data/Homo_sapiens_motifinfo.txt"), sep= "\t", header = TRUE)
 ```
+
 ```{r}
 head(motif_info_table)
 ```
 
-
 ```{r}
-motif_table<- read.table(paste0(dir_path,"data/panda_input_data/hg38_refseq_-750_250_1e-4"), sep= "\t")
+motif_table <- read.table(paste0(dir_path,"data/panda_input_data/hg38_refseq_-750_250_1e-4"), sep= "\t")
 ```
 
 ```{r}
@@ -160,9 +166,9 @@ motif_info_table$id_trim <- t(as.data.frame(strsplit(motif_info_table$MotifID, "
 
 ```{r}
 #motif_info_table$id_trim
-motif_gene<- c()
+motif_gene <- c()
 for (i in 1:length(motif_table$V1)){
-  motif_gene[i]<- motif_info_table$TF_Info[motif_table$V1[i] == motif_info_table$id_trim]
+  motif_gene[i] <- motif_info_table$TF_Info[motif_table$V1[i] == motif_info_table$id_trim]
 }
 print("done")
 ```
@@ -170,15 +176,12 @@ print("done")
 ```{r}
 #motif_gene
 motif_gene_v2 <- unlist(lapply(strsplit(motif_gene, "_", fixed = FALSE), `[[`, 1))
-library(stringr)
-motif_gene_v2<- str_replace(motif_gene_v2, "\\(", "")
-motif_gene_v2<- str_replace(motif_gene_v2, "\\)", "")
+motif_gene_v2 <- str_replace(motif_gene_v2, "\\(", "")
+motif_gene_v2 <- str_replace(motif_gene_v2, "\\)", "")
 ```
 
-
-
 ```{r}
-symbol_motif_table<- cbind(motif_gene_v2, motif_table$V2, motif_table$V3)
+symbol_motif_table <- cbind(motif_gene_v2, motif_table$V2, motif_table$V3)
 ```
 
 ```{r}
@@ -186,23 +189,24 @@ head(symbol_motif_table)
 ```
 
 ```{r}
-symbol_motif_table<- as.data.frame(symbol_motif_table)
+symbol_motif_table <- as.data.frame(symbol_motif_table)
 symbol_motif_table$V3 <- as.numeric(symbol_motif_table$V3)
 ```
 
 ```{r eval =FALSE}
 saveRDS(symbol_motif_table, paste0(dir_path, "data/panda_input_data/230104_symbol_motif_table.rds"))
 ```
+
 ### Save Data
 Done in script
     
 # END
     Location of final scripts:
-    scripts
+    scr
   
     
     Location of data produced:
-    /data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data
+    /data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/data/panda_input_data
     
     Dates when operations were done:
     230104

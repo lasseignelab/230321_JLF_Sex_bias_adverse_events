@@ -384,7 +384,7 @@ working directory</a></li>
 <div id="start" class="section level1">
 <h1>START</h1>
 <pre><code>Goal/Purpose of operations: 
-Need to normalize the expression data for the network analysis (lioness aka edge differences and panda/alpaca-communities differences.)
+Need to normalize the expression data for the network analysis.
 
 Finished psedocode on:
 230103
@@ -393,13 +393,13 @@ System which operations were done on:
 Cheaha
 
 GitHub Repo:
-Sex_Bias_Adverse_Events
+230321_JLF_Sex_bias_adverse_events
 
 Docker/Singularity: 
 rstudio_sex_bias_drugs
 
 Directory of operations: 
-&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events&quot;
+&quot;/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events&quot;
 
 Scripts being edited for operations:
 created a new function gtex_qsmooth_function in the sex_bias_functions.R for the data wrangling 
@@ -415,8 +415,8 @@ qsmooth from the YARN R package </code></pre>
 <div id="set-working-directory" class="section level3">
 <h3>Set working directory</h3>
 <pre class="r"><code>#change this path to match your paths 
-dir_path &lt;- &quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/&quot;</code></pre>
-<pre class="r"><code>source(paste0(dir_path,&quot;script/sex_bias_drug_functions.R&quot; ))
+dir_path &lt;- &quot;/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/&quot;</code></pre>
+<pre class="r"><code>source(paste0(dir_path,&quot;src/sex_bias_drug_functions.R&quot; ))
 library(Biobase)</code></pre>
 <pre><code>## Loading required package: BiocGenerics</code></pre>
 <pre><code>## 
@@ -467,16 +467,14 @@ library(Biobase)</code></pre>
 <div id="load-in-data" class="section level3">
 <h3>load in data</h3>
 <pre class="r"><code>counts_gtex &lt;- readRDS(paste0(dir_path,&quot;data/counts_gtex_filter_samples.rds&quot; ))
-metadata &lt;- readRDS(paste0(dir_path,&quot;data/metadata_gtex_filter_samples.rds&quot; ))</code></pre>
+metadata &lt;- readRDS(paste0(dir_path, &quot;data/metadata_gtex_filter_samples.rds&quot; ))</code></pre>
 </div>
 <div id="analysis" class="section level3">
 <h3>Analysis</h3>
 <pre class="r"><code>tissues &lt;- unique(metadata$gtex.smtsd)
 #remove cell tissues
-tissues&lt;- tissues[! grepl(&quot;Cell&quot;, tissues)]</code></pre>
-<pre class="r"><code>counts_gtex&lt;- as.matrix(counts_gtex)</code></pre>
-<pre class="r"><code># code for checking the function
-#gtex_qsmooth_function(counts_gtex, metadata, tissues[43] , file_filtered_expression= &quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/test_gtex_filtered_expression_set.rds&quot;, file_norm= &quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/test_gtex_qsmooth_expression.rds&quot;, file_meta=&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/tissue_gtex_metadata.rds&quot; )</code></pre>
+tissues &lt;- tissues[! grepl(&quot;Cell&quot;, tissues)]</code></pre>
+<pre class="r"><code>counts_gtex &lt;- as.matrix(counts_gtex)</code></pre>
 <pre class="r"><code>for (i in 1:length(tissues)){
   file_fe&lt;- paste(paste0(dir_path,&quot;data/gtex_qsmooth/&quot; ), tissues[i], &quot;_gtex_filtered_expression_set.rds&quot;, sep = &quot;&quot;)
   file_n&lt;- paste(paste0(dir_path,&quot;data/gtex_qsmooth/&quot; ), tissues[i], &quot;_gtex_qsmooth_expression.rds&quot;, sep = &quot;&quot;)
@@ -1089,7 +1087,7 @@ match”</p>
 <div id="end" class="section level1">
 <h1>END</h1>
 <pre><code>Location of final scripts:
-script 
+scr
 
 Location of data produced:
 ./data/gtex_qsmooth/
