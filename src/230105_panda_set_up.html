@@ -13,7 +13,7 @@
 
 <meta name="date" content="2023-01-05" />
 
-<title>230105_lioness_set_up</title>
+<title>230105_panda_set_up</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -356,7 +356,7 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">230105_lioness_set_up</h1>
+<h1 class="title toc-ignore">230105_panda_set_up</h1>
 <h4 class="author">Jennifer Fisher</h4>
 <h4 class="date">2023-01-05</h4>
 
@@ -383,7 +383,7 @@ working directory</a></li>
 <div id="start" class="section level1">
 <h1>START</h1>
 <pre><code>Goal/Purpose of operations: 
-
+Adjusting all the inputs for the panda sex-specific networks
 
 Finished psedocode on:
 230105
@@ -392,15 +392,20 @@ System which operations were done on:
 my laptop(on cheaha)
 
 GitHub Repo:
-Sex_Bias_Adverse_Events
+230321_JLF_Sex_bias_adverse_events
 
 Directory of operations:
-/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events
+/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events
+
+Docker: 
+jenfisher7/rstudio_sex_bias_drugs
 
 Scripts being edited for operations:
-sex_bias_functions.R 
+sex_bias_drug_functions.R 
 
 Data being used:
+data/panda_input_data/230104_symbol_motif_table.rds
+data/panda_input_data/230104_symbol_ppi_network_11_5_0.rds
 
 
 Papers and tools: 
@@ -410,7 +415,9 @@ NA</code></pre>
 <h1>STEPS</h1>
 <div id="set-working-directory" class="section level3">
 <h3>Set working directory</h3>
-<pre class="r"><code>source(&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/script/sex_bias_functions.R&quot;)
+<pre class="r"><code>#change this path to match your paths 
+dir_path &lt;- &quot;/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/&quot;</code></pre>
+<pre class="r"><code>source(paste0(dir_path, &quot;src/sex_bias_drug_functions.R&quot; ))
 library(netZooR)</code></pre>
 <pre><code>## Loading required package: igraph</code></pre>
 <pre><code>## 
@@ -461,10 +468,10 @@ library(netZooR)</code></pre>
 <div id="load-in-data" class="section level3">
 <h3>load in data</h3>
 <p>going to load in the ppi and transcription factor networks</p>
-<pre class="r"><code>motif_table &lt;- readRDS(&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data/230104_symbol_motif_table.rds&quot;)
-ppi_net &lt;- readRDS(&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data/230104_symbol_ppi_network_11_5_0.rds&quot;)</code></pre>
-<p>make a gene feature object from recount3</p>
-<pre class="r"><code>#SRP118922
+<pre class="r"><code>motif_table &lt;- readRDS(paste0(dir_path, &quot;data/panda_input_data/230104_symbol_motif_table.rds&quot;))
+ppi_net &lt;- readRDS(paste0(dir_path, &quot;data/panda_input_data/230104_symbol_ppi_network_11_5_0.rds&quot;))</code></pre>
+<p>make a gene feature object from recount3 with info about genes</p>
+<pre class="r"><code>#SRP118922- random recount3 project
 library(recount3)</code></pre>
 <pre><code>## Loading required package: SummarizedExperiment</code></pre>
 <pre><code>## Loading required package: MatrixGenerics</code></pre>
@@ -507,18 +514,18 @@ library(recount3)</code></pre>
 <pre><code>## Loading required package: IRanges</code></pre>
 <pre><code>## Loading required package: GenomeInfoDb</code></pre>
 <pre class="r"><code>human_projects&lt;- available_projects()</code></pre>
-<pre><code>## 2023-01-09 13:53:54 caching file sra.recount_project.MD.gz.</code></pre>
-<pre><code>## 2023-01-09 13:53:54 caching file gtex.recount_project.MD.gz.</code></pre>
-<pre><code>## 2023-01-09 13:53:55 caching file tcga.recount_project.MD.gz.</code></pre>
+<pre><code>## 2023-03-28 15:15:53 caching file sra.recount_project.MD.gz.</code></pre>
+<pre><code>## 2023-03-28 15:15:54 caching file gtex.recount_project.MD.gz.</code></pre>
+<pre><code>## 2023-03-28 15:15:54 caching file tcga.recount_project.MD.gz.</code></pre>
 <pre class="r"><code>test&lt;- create_rse(human_projects[(human_projects$project == &quot;SRP118922&quot;),])</code></pre>
-<pre><code>## 2023-01-09 13:53:59 downloading and reading the metadata.</code></pre>
-<pre><code>## 2023-01-09 13:53:59 caching file sra.sra.SRP118922.MD.gz.</code></pre>
-<pre><code>## 2023-01-09 13:54:00 caching file sra.recount_project.SRP118922.MD.gz.</code></pre>
-<pre><code>## 2023-01-09 13:54:00 caching file sra.recount_qc.SRP118922.MD.gz.</code></pre>
-<pre><code>## 2023-01-09 13:54:01 caching file sra.recount_seq_qc.SRP118922.MD.gz.</code></pre>
-<pre><code>## 2023-01-09 13:54:01 caching file sra.recount_pred.SRP118922.MD.gz.</code></pre>
-<pre><code>## 2023-01-09 13:54:01 downloading and reading the feature information.</code></pre>
-<pre><code>## 2023-01-09 13:54:02 caching file human.gene_sums.G026.gtf.gz.</code></pre>
+<pre><code>## 2023-03-28 15:15:58 downloading and reading the metadata.</code></pre>
+<pre><code>## 2023-03-28 15:15:58 caching file sra.sra.SRP118922.MD.gz.</code></pre>
+<pre><code>## 2023-03-28 15:15:59 caching file sra.recount_project.SRP118922.MD.gz.</code></pre>
+<pre><code>## 2023-03-28 15:15:59 caching file sra.recount_qc.SRP118922.MD.gz.</code></pre>
+<pre><code>## 2023-03-28 15:16:00 caching file sra.recount_seq_qc.SRP118922.MD.gz.</code></pre>
+<pre><code>## 2023-03-28 15:16:00 caching file sra.recount_pred.SRP118922.MD.gz.</code></pre>
+<pre><code>## 2023-03-28 15:16:00 downloading and reading the feature information.</code></pre>
+<pre><code>## 2023-03-28 15:16:01 caching file human.gene_sums.G026.gtf.gz.</code></pre>
 <pre><code>## Found more than one class &quot;file&quot; in cache; using the first, from namespace &#39;BiocGenerics&#39;</code></pre>
 <pre><code>## Also defined by &#39;RJSONIO&#39;</code></pre>
 <pre><code>## Found more than one class &quot;file&quot; in cache; using the first, from namespace &#39;BiocGenerics&#39;</code></pre>
@@ -529,12 +536,12 @@ library(recount3)</code></pre>
 <pre><code>## Also defined by &#39;RJSONIO&#39;</code></pre>
 <pre><code>## Found more than one class &quot;connection&quot; in cache; using the first, from namespace &#39;BiocGenerics&#39;</code></pre>
 <pre><code>## Also defined by &#39;RJSONIO&#39;</code></pre>
-<pre><code>## 2023-01-09 13:54:03 downloading and reading the counts: 35 samples across 63856 features.</code></pre>
-<pre><code>## 2023-01-09 13:54:03 caching file sra.gene_sums.SRP118922.G026.gz.</code></pre>
-<pre><code>## 2023-01-09 13:54:05 construcing the RangedSummarizedExperiment (rse) object.</code></pre>
+<pre><code>## 2023-03-28 15:16:01 downloading and reading the counts: 35 samples across 63856 features.</code></pre>
+<pre><code>## 2023-03-28 15:16:02 caching file sra.gene_sums.SRP118922.G026.gz.</code></pre>
+<pre><code>## 2023-03-28 15:16:03 construcing the RangedSummarizedExperiment (rse) object.</code></pre>
 <pre class="r"><code>feature_info &lt;- test@rowRanges
 rm(test)</code></pre>
-<pre class="r"><code>saveRDS(feature_info, &quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/recount3_feature_info.rds&quot;)</code></pre>
+<pre class="r"><code>saveRDS(feature_info, paste0(dir_path, &quot;data/recount3_feature_info.rds&quot;))</code></pre>
 </div>
 <div id="analysis" class="section level3">
 <h3>Analysis</h3>
@@ -542,20 +549,22 @@ rm(test)</code></pre>
 <pre class="r"><code>#Liver_gtex_qsmooth_expression &lt;- readRDS(&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/Liver_gtex_qsmooth_expression.rds&quot;)</code></pre>
 <p>fix the gene ids to match</p>
 <pre class="r"><code>#gene_ids&lt;- feature_info$gene_id[feature_info$gene_id %in% rownames(Liver_gtex_qsmooth_expression)]
-#gene_symbols&lt;- feature_info$gene_name[feature_info$gene_id %in% rownames(Liver_gtex_qsmooth_expression)]</code></pre>
-<pre class="r"><code>#identical(rownames(Liver_gtex_qsmooth_expression), gene_ids)</code></pre>
-<pre class="r"><code>#rownames(Liver_gtex_qsmooth_expression)&lt;- gene_symbols</code></pre>
-<pre class="r"><code>#liver_express_rm &lt;- keep_max_duplicate(Liver_gtex_qsmooth_expression)</code></pre>
-<pre class="r"><code>#liver_qsmooth_expr_set &lt;- ExpressionSet(assayData=liver_express_rm)</code></pre>
-<pre class="r"><code>ppi_net&lt;- as.data.frame(ppi_net)
-ppi_net[,3]&lt;- as.numeric(ppi_net[,3])</code></pre>
-<pre class="r"><code>saveRDS( ppi_net, &quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data/230104_symbol_numeric_ppi_network_11_5_0.rds&quot;)</code></pre>
+#gene_symbols&lt;- feature_info$gene_name[feature_info$gene_id %in% rownames(Liver_gtex_qsmooth_expression)]
+#identical(rownames(Liver_gtex_qsmooth_expression), gene_ids)
+#rownames(Liver_gtex_qsmooth_expression)&lt;- gene_symbols
+#liver_express_rm &lt;- keep_max_duplicate(Liver_gtex_qsmooth_expression)
+#liver_qsmooth_expr_set &lt;- ExpressionSet(assayData=liver_express_rm)</code></pre>
+<pre class="r"><code>ppi_net &lt;- as.data.frame(ppi_net)
+ppi_net[,3] &lt;- as.numeric(ppi_net[, 3])</code></pre>
+<pre class="r"><code>saveRDS(ppi_net, paste0(dir_path, &quot;data/panda_input_data/230104_symbol_numeric_ppi_network_11_5_0.rds&quot;))</code></pre>
 <pre class="r"><code>#reload to test function
-#Liver_test_expression &lt;- readRDS(&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/Liver_gtex_qsmooth_expression.rds&quot;)</code></pre>
-<pre class="r"><code>#panda_tissue_run(Liver_test_expression,
+#Liver_test_expression &lt;- readRDS(&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/Liver_gtex_qsmooth_expression.rds&quot;)
+#panda_tissue_run(Liver_test_expression,
 #                expression_file=&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/processed_normalized_expression/test.rds&quot;,  
 #                network_file= &quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/tissue_panda/test.rds&quot;)</code></pre>
-<pre class="r"><code>metadata &lt;- readRDS(&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/metadata_gtex_filter_samples.rds&quot;)
+<p>Filter normalized expression for each tissue for symbols that don’t
+replicate</p>
+<pre class="r"><code>metadata &lt;- readRDS(paste0(dir_path, &quot;data/metadata_gtex_filter_samples.rds&quot;))
 
 tissues &lt;- unique(metadata$gtex.smtsd)
 #remove cell tissues
@@ -563,14 +572,11 @@ tissues&lt;- tissues[! grepl(&quot;Cell&quot;, tissues)]</code></pre>
 <pre class="r"><code>for( i in 1:length(tissues)){
   
   print(tissues[i])
-  file_name&lt;- paste(&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/&quot;, tissues[i], &quot;_gtex_qsmooth_expression.rds&quot;, sep = &quot;&quot;)
+  file_name&lt;- paste(dir_path, &quot;data/gtex_qsmooth/&quot;, tissues[i], &quot;_gtex_qsmooth_expression.rds&quot;, sep = &quot;&quot;)
   expression &lt;- readRDS(file_name)
-  file_expression &lt;- paste(&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/processed_normalized_expression/&quot;, tissues[i], &quot;_gtex_processed_expression.rds&quot;, sep = &quot;&quot;)
-  file_network &lt;- paste(&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/tissue_panda/&quot;, tissues[i], &quot;_gtex_panda_tissue_networks.rds&quot;, sep = &quot;&quot;)
+  file_expression &lt;- paste(dir_path, &quot;results/lioness/processed_normalized_expression/&quot;, tissues[i], &quot;_gtex_processed_expression.rds&quot;, sep = &quot;&quot;)
   
-  try(panda_tissue_run(expression,
-                expression_file=file_expression,  
-                network_file= file_network))
+  panda_tissue_fix(expression, expression_file = file_expression)
 }</code></pre>
 </div>
 <div id="save-data" class="section level3">
@@ -581,11 +587,10 @@ tissues&lt;- tissues[! grepl(&quot;Cell&quot;, tissues)]</code></pre>
 <div id="end" class="section level1">
 <h1>END</h1>
 <pre><code>Location of final scripts:
-scripts
-
+src
 
 Location of data produced:
-/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data
+/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/results/lioness
 
 Dates when operations were done:
 230104</code></pre>
