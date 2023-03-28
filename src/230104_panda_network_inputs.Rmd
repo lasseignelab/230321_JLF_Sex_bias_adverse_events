@@ -79,7 +79,7 @@ ppi_table$combined_score <- ppi_table$combined_score /1000
 
 
 ```{r}
-ppi_table$combined_score<- ifelse(ppi_table$protein1 == ppi_table$protein2, 1, ppi_table$combined_score)
+ppi_table$combined_score <- ifelse(ppi_table$protein1 == ppi_table$protein2, 1, ppi_table$combined_score)
 ```
 
 ```{r}
@@ -104,11 +104,11 @@ ppi <- ppi_table[ppi_table$combined_score >0.7, ]
 
 ```{r}
 protein1_symbols <- c()
-protein2_symbols<- c()
+protein2_symbols <- c()
 for (i in 1:length(ppi$protein1)){
   #print(i)
-  protein1_symbols[i]<- ppi_protein_info$V2[ppi$protein1[i] == ppi_protein_info$V1]
-  protein2_symbols[i]<-ppi_protein_info$V2[ppi$protein2[i] == ppi_protein_info$V1]
+  protein1_symbols[i] <- ppi_protein_info$V2[ppi$protein1[i] == ppi_protein_info$V1]
+  protein2_symbols[i] <-ppi_protein_info$V2[ppi$protein2[i] == ppi_protein_info$V1]
 }
 
 ```
@@ -125,7 +125,7 @@ symbol_ppi_table$scores <- as.numeric(symbol_ppi_table$scores)
 
 
 ```{r eval =FALSE}
-saveRDS(symbol_ppi_table, paste0(dir_path,"data/panda_input_data/230104_symbol_ppi_network_11_5_0.rds"))
+saveRDS(symbol_ppi_table, paste0(dir_path, "data/panda_input_data/230104_symbol_ppi_network_11_5_0.rds"))
 ```
 
 ```{r}
