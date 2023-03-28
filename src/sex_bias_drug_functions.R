@@ -142,9 +142,8 @@ gtex_qsmooth_function<- function(count, metadata, tissue , file_filtered_express
   saveRDS(metadata_v2, file= file_meta)
 }
 
-panda_tissue_run<- function(norm_expression,
-                            expression_file="/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/proccessed_normalized_expression",  
-                            network_file= "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/tissue_panda"){ 
+panda_tissue_fix <- function(norm_expression,
+                            expression_file="/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/proccessed_normalized_expression"){ 
   #this function assumes that feature info is available in environment   
   
   print("check the gene ids")
@@ -157,9 +156,6 @@ panda_tissue_run<- function(norm_expression,
   express_rm <- keep_max_duplicate(norm_expression)
   saveRDS(express_rm, expression_file )
   
-  print( "run panda")
-  networks <- panda(expr = as.data.frame(express_rm), motif = motif_table, ppi = ppi_net, progress=TRUE, mode="intersection")
-  saveRDS(networks, network_file)
 }
 
 keep_max_duplicate<- function(expression_matrix){
@@ -302,3 +298,24 @@ lioness_output_adjustment<- function(index){
   df_file<-paste(paste0(dir_path, "output/lioness/adjusted_lioness_output/"), tissues_wo_ws[index], "_lioness_res_all.rds", sep = "")
   saveRDS(inital_df, df_file)
 }
+
+panda_tissue_run<- function(norm_expression,
+                            expression_file="/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/proccessed_normalized_expression",  
+                            network_file= "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/tissue_panda"){ 
+  #this function assumes that feature info is available in environment   
+  
+  print("check the gene ids")
+  gene_ids<- feature_info$gene_id[feature_info$gene_id %in% rownames(norm_expression)]
+  gene_symbols<- feature_info$gene_name[feature_info$gene_id %in% rownames(norm_expression)]
+  identical(rownames(norm_expression), gene_ids)
+  rownames(norm_expression)<- gene_symbols
+  
+  print("remove duplicated gene ids")
+  express_rm <- keep_max_duplicate(norm_expression)
+  saveRDS(express_rm, expression_file )
+  
+  print( "run panda")
+  networks <- panda(expr = as.data.frame(express_rm), motif = motif_table, ppi = ppi_net, progress=TRUE, mode="intersection")
+  saveRDS(networks, network_file)
+}
+
