@@ -80,15 +80,31 @@ To run the scripts, you use the commands in 230213_fares_fisher_test.txt in the 
 
 
 ## Scripts
+
+Note for all .Rmd files there is a knitted .html file with outputs of code. Some of the code takes awhile to run (i.e., more than ~1 hour) so the ouput is not in the knit file. 
+
 **GTEx data download and exploration**
 - 210806_GTEx_Age_Sex.Rmd
 
-This is important script. Update Jen on any issues with script. 
+ - This is important script. Update Jen on any issues with script. 
 
 **Network analysis scripts**
 - 230103_network_qsmooth.Rmd
+  
+  - 12 hour-short job on cheaha. important script. Update Jen on any issues with script. 
+  
 - 230104_panda_network_inputs.Rmd
+
+  - 2 hour-express job on cheaha. important script. Update Jen on any issues with script. 
+  
+- 230105_panda_set_up.Rmd
+
+   - 12 hour-short job on cheaha. important script. Update Jen on any issues with script. 
+
 - 230109_sex_specific_tissue_networks.Rmd
+
+   - 48 hour-medium job on cheaha (more time than you need). important script. Update Jen on any issues with script. 
+ 
 - 230206_alpaca_results_exploration.Rmd
 - 230221_liver_sex_specific_com.Rmd
 
@@ -96,7 +112,7 @@ This is important script. Update Jen on any issues with script.
 - 220722_FDA_OPEN_FARES_Exploration.Rmd
 - 230124_fares_sbae_drugs.Rmd
 <br>
-The following 230213_fares_fisher_test scripts use the conda enviroment. 
+The following 230213_fares_fisher_test scripts use the conda enviroment. 1 day run on cheaha. Suggest running over the weekend. 
 
 - 230213_fares_fisher_test.txt
 - 230213_fares_fisher_test.sh
@@ -145,8 +161,6 @@ remove in the future but noting here for now
 - src/221031_transfer_sex_diff_test.Rmd
 - src/230105_lioness_function_script.R
 - src/230105_lioness_function_script.sh
-- src/230105_lioness_set_up.Rmd
-- src/230105_lioness_set_up.html
 - src/230106_lioness_tissue_runs.txt
 - src/230112_lioness_function_script_smaller.R
 - src/230112_lioness_function_script_smaller.sh
