@@ -1,0 +1,130 @@
+---
+title: "220722_Meddra_mapping"
+author: "Jennifer Fisher"
+date: '2022-07-22'
+output:
+  html_document:
+    toc: true
+    theme: united
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# START 
+    Goal/Purpose of operations: 
+    THE FARES adverse event data was download from FDA open July 2021. this data was data wrangled to create R dataframe with the case number, sex (if the case didn't have a sex it was removed), age (if age was not reported the age is NA), number of drugs that the person was on and drug and possible side effect. It is important to note that the FARES database does not require causal relationship for side effect to reported any anyone can report a case. 
+    The goal of this script is to combine the data frame investigate the data by plot the different metrics. Also, I want to calculate the reporting odds ratio. 
+    
+    Started psedocode on: 
+    220722
+    
+    System which operations were done on: 
+    my laptop with a docker
+    
+    GitHub Repo:
+    Sex_Bias_Adverse_Events
+    
+    Docker:
+    jenfisher7/rstudio_sex_bias_analysis
+    
+    Directory of operations: 
+    /Users/jenniferfisher/Documents/Sex_Bias_Adverse_Events:/home/rstudio/
+    
+    Scripts being edited for operations: 
+    NA
+    
+    Data being used:description and location
+    FARES/FDA_open: description in the goal statement. data/FDA_OPEN
+    
+    Papers and tools:
+    FARES
+    report odds ratio
+    AE_mapping
+
+# STEPS
+### Set working directory 
+```{r}
+setwd("/home/rstudio")
+```
+
+```{r}
+source("./sex_bias_functions.R")
+library(ggplot2)
+library(viridis)
+```
+
+
+### load in data
+
+create the meddra term mapping 
+```{r}
+#lowest_level_term
+llt_meddra<- read.delim("~/data/MedDRA_25_0_English/MedAscii/llt.asc", sep="$", header= FALSE)
+# preferred terms
+pt_meddra <- read.delim("~/data/MedDRA_25_0_English/MedAscii/pt.asc", sep="$", header= FALSE)
+#high level term
+hlt_meddra<- read.delim("~/data/MedDRA_25_0_English/MedAscii/hlt.asc", sep="$", header= FALSE)
+#high level group 
+hlgt_meddra<- read.delim("~/data/MedDRA_25_0_English/MedAscii/hlgt.asc", sep="$", header= FALSE)
+#system organ
+soc_meddra <- read.delim("~/data/MedDRA_25_0_English/MedAscii/soc.asc", sep="$", header= FALSE)
+```
+
+create a mapping
+1- llt, 2-pt, 3-hlt, 4-hglt, 5-soc, repat with the names
+```{r}
+meddra_mapping <- llt_meddra[,1:3]
+#add the pt and soc info 
+info_add<- c("pt_id", "pt_name", "soc_id")
+for (i in 1:nrow(meddra_mapping)){
+  info_1 <- pt_meddra[meddra_mapping[i,3] == pt_meddra[,1],c(1,2,4)]
+  info_add<- rbind(info_add, info_1)
+}
+```
+
+```{r}
+info_add<- info_add[-1,]
+rownames(meddra_mapping) <- NULL
+rownames(info_add) <- NULL
+meddra_mapping_v2 <- cbind(meddra_mapping, info_add)
+```
+add the soc names
+```{r}
+soc_list <- c("soc_name", "soc_short")
+for(i in 1:nrow(meddra_mapping_v2)){
+  soc_list_v2 <- soc_meddra[meddra_mapping_v2[i,6]== soc_meddra[,1], c(2,3)]
+  soc_list <- rbind(soc_list, soc_list_v2)
+}
+soc_list<- soc_list[-1,]
+```
+
+```{r}
+meddrda_mapping_all <- cbind(meddra_mapping_v2, soc_list)
+meddrda_mapping_all[1:5,]
+```
+
+```{r}
+colnames(meddrda_mapping_all)<- c("llt_id", "llt_name", "pt_id", "pt_id2", "pt_name", "soc_id", "soc_name", "soc_short")
+```
+
+### Save Data
+```{r}
+saveRDS(meddrda_mapping_all, "~/data/MedDRA_mapping_llt_pt_soc.rds" )
+```
+
+
+# END
+    Location of final scripts:
+    
+    Location of data produced:
+    
+    Dates when operations were done:
+    
+## Versions
+```{r}
+sessionInfo()
+```
+
