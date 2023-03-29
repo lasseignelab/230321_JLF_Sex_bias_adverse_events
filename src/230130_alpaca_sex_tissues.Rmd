@@ -115,9 +115,9 @@ for (i in 1:length(panda_adjusted_files)){
   tissue_name <- unlist(str_split(panda_adjusted_files[i], "__")[[1]])[1]
   print(tissue_name)
   
-  file_header<- paste0(paste0(dir_path, "/results/alpaca/alpaca_run/"),  tissue_name, "_",sep = "")
+  file_header <- paste0(paste0(dir_path, "/results/alpaca/alpaca_run/"),  tissue_name, "_",sep = "")
   
-  regnet_sex_alp<- alpaca(input, file_header, verbose = TRUE)
+  regnet_sex_alp <- alpaca(input, file_header, verbose = TRUE)
 }
 ```
 
@@ -126,14 +126,14 @@ for (i in 1:length(panda_adjusted_files)){
 #change the order for male specific communities
 for (i in 1:length(panda_adjusted_files)){
   print(panda_adjusted_files[i])
-  input<- readRDS(paste0(paste0(dir_path, "/results/alpaca/alpaca_adjusted_inputs/"),  panda_adjusted_files[i], sep = ""))
-  input_adj<- input[,c(1,2,4,3)]
+  input <- readRDS(paste0(paste0(dir_path, "/results/alpaca/alpaca_adjusted_inputs/"),  panda_adjusted_files[i], sep = ""))
+  input_adj <- input[,c(1,2,4,3)]
   tissue_name <- unlist(str_split(panda_adjusted_files[i], "__")[[1]])[1]
   print(tissue_name)
   
-  file_header<- paste0(paste0(dir_path, "/results/alpaca/alpaca_run/"),  tissue_name, "female", "male" , "_",sep = "")
+  file_header <- paste0(paste0(dir_path, "/results/alpaca/alpaca_run/"), tissue_name, "female", "male" , "_",sep = "")
   
-  regnet_sex_alp_flipped<- alpaca(input_adj, file_header, verbose = TRUE)
+  regnet_sex_alp_flipped <- alpaca(input_adj, file_header, verbose = TRUE)
 }
 ```
 

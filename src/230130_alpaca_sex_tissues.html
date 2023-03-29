@@ -539,21 +539,21 @@ for (i in 1:length(panda_adjusted_files)){
   tissue_name &lt;- unlist(str_split(panda_adjusted_files[i], &quot;__&quot;)[[1]])[1]
   print(tissue_name)
   
-  file_header&lt;- paste0(paste0(dir_path, &quot;/results/alpaca/alpaca_run/&quot;),  tissue_name, &quot;_&quot;,sep = &quot;&quot;)
+  file_header &lt;- paste0(paste0(dir_path, &quot;/results/alpaca/alpaca_run/&quot;),  tissue_name, &quot;_&quot;,sep = &quot;&quot;)
   
-  regnet_sex_alp&lt;- alpaca(input, file_header, verbose = TRUE)
+  regnet_sex_alp &lt;- alpaca(input, file_header, verbose = TRUE)
 }</code></pre>
 <pre class="r"><code>#change the order for male specific communities
 for (i in 1:length(panda_adjusted_files)){
   print(panda_adjusted_files[i])
-  input&lt;- readRDS(paste0(paste0(dir_path, &quot;/results/alpaca/alpaca_adjusted_inputs/&quot;),  panda_adjusted_files[i], sep = &quot;&quot;))
-  input_adj&lt;- input[,c(1,2,4,3)]
+  input &lt;- readRDS(paste0(paste0(dir_path, &quot;/results/alpaca/alpaca_adjusted_inputs/&quot;),  panda_adjusted_files[i], sep = &quot;&quot;))
+  input_adj &lt;- input[,c(1,2,4,3)]
   tissue_name &lt;- unlist(str_split(panda_adjusted_files[i], &quot;__&quot;)[[1]])[1]
   print(tissue_name)
   
-  file_header&lt;- paste0(paste0(dir_path, &quot;/results/alpaca/alpaca_run/&quot;),  tissue_name, &quot;female&quot;, &quot;male&quot; , &quot;_&quot;,sep = &quot;&quot;)
+  file_header &lt;- paste0(paste0(dir_path, &quot;/results/alpaca/alpaca_run/&quot;), tissue_name, &quot;female&quot;, &quot;male&quot; , &quot;_&quot;,sep = &quot;&quot;)
   
-  regnet_sex_alp_flipped&lt;- alpaca(input_adj, file_header, verbose = TRUE)
+  regnet_sex_alp_flipped &lt;- alpaca(input_adj, file_header, verbose = TRUE)
 }</code></pre>
 </div>
 <div id="save-data" class="section level3">
