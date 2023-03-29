@@ -80,7 +80,7 @@ Counts_to_tpm <- function(counts, featureLength) {
 }
 
 
-gtex_qsmooth_function<- function(count, metadata, tissue , file_filtered_expression= "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/tissue_gtex_filtered_expression_set.rds", file_norm= "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/tissue_gtex_qsmooth_expression.rds", file_meta="/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/tissue_gtex_metadata.rds" ){
+gtex_qsmooth_function <- function(count, metadata, tissue , file_filtered_expression= "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/tissue_gtex_filtered_expression_set.rds", file_norm= "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/tissue_gtex_qsmooth_expression.rds", file_meta="/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/gtex_qsmooth/tissue_gtex_metadata.rds" ){
   #This function is used to gsmooth normalize based on https://academic.oup.com/biostatistics/article/19/2/185/3949169
   #which was used in the YARN netZoo R package 
   #inputs
@@ -158,7 +158,7 @@ panda_tissue_fix <- function(norm_expression,
   
 }
 
-keep_max_duplicate<- function(expression_matrix){
+keep_max_duplicate <- function(expression_matrix){
   med <- rowMedians(expression_matrix)
   #check
   #print(med[order(-med)][1:5])
@@ -168,7 +168,7 @@ keep_max_duplicate<- function(expression_matrix){
   return(expres_rm)
 }
 
-sex_networks<-  function(processed_expression, 
+sex_networks <-  function(processed_expression, 
                          metadata, 
                          male_network_file, 
                          female_network_file ){
@@ -204,14 +204,14 @@ sex_networks<-  function(processed_expression,
 }
 
 
-create_alpaca_input<- function(file_path_name_female, file_path_name_male, tissue_name){
+create_alpaca_input <- function(file_path_name_female, file_path_name_male, tissue_name){
   
   #make a longer dataframe for the male network
-  panda_M <- readRDS(paste0(paste0(dir_path, "/results/alpaca/sex_specific_networks/"),  file_path_name_male, sep = ""))
+  panda_M <- readRDS(paste0(paste0(dir_path, "/results/alpaca/sex_specific_networks/"), file_path_name_male, sep = ""))
   regNet_panda_intersection_male <- panda_M@regNet
-  topNet_male <- topedges( panda_M , cutoff = 2)
+  topNet_male <- topedges( panda_M, cutoff = 2)
   topNET_male_regnet <- as.data.frame(topNet_male@regNet)
-  topNET_male_regnet$TF<- rownames(topNET_male_regnet)
+  topNET_male_regnet$TF <- rownames(topNET_male_regnet)
   topNET_male_regnet_long <- topNET_male_regnet  %>%  pivot_longer(!TF, names_to = "gene", values_to = "male") 
   
   #make a longer dataframe for the female network
@@ -219,7 +219,7 @@ create_alpaca_input<- function(file_path_name_female, file_path_name_male, tissu
   regNet_panda_intersection_female <- panda_F@regNet
   topNet_female <- topedges( panda_F , cutoff = 2)
   topNET_female_regnet <- as.data.frame(topNet_female@regNet)
-  topNET_female_regnet$TF<- rownames(topNET_female_regnet)
+  topNET_female_regnet$TF <- rownames(topNET_female_regnet)
   topNET_female_regnet_long <- topNET_female_regnet  %>%  pivot_longer(!TF, names_to = "gene", values_to = "female")
   
   #check the tf and genes are in the same order
@@ -230,14 +230,14 @@ create_alpaca_input<- function(file_path_name_female, file_path_name_male, tissu
   #add together
   topNet_regnet_male_female_long<- cbind(topNET_male_regnet_long, topNET_female_regnet_long$female)
   
-  colnames(topNet_regnet_male_female_long)<- c("TF", "gene", "male", "female")
+  colnames(topNet_regnet_male_female_long) <- c("TF", "gene", "male", "female")
   
   file_name<- paste0(paste0(dir_path, "/results/alpaca/alpaca_adjusted_inputs/"),  tissue_name, "_topNet_regnet_male_female_long.rds")
   
   saveRDS(topNet_regnet_male_female_long, file_name )
 }
 
-sex_bias_adverse_event_test<- function( index, drug_event_df ){
+sex_bias_adverse_event_test <- function( index, drug_event_df ){
   #event and drug
   event<- drug_event_df[index,2]
   drug<- drug_event_df[index,1]
@@ -264,7 +264,7 @@ sex_bias_adverse_event_test<- function( index, drug_event_df ){
 
 
 #old functions no longer used in main project
-lioness_output_adjustment<- function(index){
+lioness_output_adjustment <- function(index){
   #need to determine the number the lioness subsets
   num_files <- length(lioness_output_files[agrep(tissues_wo_ws[index], lioness_output_files)])
   print(num_files)
@@ -299,7 +299,7 @@ lioness_output_adjustment<- function(index){
   saveRDS(inital_df, df_file)
 }
 
-panda_tissue_run<- function(norm_expression,
+panda_tissue_run <- function(norm_expression,
                             expression_file="/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/proccessed_normalized_expression",  
                             network_file= "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/tissue_panda"){ 
   #this function assumes that feature info is available in environment   
