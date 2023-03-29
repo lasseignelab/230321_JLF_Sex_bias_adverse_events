@@ -105,6 +105,8 @@ Note for all .Rmd files there is a knitted .html file with outputs of code. Some
 
    - 48 hour-medium job on cheaha (more time than you need). important script. Update Jen on any issues with script. 
  
+- 230130_alpaca_sex_tissues.Rmd
+   - 12 hour-short job on cheaha. important script. Update Jen on any issues with script. 
 - 230206_alpaca_results_exploration.Rmd
 - 230221_liver_sex_specific_com.Rmd
 
