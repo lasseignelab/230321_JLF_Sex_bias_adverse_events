@@ -5,11 +5,11 @@
 rm(list=ls())
 
 #set the working directory 
-dir_path <- "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/"
+dir_path <- "/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/"
 setwd(dir_path)
 
 # load in the packages and functions
-source(paste0(dir_path, "script/sex_bias_drug_functions.R"))
+source(paste0(dir_path, "src/sex_bias_drug_functions.R"))
 library(MASS)
 library(parallel)
 library(BiocParallel)
