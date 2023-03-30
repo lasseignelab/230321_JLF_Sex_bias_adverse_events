@@ -237,6 +237,25 @@ create_alpaca_input <- function(file_path_name_female, file_path_name_male, tiss
   saveRDS(topNet_regnet_male_female_long, file_name )
 }
 
+
+drug_ae_events<- function(index){
+  #index for the case to expand the drug and adverse event pairs
+  
+  case_df <- expand.grid(test_drug[[index]], test_ae[[index]])
+  case_df<- case_df[ !duplicated(case_df),]
+  colnames(case_df)<- c("drug", "adverse_event")
+  return(case_df)
+}
+
+
+combine_sub_data_frames<- function(index, list_samples, data_frame_list ){
+  group1<-unlist(list_samples[index])
+  #print(group1)
+  drug_ae_df<- bind_rows(data_frame_list[group1])
+  drug_ae_df1<- drug_ae_df[!duplicated(drug_ae_df),]
+  return(drug_ae_df1)
+}
+
 sex_bias_adverse_event_test <- function( index, drug_event_df ){
   #event and drug
   event<- drug_event_df[index,2]
@@ -261,6 +280,8 @@ sex_bias_adverse_event_test <- function( index, drug_event_df ){
   return(table_info)
   
 }
+
+
 
 
 #old functions no longer used in main project
