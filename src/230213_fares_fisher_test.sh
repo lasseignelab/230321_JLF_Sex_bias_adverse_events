@@ -11,7 +11,7 @@
 #SBATCH --error=%j.%N.err.txt
 #SBATCH --output=%j.%N.out.txt
 
-cd /data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/
+cd /data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/
 
 module load intel/2017a
 module load Anaconda3/5.3.1
@@ -21,4 +21,4 @@ conda activate SR_TAU_CELL
 echo $SLURM_ARRAY_TASK_ID 
 
 
-Rscript ./script/230213_fares_fisher_test.R $SLURM_ARRAY_TASK_ID
+Rscript ./src/230213_fares_fisher_test.R $SLURM_ARRAY_TASK_ID
