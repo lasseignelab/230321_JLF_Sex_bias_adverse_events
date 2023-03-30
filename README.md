@@ -21,6 +21,8 @@ Download the Docker image from Docker Hub (only done once)
 docker pull jenfisher7/rstudio_sex_bias_drugs
 ````
 
+Adjust Docker Desktop settings to CPUs = 12 ; Memory = 64 GB; swap = 1 GB; disk size = 1.6 TB
+
 Mount the github as your working directory to match file paths and to avoid upstream files that could affect results. 
 ```
 docker run -d --rm -p 8787:8787 -e PASSWORD=NBI -v [Replace with your path to the github directory]/230321_JLF_Sex_bias_adverse_events:/home/rstudio/ jenfisher7/rstudio_sex_bias_drugs
@@ -37,7 +39,7 @@ Go to the github directory
 cd [Replace with your path to the github directory]/230321_JLF_Sex_bias_adverse_events
 module load Singularity/3.5.2-GCC-5.4.0-2.26
 ````
-Pull the docker image from Dockerhub and create sif file
+Pull the docker image from Dockerhub and create sif file (only done once)
 ````
 singularity pull jenfisher7/rstudio_sex_bias_drugs
 ````
@@ -76,7 +78,8 @@ Correct the path your conda environment R libraries in the 230213_fares_fisher_t
 #SR_TAU_CELL
 .libPaths("/data/user/<YOU>/.conda/envs/SR_TAU_CELL/lib/R/library")
 ````
-To run the scripts, you use the commands in 230213_fares_fisher_test.txt in the src directory. This will run the .sh file which will use the R script. This is an array job so you can run several jobs in parrallel. I suggest running this on the weekend when you don't need cheaha. It is about one day run time. 
+To run the scripts, you use the commands in 230213_fares_fisher_test.txt in the src directory. This will run the .sh file which will use the R script. With the .sh script, please adjust lines 3, 14 to be your email and directories. In .R file, please adjust lines 2 and 8 to point to the right directores.
+These scripts run as an array job so you can run several jobs in parrallel. I suggest running this on the weekend when you don't need cheaha. It is about one day run time. 
 
 
 ## Scripts
@@ -111,8 +114,9 @@ Note for all .Rmd files there is a knitted .html file with outputs of code. Some
 - 230221_liver_sex_specific_com.Rmd
 
 **FARES scripts**
-- 220722_FDA_OPEN_FARES_Exploration.Rmd
+- 220722_Meddra_mapping.Rmd
 - 230124_fares_sbae_drugs.Rmd
+  - 2 hour express ; 3 cpu and 80GB per cpu in cheaha.
 <br>
 The following 230213_fares_fisher_test scripts use the conda enviroment. 1 day run on cheaha. Suggest running over the weekend. 
 
