@@ -24,16 +24,16 @@ knitr::opts_chunk$set(echo = TRUE)
     my laptop
     
     GitHub Repo:
-    Sex_Bias_Adverse_Events
+    230321_JLF_Sex_bias_adverse_events
     
     Directory of operations:
-    ~/Documents/Sex_Bias_Adverse_Events
+    ~/Documents/230321_JLF_Sex_bias_adverse_events
     
     Scripts being edited for operations:
     NA
     
     Data being used:
-    output/alpaca/alpaca_runs
+    results/alpaca/alpaca_runs
     
     Papers and tools: 
     NA
@@ -47,124 +47,10 @@ library(gprofiler2)
 library(viridis)
 library(RColorBrewer)
 library(ComplexHeatmap)
+library(GOSemSim)
 ```
 
 
-
-```{r}
-alpaca_com_plot_function<- function(newfile, com_num, title){
-  comm_symbols_genes <- newfile$symbol[newfile$com == com_num]
-  set.seed(101)
-  pathway_results_male <- gost(query = comm_symbols_genes, 
-                               organism = "hsapiens", ordered_query = FALSE, 
-                               multi_query = FALSE, significant = TRUE, exclude_iea= FALSE, measure_underrepresentation = FALSE, evcodes = FALSE,
-                               user_threshold = 0.05, correction_method = "g_SCS", 
-                               domain_scope = "annotated", custom_bg = NULL, 
-                               numeric_ns = "", as_short_link = FALSE)
-  pathway_results_male_comm_5_res<- pathway_results_male$result
-  #print(pathway_results_male_comm_5_res$p_value[1:5])
-  
-  
-  pathway_results_male_comm_5_res$set<- rep(title, nrow(pathway_results_male_comm_5_res))
-  
-  file_name1<- paste0("~/output/alpaca/alpaca_pathway_analysis/", title, "_pathways.csv")
-  write.csv2(as.data.frame(pathway_results_male_comm_5_res[,-14]), file_name1 )
-  
-  pathway_results_male_comm_5_res<- pathway_results_male_comm_5_res[pathway_results_male_comm_5_res$source %in% c("KEGG","REAC" ),]
-  pathway_results_male_comm_5_res$log_p <- -log(pathway_results_male_comm_5_res$p_value)
-  
-  file_name<- paste("~/output/alpaca/alpaca_pathway_analysis/gpplot_kegg_reactome_", title, ".png", sep = "")
-  ggplot(pathway_results_male_comm_5_res, aes(x=term_name, y=log_p))+ geom_point(aes(size = recall)) +coord_flip() + ggtitle(title) + scale_color_viridis(option="plasma")+ theme_bw() +theme(text = element_text(size=10)) + scale_size(range = c(5,10))
-  ggsave( file_name)
-}
-```
-
-```{r}
-alpaca_output_dw_tf_genes <- function(scores, comms){
-#scores<- male_female_ALPACA_scores
-#comms<- male_female_ALPACA_final_memb
-tosel <- intersect(scores[,1], comms[,1])
-scores <- scores[which(scores[,1] %in% tosel),]
-comms <- comms[which(comms[,1] %in% tosel),]
-scores <- scores[order(scores[,1]),]
-comms <- comms[order(comms[,1]),]
-scores[,1] <- as.character(scores[,1])
-comms[,1] <- as.character(comms[,1])
-all(scores[,1]==comms[,1])
-scores <- cbind(scores, comms[,2])
-row.names(scores) <- scores[,1]
-scores <- scores[,-1]
-colnames(scores) <- c("score", "com")
-alpaca_nodes <- row.names(scores)
-table(substr(alpaca_nodes, nchar(alpaca_nodes), nchar(alpaca_nodes))) # 714 A (tf) 22572 B (gene) in test network
-alpaca_genes <- scores
-alpaca_genes <- alpaca_genes[order(alpaca_genes[,2],decreasing=T),]
-alpaca_genes <- alpaca_genes[,c(2,1)]
-            newfile<- matrix(nrow= 1, ncol=2)
-            colnames(newfile)<- colnames(alpaca_genes)
-           for(n in 1:max(alpaca_genes$com)){
-            junk <- alpaca_genes[which(alpaca_genes$com==n),]
-            junk <- junk[order(junk$score,decreasing=T),]
-            if(nrow(junk)>100){
-                junk <- junk[1:100,]
-                if(n==1){
-                    newfile <- junk
-                } else {
-                    newfile <- rbind(newfile, junk)
-                }
-            }
-           }   
-newfile$symbol <- substr(row.names(newfile), 1, nchar(row.names(newfile))-2)
-newfile<- newfile[-1,]
-return(newfile)
-}
-
-```
-
-
-```{r}
-alpaca_pathway_wrapper<- function(tissue_name, sex){
-  print(tissue_name)
-  print(sex)
-  if (sex == "female"){
-    scores_file <- paste0("~/output/alpaca/alpaca_run/", tissue_name, "__ALPACA_scores.txt")
-    comms_file <- paste0("~/output/alpaca/alpaca_run/", tissue_name, "__ALPACA_final_memb.txt")
-  }else{
-    scores_file <- paste0("~/output/alpaca/alpaca_run/", tissue_name, "femalemale__ALPACA_scores.txt")
-    comms_file <- paste0("~/output/alpaca/alpaca_run/", tissue_name, "femalemale__ALPACA_final_memb.txt")
-  }
-  #read in the score file 
-  #read in the final memb file 
-  file_scores <- read.delim(scores_file, header=FALSE)
-  file_comms<- read.delim(comms_file, header=FALSE)
-  
-  # top 100 genes in the community
-  alpaca_core_genes <- alpaca_output_dw_tf_genes(file_scores, file_comms)
-  #save the tf and gene files for each community
-  core_name<- paste(tissue_name, sex, "core_genes.rds", sep= "_")
-  file_core_name<- paste0("~/output/alpaca/alpaca_core_gene_lists/",core_name)
-  saveRDS(alpaca_core_genes,file_core_name)
-  
-  #pathway analysis for each community with 100 genes 
-  num_comm<- unique(alpaca_core_genes[,1])
-  print(num_comm)
-  for( i in 1:length(num_comm)){
-    index<- num_comm[i]
-    test_name<- paste(tissue_name, sex, index, "community",  sep= "_")
-    print(test_name)
-    try(alpaca_com_plot_function(alpaca_core_genes, index, test_name))
-  }
-}
-```
-
-```{r}
-#alpaca_pathway_wrapper("Liver", "female")
-#alpaca_pathway_wrapper("Liver", "male")
-```
-Error in log(pathway_results_male_comm_5_res$p_value) : 
-  non-numeric argument to mathematical function
-
-Null on p-values with this error. 
 ```{r}
 metadata <- readRDS("~/data/metadata_gtex_filter_samples.rds")
 ```
@@ -190,17 +76,17 @@ for (j in 1:length(tissues_wo_ws)){
 # top pathways
 
 ```{r}
-all_files<- list.files("~/output/alpaca/alpaca_pathway_analysis")
+all_files<- list.files("~/results/alpaca/alpaca_pathway_analysis")
 pathway_files <- all_files[grep("pathways.csv", all_files )]
 ```
 
 ```{r}
-all_pathway_res<- read.csv2(paste0("~/output/alpaca/alpaca_pathway_analysis/", pathway_files[1]))
+all_pathway_res<- read.csv2(paste0("~/results/alpaca/alpaca_pathway_analysis/", pathway_files[1]))
 for (j in 2:length(pathway_files)){
-  group <- read.csv2(paste0("~/output/alpaca/alpaca_pathway_analysis/", pathway_files[j]))
+  group <- read.csv2(paste0("~/results/alpaca/alpaca_pathway_analysis/", pathway_files[j]))
   all_pathway_res<- rbind(all_pathway_res, group)
 }
-saveRDS(all_pathway_res, "~/output/alpaca/alpaca_pathway_analysis/all_pathways.rds")
+saveRDS(all_pathway_res, "~/results/alpaca/alpaca_pathway_analysis/all_pathways.rds")
 ```
 
 ```{r}
@@ -218,11 +104,10 @@ all_pathway_res$comm_number <- as.numeric(gsub(".*?([0-9]+).*", "\\1", all_pathw
 ```
 
 ```{r}
-saveRDS(all_pathway_res, "~/output/alpaca/alpaca_pathway_analysis/all_pathways.rds")
+saveRDS(all_pathway_res, "~/results/alpaca/alpaca_pathway_analysis/all_pathways.rds")
 ```
 
 ```{r}
-
 all_pathway_res_filter<- cbind(all_pathway_res$term_name,all_pathway_res$source, all_pathway_res$term_id, all_pathway_res$tissue)
 colnames(all_pathway_res_filter)<- c("term_name", "source", "id", "tissue")
 all_pathway_res_filter<- all_pathway_res_filter[!duplicated(all_pathway_res_filter),]
@@ -236,71 +121,8 @@ go_bp_all_tissues<- test[test$Freq == 43,1]
 ```
 
 
-```{r}
-#functions from rrvgo
-#rrvgo github (getGoTerm, loadOrgdb, getGoSize, reduceSimMatrix)
-getGoTerm <- function(x) {
-  sapply(x, function(x) tryCatch(GO.db::GOTERM[[x]]@Term, error=function(e) NA))
-}
-loadOrgdb <- function(orgdb) {
-  if(!requireNamespace(orgdb, quietly = TRUE)) {
-    stop("Bioconductor orgdb for ", orgdb, " not found. Consider installing it.",
-         call. = FALSE)
-  }
-  eval(parse(text=paste0(orgdb, "::", orgdb)))
-}
-getGoSize <- function(terms, orgdb, keytype) {
-  if(all(is(orgdb) != "OrgDb")) {
-    orgdb <- loadOrgdb(orgdb)
-  }
-  
-  # get all GO terms with genes associated
-  go <- suppressMessages(
-    AnnotationDbi::select(orgdb,
-                          keytype=keytype,
-                          columns=c("GO", "ONTOLOGY"),
-                          keys=AnnotationDbi::keys(orgdb, keytype=keytype)))
-  go <- go[!is.na(go$GO), ]
-  go <- go[go$GO %in% terms, ]
-  
-  # count
-  counts   <- table(go$GO)
-  go <- go[go$GO %in% terms, ]
-  empty    <- terms[!(terms %in% names(counts))]
-  nocounts <- setNames(rep(0, length(empty)), empty)
-  
-  c(counts, nocounts)
-}
-reduceSimMatrix <- function (simMatrix, scores = NULL, threshold = 0.7, orgdb="org.Hs.eg.db", keytype = "ENTREZID") {
-  if (!is.null(scores) && !all(rownames(simMatrix) %in% names(scores))) {
-    stop("Scores vector does not contain all terms in the similarity matrix")
-  }
-  sizes <- getGoSize(rownames(simMatrix), orgdb, keytype)
-  if (is.null(scores)) {
-    message("No scores provided. Falling back to term's size")
-    scores <- sizes
-  }
-  scores <- scores[match(rownames(simMatrix), names(scores))]
-  orows <- match(rownames(simMatrix), names(scores))
-  ocols <- match(colnames(simMatrix), names(scores))
-  simMatrix <- simMatrix[orows, ocols]
-  o <- rev(order(scores, sizes, na.last = FALSE))
-  simMatrix <- simMatrix[o, o]
-  cluster <- cutree(hclust(as.dist(1 - simMatrix)), h = threshold)
-  clusterRep <- tapply(rownames(simMatrix), cluster, function(x) x[which.max(scores[x])])
-  data.frame(go = rownames(simMatrix), cluster = cluster, parent = clusterRep[cluster], 
-             parentSimScore = unlist(Map(seq_len(nrow(simMatrix)), 
-                                         clusterRep[cluster], f = function(i, j) simMatrix[i, 
-                                                                                           j])), score = scores[match(rownames(simMatrix), 
-                                                                                                                      names(scores))], size = sizes[match(rownames(simMatrix), 
-                                                                                                                                                          names(sizes))], term =getGoTerm(rownames(simMatrix)), 
-             parentTerm = getGoTerm(clusterRep[cluster]))
-}
-
-```
 
 ```{r}
-library(GOSemSim)
 hsGO <- godata('org.Hs.eg.db', ont="BP")
 ```
 
@@ -392,7 +214,7 @@ ggplot(sem_res, aes(y= Var1, x= Freq, label=Freq)) + geom_bar(stat="identity", f
 
 
 # drug genes
-
+KEGG_DRUG_METABOLISM_CYTOCHROME_P450.v2022.1.Hs.gmt contain a list of drug metabolism genes
 ```{r}
 drug_genes <- c("ADH1A"	,"ADH1B", "ADH1C", "ADH4",	"ADH5",	"ADH6",	"ADH7",	
                 "ALDH1A3",	"ALDH3A1",	"ALDH3B1", "ALDH3B2", "AOX1", "CYP1A2",
@@ -407,153 +229,16 @@ drug_genes <- c("ADH1A"	,"ADH1B", "ADH1C", "ADH4",	"ADH5",	"ADH6",	"ADH7",
 ```
 
 
-
-
 ```{r}
-alpaca_output_dw_all <- function(scores, comms){
-#scores<- male_female_ALPACA_scores
-#comms<- male_female_ALPACA_final_memb
-tosel <- intersect(scores[,1], comms[,1])
-scores <- scores[which(scores[,1] %in% tosel),]
-comms <- comms[which(comms[,1] %in% tosel),]
-scores <- scores[order(scores[,1]),]
-comms <- comms[order(comms[,1]),]
-scores[,1] <- as.character(scores[,1])
-comms[,1] <- as.character(comms[,1])
-all(scores[,1]==comms[,1])
-scores <- cbind(scores, comms[,2])
-row.names(scores) <- scores[,1]
-scores <- scores[,-1]
-colnames(scores) <- c("score", "com")
-alpaca_nodes <- row.names(scores)
-table(substr(alpaca_nodes, nchar(alpaca_nodes), nchar(alpaca_nodes))) # 714 A (tf) 22572 B (gene) in test network
-alpaca_genes <- scores
-alpaca_genes <- alpaca_genes[order(alpaca_genes[,2],decreasing=T),]
-alpaca_genes <- alpaca_genes[,c(2,1)]
-
-alpaca_genes$symbol <- substr(row.names(alpaca_genes), 1, nchar(row.names(alpaca_genes))-2)
-return(alpaca_genes)
-}
-
-```
-
-
-```{r}
-alpaca_gene_set_analysis <- function(tissue_nam, genes="drugs", gene_set_name= "Drug Metabolism Genes", path="~/output/alpaca/drug_metabolism_genes/", save_com_list= TRUE){
-  print(tissue_nam)
-  if(genes== "drugs"){
-    print("using drug gene list from KEGG")
-    genes <- c("ADH1A"	,"ADH1B", "ADH1C", "ADH4",	"ADH5",	"ADH6",	"ADH7",	
-                "ALDH1A3",	"ALDH3A1",	"ALDH3B1", "ALDH3B2", "AOX1", "CYP1A2",
-                "CYP2A13", "CYP2A6", "CYP2A7",	"CYP2B6",	"CYP2C18",	"CYP2C19",
-                "CYP2C8",	"CYP2C9",	"CYP2D6",	"CYP2E1",	"CYP3A4",	"CYP3A43",	"CYP3A5",
-                "CYP3A7",	"FMO1",	"FMO2",	"FMO3", "FMO4",	"FMO5",  "GSTA1", "GSTA2", 	"GSTA3",	"GSTA4",
-                "GSTA5",	"GSTK1",	"GSTM1",	"GSTM2",	"GSTM3",	"GSTM4",	"GSTM5",	"GSTO1",
-                "GSTO2",	"GSTP1",	"GSTT1",	"GSTT2",	"GSTZ1",	"MAOA",	"MAOB",	"MGST1",
-                "MGST2",	"MGST3",	"UGT1A1",	"UGT1A10",	"UGT1A3",	"UGT1A4",
-                "UGT1A5",	"UGT1A6",	"UGT1A7",	"UGT1A8", "UGT1A9",	"UGT2A1",	"UGT2A3", "UGT2B10",
-                "UGT2B11",	"UGT2B15",	"UGT2B17",	"UGT2B28",	"UGT2B4",	"UGT2B7")
-  }
-  
-  #get the data
-    scores_file_f <- paste0("~/output/alpaca/alpaca_run/", tissue_nam, "__ALPACA_scores.txt")
-    comms_file_f <- paste0("~/output/alpaca/alpaca_run/", tissue_nam, "__ALPACA_final_memb.txt")
-    file_scores_f <- read.delim(scores_file_f, header=FALSE)
-    file_comms_f <- read.delim(comms_file_f, header=FALSE)
-    test<- alpaca_output_dw_all(file_scores_f, file_comms_f)
-    
-  
-    scores_file_m <- paste0("~/output/alpaca/alpaca_run/", tissue_nam, "femalemale__ALPACA_scores.txt")
-    comms_file_m <- paste0("~/output/alpaca/alpaca_run/", tissue_nam, "femalemale__ALPACA_final_memb.txt")
-    file_scores_m <- read.delim(scores_file_m, header=FALSE)
-    file_comms_m <- read.delim(comms_file_m, header=FALSE)
-    test2<- alpaca_output_dw_all(file_scores_m, file_comms_m)
-    
-    if (save_com_list){
-    #save this data- alpaca_com_gene_list
-    file_name<- paste("~/output/alpaca/alpaca_com_gene_list/", tissue_nam, "_female_alpaca_com_all_gene_df.rds", sep = "")
-    saveRDS(test, file_name)
-    #save this data- alpaca_com_gene_list
-    file_name<- paste("~/output/alpaca/alpaca_com_gene_list/", tissue_nam, "_male_alpaca_com_all_gene_df.rds", sep = "")
-    saveRDS(test2, file_name)
-    }
-    
-    
-    y_name<- paste("Number of ", gene_set_name)
-    #female plot 
-    drug_subset <- test[test$symbol %in% genes,]
-    drug_subset_list <- factor(drug_subset$com, levels=1:length(unique(test$com)))
-    drug_gene_count<- as.data.frame(table(drug_subset_list))
-    drug_gene_count$drug_subset_list <-  paste0( "female", drug_gene_count$drug_subset_list)
-  
-    ggplot(drug_gene_count, aes(x= drug_subset_list, y= Freq, label=Freq)) + geom_bar(stat="identity", fill = "#440154FF", color= "black", alpha=0.7)+
-    geom_text(size = 10, position = position_stack(vjust = 0.9)) + xlab("Communities") + ylab(y_name)+theme(text = element_text(size = 30,  face="bold"))
-    #save this plot - count_bar_plots
-    file_name<- paste(path, "count_bar_plots/", tissue_nam, "_female_alpaca_com_gene_set.png", sep = "")
-    ggsave(file_name, width = 20, height=10, units= "in")
-    
-    #male plot
-    drug_subset2 <- test2[test2$symbol %in% drug_genes,]
-    drug_subset_list2 <- factor(drug_subset2$com, levels=1:length(unique(test2$com)))
-    drug_gene_count2<- as.data.frame(table(drug_subset_list2))
-    drug_gene_count2$drug_subset_list <-  paste0( "male", drug_gene_count2$drug_subset_list2)
-    
-    ggplot(drug_gene_count2, aes(x= drug_subset_list, y= Freq, label=Freq)) + geom_bar(stat="identity", fill = "#21908CFF", color= "black", alpha=0.7)+ 
-    geom_text(size = 10, position = position_stack(vjust = 0.9)) + xlab("Communities") + ylab(y_name)+theme(text = element_text(size = 30,  face="bold"))
-    #save this plot  - count_bar_plots
-    file_name<- paste(path, "count_bar_plots/", tissue_nam, "_male_alpaca_com_gene_set.png", sep = "")
-    ggsave(file_name, width = 20, height=10, units= "in")
-    
-    
-    
-    drug_subset2$sex<- rep("male", nrow(drug_subset2))
-    drug_subset$sex<- rep("female", nrow(drug_subset))
-    
-    liver_drug_subset<- rbind(drug_subset, drug_subset2)
-    liver_drug_subset<- liver_drug_subset[order(liver_drug_subset$symbol),]
-    #save the liver_drug_subset- drug_gene_com
-    file_name<- paste(path, "gene_com/", tissue_nam, "_alpaca_com_gene_set_df.rds", sep = "")
-    saveRDS(liver_drug_subset, file_name)
-    
-    #sometimes there is not duplicates- removing genes without duplicate
-    keep_genes<- names(table(liver_drug_subset$symbol))[table(liver_drug_subset$symbol) >1]
-    liver_drug_subset<- liver_drug_subset[liver_drug_subset$symbol %in% keep_genes,]
-      
-    liver_drug_subset_female<- liver_drug_subset[liver_drug_subset$sex == "female",]
-    liver_drug_subset_male<- liver_drug_subset[liver_drug_subset$sex == "male",]
-    res <- wilcox.test(liver_drug_subset_female$score, liver_drug_subset_male$score, paired = TRUE)
-    p_value <- res$p.value
-    
-    diff<- log2(mean(liver_drug_subset_female$score)) - log2(mean(liver_drug_subset_male$score))
-    
-    #adjust the names here
-    y_name2<- paste("number of ", gene_set_name)
-    title_tissue<- paste("Differential modularity score of ", y_name2, "\nin", tissue_nam, "sex-specific gene regulatory networks", sep = " ")
-    label_tissue <- paste("Paired Wilcoxon signed rank test\np-value =", p_value, sep = " ")
-    
-    ggplot(liver_drug_subset, aes(y=score, x= sex, fill = sex)) + geom_violin() +geom_point() + geom_text(x="female", y=0.002, label= label_tissue, size= 10) +ylab("Differential modularity score") + xlab("Sex") + ggtitle(title_tissue) + scale_fill_manual(values= c( "#440154FF","#21908CFF")) +theme(text = element_text(size = 30,  face="bold"))
-    #save the plot - sex_differential_modularity_plots
-    file_name<- paste(path, "sex_differential_modularity_plots/", tissue_nam, "_sex_differential_modularity_plot.png", sep = "")
-    ggsave(file_name, width = 20, height=10, units= "in")
-    
-    #return p_value 
-    obj<- list(p_value, diff)
-    return(obj)
-}
-
-```
-
-
-```{r}
-#alpaca_gene_set_analysis( "Liver", genes="drugs", gene_set_name= "Drug Metabolism Genes", path="~/output/alpaca/drug_metabolism_genes/")
-#alpaca_gene_set_analysis( "Lung", genes="drugs", gene_set_name= "Drug Metabolism Genes", path="~/output/alpaca/drug_metabolism_genes/")
+#alpaca_gene_set_analysis( "Liver", genes="drugs", gene_set_name= "Drug Metabolism Genes", path="~/results/alpaca/drug_metabolism_genes/")
+#alpaca_gene_set_analysis( "Lung", genes="drugs", gene_set_name= "Drug Metabolism Genes", path="~/results/alpaca/drug_metabolism_genes/")
 ```
 
 ```{r}
 test_p<- c()
 test_change <- c()
 for (j in 1:length(tissues_wo_ws)){ #
-   test <- alpaca_gene_set_analysis( tissues_wo_ws[j], genes="drugs", gene_set_name= "Drug Metabolism Genes", path="~/output/alpaca/drug_metabolism_genes/")
+   test <- alpaca_gene_set_analysis( tissues_wo_ws[j], genes="drugs", gene_set_name= "Drug Metabolism Genes", path="~/results/alpaca/drug_metabolism_genes/")
   test_p[j]<- test[1]
   test_change[j]<- test[2]
 }
@@ -580,31 +265,10 @@ ggplot(sig_drug_gene_set, aes(x=log2fold_Change, y= neg_log_p, label=Tissue_2  )
 ```{r}
 sig_drug_gene_set$Tissue<- factor(sig_drug_gene_set$Tissue, levels= sig_drug_gene_set$Tissue[order(sig_drug_gene_set$neg_log_p)])
 ggplot(sig_drug_gene_set, aes(y=Tissue, x= neg_log_p, fill= log2fold_Change))+ geom_bar(stat="identity",  color= "black") + scale_fill_gradient2(low= "#21908CFF", mid= "white", high= "#440154FF")  +theme(text = element_text(size = 20,  face="bold"))+ geom_vline(xintercept=p_value_cut, linetype="dashed", color = "black")+ xlab("-log(p-value)")
-ggsave("~/output/alpaca/drug_metabolism_genes/230220_differential_mod_drug_genes_wilcox_test.png", height=12, width=10)
+ggsave("~/results/alpaca/drug_metabolism_genes/230220_differential_mod_drug_genes_wilcox_test.png", height=12, width=10)
 ```
 
 #make new function for jaccard similarity
-
-```{r}
-jaccard <- function(a, b) {
-    intersection = length(intersect(a, b))
-    union = length(a) + length(b) - intersection
-    return (intersection/union)
-}
-```
-
-```{r}
-gene_com_list<- function(tissue, sex){
-  com_df <- readRDS(paste("~/output/alpaca/alpaca_com_gene_list/", tissue, "_", sex,  "_alpaca_com_all_gene_df.rds", sep =""))
-  com_numbers<- unique(com_df$com)
-  com_sub_list<- list()
-  for(i in 1:length(com_numbers)){
-    com_sub_list[[i]]<- com_df$symbol[com_df$com ==  com_numbers[i]]
-  }
-  names(com_sub_list)<- paste0(tissue, "@" ,sex, "@", com_numbers)
-  return(com_sub_list)
-}
-```
 
 
 need to apply this to all the communities
@@ -645,20 +309,11 @@ res[grep("Liver",colnames(res)),grep("Liver",colnames(res))]
 
 
 ```{r}
-#col_fun <- colorRamp2(c(0,  1), c( "black", "yellow"))
-#Heatmap(res[1:50,1:50], nam= "Jaccard Similarity", col = col_fun, 
- #         clustering_distance_rows= "euclidean",
-#          clustering_distance_columns=  "euclidean",
-#          clustering_method_rows = "ward.D2" , column_names_rot = 45,
-#          clustering_method_columns="ward.D2", heatmap_legend_param = list( title_gp = gpar(fontsize = 15 , fontface = "bold"), labels_gp = gpar(fontsize = 8, fontface = "bold")))
-```
-
-```{r}
 tissue_all <- str_split(rownames(res), "@" , simplify = TRUE)[,1]
 sex_all <- str_split(rownames(res), "@" , simplify = TRUE)[,2]
 com_all <- str_split(rownames(res), "@" , simplify = TRUE)[,3]
 
-png("~/output/alpaca/alpaca_pathway_analysis/230220_jaccard_all_com_genes_clustering.png",width=20,height=10,units="in",res=1200)
+png("~/results/alpaca/alpaca_pathway_analysis/230220_jaccard_all_com_genes_clustering.png",width=20,height=10,units="in",res=1200)
 #Your heat-map code
 set.seed(105)
 row_ha<-  HeatmapAnnotation(Tissue=tissue_all, Sex=sex_all, Community_Number= com_all)
@@ -676,7 +331,7 @@ dev.off()
 
 ```{r}
 gene_core_list<- function(tissue, sex){
-  com_df <- readRDS(paste("~/output/alpaca/alpaca_core_gene_lists/", tissue, "_", sex,  "_core_genes.rds", sep =""))
+  com_df <- readRDS(paste("~/results/alpaca/alpaca_core_gene_lists/", tissue, "_", sex,  "_core_genes.rds", sep =""))
   com_numbers<- unique(com_df$com)
   com_sub_list<- list()
   for(i in 1:length(com_numbers)){
@@ -721,7 +376,7 @@ colnames(res_core) <- names(all_core_list)
 tissue_all <- str_split(rownames(res_core), "@" , simplify = TRUE)[,1]
 sex_all <- str_split(rownames(res_core), "@" , simplify = TRUE)[,2]
 com_all <- str_split(rownames(res_core), "@" , simplify = TRUE)[,3]
-png("~/output/alpaca/alpaca_pathway_analysis/230220_jaccard_core_com_genes_clustering.png",width=20,height=10,units="in",res=1200)
+png("~/results/alpaca/alpaca_pathway_analysis/230220_jaccard_core_com_genes_clustering.png",width=20,height=10,units="in",res=1200)
 set.seed(105)
 row_ha<-  HeatmapAnnotation(Tissue=tissue_all, Sex=sex_all, Community_Number= com_all)
   column_dend <-  hclust(dist(t(res_core)), method = "ward.D2")
@@ -743,7 +398,7 @@ tissue_1_3 <- str_split(rownames(res_core_1_3), "@" , simplify = TRUE)[,1]
 sex_1_3 <- str_split(rownames(res_core_1_3), "@" , simplify = TRUE)[,2]
 #com_1_3 <- str_split(rownames(res_core_1_3), "@" , simplify = TRUE)[,3]
 
-#png("~/output/alpaca/alpaca_pathway_analysis/230220_jaccard_core_com_genes_clustering.png",width=20,height=10,units="in",res=1200)
+#png("~/results/alpaca/alpaca_pathway_analysis/230220_jaccard_core_com_genes_clustering.png",width=20,height=10,units="in",res=1200)
 set.seed(105)
 row_ha<-  HeatmapAnnotation(Tissue=tissue_1_3, Sex=sex_1_3)
   column_dend <-  hclust(dist(t(res_core_1_3)), method = "ward.D2")
@@ -761,7 +416,7 @@ tissue_brain<- str_split(rownames(res_core_brain), "@" , simplify = TRUE)[,1]
 sex_brain <- str_split(rownames(res_core_brain), "@" , simplify = TRUE)[,2]
 #com_1_3 <- str_split(rownames(res_core_1_3), "@" , simplify = TRUE)[,3]
 
-#png("~/output/alpaca/alpaca_pathway_analysis/230220_jaccard_core_com_genes_clustering.png",width=20,height=10,units="in",res=1200)
+#png("~/results/alpaca/alpaca_pathway_analysis/230220_jaccard_core_com_genes_clustering.png",width=20,height=10,units="in",res=1200)
 set.seed(120)
 row_ha<-  HeatmapAnnotation(Tissue=tissue_brain, Sex=sex_brain)
   column_dend <-  hclust(dist(t(res_core_brain)), method = "ward.D2")
@@ -782,7 +437,7 @@ tissue_drug<- str_split(rownames(res_core_drug_tissues), "@" , simplify = TRUE)[
 sex_drug <- str_split(rownames(res_core_drug_tissues), "@" , simplify = TRUE)[,2]
 com_drug <- str_split(rownames(res_core_drug_tissues), "@" , simplify = TRUE)[,3]
 
-#png("~/output/alpaca/alpaca_pathway_analysis/230220_jaccard_core_com_genes_clustering.png",width=20,height=10,units="in",res=1200)
+#png("~/results/alpaca/alpaca_pathway_analysis/230220_jaccard_core_com_genes_clustering.png",width=20,height=10,units="in",res=1200)
 set.seed(110)
 row_ha<-  HeatmapAnnotation(Tissue=tissue_drug, Sex=sex_drug, Community= com_drug)
   column_dend <-  hclust(dist(t(res_core_drug_tissues)), method = "ward.D2")
@@ -882,7 +537,7 @@ go_term_heatmap<- function(female_pathways, male_pathways, threshold = 0.95, fil
 
 ```{r}
 #all_pathway_res[all_pathway_res$set %in% c("Liver_female_3_community", "Liver_male_5_community"),]
-go_term_heatmap(all_pathway_res[all_pathway_res$set=="Liver_female_3_community",], all_pathway_res[all_pathway_res$set=="Liver_male_3_community",], threshold = 0.9, file_name= "~/output/alpaca/alpaca_pathway_analysis/liver_female_3_male_2_go_sem_bp.csv" )
+go_term_heatmap(all_pathway_res[all_pathway_res$set=="Liver_female_3_community",], all_pathway_res[all_pathway_res$set=="Liver_male_3_community",], threshold = 0.9, file_name= "~/results/alpaca/alpaca_pathway_analysis/liver_female_3_male_2_go_sem_bp.csv" )
 ```
 
 
@@ -918,8 +573,8 @@ ggplot(sim_go_groups, aes(x=Jaccard, y=sim_go_groups, fill =sex )) + geom_bar(st
 
 
 ```{r}
-Whole_Blood_male_core_genes <- readRDS("~/output/alpaca/alpaca_core_gene_lists/Whole_Blood_male_core_genes.rds")
-Whole_Blood_female_core_genes <- readRDS("~/output/alpaca/alpaca_core_gene_lists/Whole_Blood_female_core_genes.rds")
+Whole_Blood_male_core_genes <- readRDS("~/results/alpaca/alpaca_core_gene_lists/Whole_Blood_male_core_genes.rds")
+Whole_Blood_female_core_genes <- readRDS("~/results/alpaca/alpaca_core_gene_lists/Whole_Blood_female_core_genes.rds")
 ```
 
 ```{r}
@@ -929,8 +584,8 @@ table(Whole_Blood_female_core_genes$symbol %in% drug_genes)
 
 
 ```{r}
-> `Small_Intestine_-_Terminal_Ileum_male_core_genes` <- readRDS("~/output/alpaca/alpaca_core_gene_lists/Small_Intestine_-_Terminal_Ileum_male_core_genes.rds")
-> `Small_Intestine_-_Terminal_Ileum_female_core_genes` <- readRDS("~/output/alpaca/alpaca_core_gene_lists/Small_Intestine_-_Terminal_Ileum_female_core_genes.rds")
+> `Small_Intestine_-_Terminal_Ileum_male_core_genes` <- readRDS("~/results/alpaca/alpaca_core_gene_lists/Small_Intestine_-_Terminal_Ileum_male_core_genes.rds")
+> `Small_Intestine_-_Terminal_Ileum_female_core_genes` <- readRDS("~/results/alpaca/alpaca_core_gene_lists/Small_Intestine_-_Terminal_Ileum_female_core_genes.rds")
 ```
 
 
@@ -941,8 +596,8 @@ table(`Small_Intestine_-_Terminal_Ileum_male_core_genes`$symbol %in% drug_genes)
 
 
 ```{r}
-scores_file <- paste0("~/output/alpaca/alpaca_run/", tissues_wo_ws[41], "__ALPACA_scores.txt")
-comms_file <- paste0("~/output/alpaca/alpaca_run/", tissues_wo_ws[41], "__ALPACA_final_memb.txt")
+scores_file <- paste0("~/results/alpaca/alpaca_run/", tissues_wo_ws[41], "__ALPACA_scores.txt")
+comms_file <- paste0("~/results/alpaca/alpaca_run/", tissues_wo_ws[41], "__ALPACA_final_memb.txt")
   file_scores <- read.delim(scores_file, header=FALSE)
   file_comms<- read.delim(comms_file, header=FALSE)
 test<- alpaca_output_dw_all(file_scores, file_comms)
@@ -961,8 +616,8 @@ ggplot(drug_gene_count, aes(x= drug_subset_list, y= Freq, label=Freq)) + geom_ba
 
 
 ```{r}
-scores_file <- paste0("~/output/alpaca/alpaca_run/", tissues_wo_ws[41], "femalemale__ALPACA_scores.txt")
-comms_file <- paste0("~/output/alpaca/alpaca_run/", tissues_wo_ws[41], "femalemale__ALPACA_final_memb.txt")
+scores_file <- paste0("~/results/alpaca/alpaca_run/", tissues_wo_ws[41], "femalemale__ALPACA_scores.txt")
+comms_file <- paste0("~/results/alpaca/alpaca_run/", tissues_wo_ws[41], "femalemale__ALPACA_final_memb.txt")
   file_scores <- read.delim(scores_file, header=FALSE)
   file_comms<- read.delim(comms_file, header=FALSE)
 test2<- alpaca_output_dw_all(file_scores, file_comms)
