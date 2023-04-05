@@ -328,20 +328,6 @@ dev.off()
 ```
 
 
-
-```{r}
-gene_core_list<- function(tissue, sex){
-  com_df <- readRDS(paste("~/results/alpaca/alpaca_core_gene_lists/", tissue, "_", sex,  "_core_genes.rds", sep =""))
-  com_numbers<- unique(com_df$com)
-  com_sub_list<- list()
-  for(i in 1:length(com_numbers)){
-    com_sub_list[[i]]<- com_df$symbol[com_df$com ==  com_numbers[i]]
-  }
-  names(com_sub_list)<- paste0(tissue, "@" ,sex, "@", com_numbers)
-  return(com_sub_list)
-}
-```
-
 need to apply this to all the communities
 ```{r}
 female_core_list <- list()
@@ -472,67 +458,6 @@ go_sim <- mgoSim(as.character(go_bp_3_2_liver), as.character(go_bp_3_2_liver), s
 #get the parent terms from rrvgo for the pathways
 res <- reduceSimMatrix(go_sim , threshold = 0.6)
 res_v2<- res[match(colnames(go_sim ), res$go),]
-```
-```{r}
-go_term_heatmap<- function(female_pathways, male_pathways, threshold = 0.95, file_name){
-  #input
-  #female_pathways, female_pathways- the gprofiler result data frame for each method with the last column (named set)
-  #threshold- is the threshold of how far up or down the go ontology tree to go. default to 0.95
-  #file name for the parent go term results
-  
-  #output 
-  #heatmap
-  
-  #get terms
-  female_bp<- female_pathways$term_id[ female_pathways$source == "GO:BP" ]
-  male_bp <- male_pathways$term_id[ male_pathways$source == "GO:BP"]
-  
-  #run the go term semantic similarity 
-  go1 <-  unique(c(female_bp, male_bp ))
-  go_gbm_up_sim <- mgoSim(go1, go1, semData=hsGO, measure="Wang", combine=NULL)
-  
-  #get the parent terms from rrvgo for the pathways
-  res <- reduceSimMatrix(go_gbm_up_sim, threshold = threshold)
-  res_v2<- res[match(colnames(go_gbm_up_sim), res$go),]
-  
-  
-  
-  #determine which pathway is enriched in the different methods for the heatmap annotation
-  female_drugs <- grepl(paste(female_bp,collapse="|"), colnames(go_gbm_up_sim)) 
-  male_drugs<- grepl(paste(male_bp,collapse="|"), colnames(go_gbm_up_sim))
-  
-  #handing the case where there are no pathways enriched
-  if(length(female_bp) ==0){ female_drugs <- rep(FALSE,ncol(go_gbm_up_sim) )} 
-  if(length(male_bp) ==0){ male_drugs <- rep(FALSE,ncol(go_gbm_up_sim) )} 
-  
-  #pick the number of colors note limit is about 9 
-  bp_color<- brewer.pal(n = length(unique(res_v2$parentTerm)), name = "Paired")
-  names(bp_color)<- unique(res_v2$parentTerm)
-  
-  #create heatmap
-  row_ha <- HeatmapAnnotation(Female=female_drugs, Male= male_drugs, GO_BP_Group= res_v2$parentTerm , col = list(Female = c("TRUE" = "#440154FF", "FALSE" = "#228C8DFF"), Male = c("TRUE" = "#440154FF", "FALSE" = "#228C8DFF"), GO_BP_Group= bp_color ), annotation_name_gp= gpar(fontsize = 16,  fontface = "bold"), annotation_legend_param = list(Female= list(title_gp = gpar(fontsize = 15, fontface = "bold"), labels_gp = gpar(fontsize = 13, fontface = "bold")),  Male = list(title_gp = gpar(fontsize = 15, fontface = "bold"), labels_gp = gpar(fontsize = 13, fontface = "bold")),  GO_BP_Group = list(title_gp = gpar(fontsize = 15, fontface = "bold"), labels_gp = gpar(fontsize = 13, fontface = "bold"))))
-  
-  col_fun <- colorRamp2(c(0,  1), c( "black", "yellow"))
-  
-  #SAVE THE PARENT MATCHES
-  res_v3<- cbind(res_v2,female_drugs, male_drugs)
-  #return(res_v3)
-  write.csv(res_v3, file_name)
- heatmap <- Heatmap(go_gbm_up_sim, nam= "GO Term Similarity (Wang)", col = col_fun, show_column_names = FALSE,  show_row_names = FALSE, top_annotation = row_ha, clustering_distance_rows= "euclidean", clustering_distance_columns=  "euclidean", clustering_method_rows = "ward.D2" ,  clustering_method_columns="ward.D2", heatmap_legend_param = list( title_gp = gpar(fontsize = 15 , fontface = "bold"), labels_gp = gpar(fontsize = 12, fontface = "bold")))
- 
-  draw(heatmap, annotation_legend_side = "bottom")
-
-  # 
-  # column_dend = hclust(dist(t(go_gbm_up_sim)), method = "ward.D2")
-  # 
-  # heatmap_v2 <- Heatmap(matrix(nrow = 0, ncol = ncol(go_gbm_up_sim)),
-  #         cluster_columns = column_dend, 
-  #         show_column_names = FALSE,  
-  #         show_row_names = FALSE, 
-  #         top_annotation = row_ha) 
-  # draw(heatmap_v2, annotation_legend_side = "bottom")
-  # 
-}
 ```
 
 ```{r}
