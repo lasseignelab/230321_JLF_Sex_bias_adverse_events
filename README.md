@@ -41,8 +41,9 @@ module load Singularity/3.5.2-GCC-5.4.0-2.26
 ````
 Pull the docker image from Dockerhub and create sif file (only done once)
 ````
-singularity pull jenfisher7/rstudio_sex_bias_drugs
+singularity pull docker://jenfisher7/rstudio_sex_bias_drugs
 ````
+
 create files need to run singularity (only do this step once).
 ````
 mkdir -p run var-lib-rstudio-server
