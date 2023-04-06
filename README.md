@@ -41,8 +41,9 @@ module load Singularity/3.5.2-GCC-5.4.0-2.26
 ````
 Pull the docker image from Dockerhub and create sif file (only done once)
 ````
-singularity pull jenfisher7/rstudio_sex_bias_drugs
+singularity pull docker://jenfisher7/rstudio_sex_bias_drugs
 ````
+
 create files need to run singularity (only do this step once).
 ````
 mkdir -p run var-lib-rstudio-server
@@ -80,6 +81,11 @@ Correct the path your conda environment R libraries in the 230213_fares_fisher_t
 ````
 To run the scripts, you use the commands in 230213_fares_fisher_test.txt in the src directory. This will run the .sh file which will use the R script. With the .sh script, please adjust lines 3, 14 to be your email and directories. In .R file, please adjust lines 2 and 8 to point to the right directores.
 These scripts run as an array job so you can run several jobs in parrallel. I suggest running this on the weekend when you don't need cheaha. It is about one day run time. 
+
+## Some saved output might be in the older verison of this project on Cheaha
+````
+/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/
+````
 
 
 ## Scripts

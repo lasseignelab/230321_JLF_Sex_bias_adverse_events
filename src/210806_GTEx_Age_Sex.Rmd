@@ -224,7 +224,7 @@ ggplot(sex_table, aes(fill = gtex.sex, y = Freq, x = gtex.smts)) +
 ggsave("~/results/GTEx_plots/210806_sex_tissue_GTEx.pdf")
 ```
 
-plot the number of samples for each sex across the tissues(with the precentage)
+plot the number of samples for each sex across the tissues(with the percentage)
 ```{r}
 ggplot(sex_table, aes(fill = gtex.sex, y = Freq, x = gtex.smts)) +
   geom_bar(position = "fill", stat = "identity") +
@@ -256,7 +256,7 @@ ggplot(age_table, aes(fill = gtex.age, y = Freq, x = gtex.smts)) +
 ggsave("~/results/GTEx_plots/210806_age_tissue_GTEx.pdf")
 ```
 
-plot the number of samples for each age group across the tissues (precentage)
+plot the number of samples for each age group across the tissues (percentage)
 ```{r}
 ggplot(age_table, aes(fill = gtex.age, y = Freq, x = gtex.smts)) +
   geom_bar(position = "fill", stat = "identity") +
@@ -269,7 +269,7 @@ ggplot(age_table, aes(fill = gtex.age, y = Freq, x = gtex.smts)) +
     axis.ticks = element_blank()
   ) +
   ggtitle("Age for GTEx tissue")
-ggsave("~/results/GTEx_plots/210806_age_tissue_GTEx_precent.pdf")
+ggsave("~/results/GTEx_plots/210806_age_tissue_GTEx_percent.pdf")
 ```
 
 plot the number of samples for each sex/age groups across the tissues
@@ -301,7 +301,7 @@ ggplot(age_sex_table, aes(fill = SEX_AGE, y = Freq, x = gtex.smts)) +
     axis.ticks = element_blank()
   ) +
   ggtitle("Sex and Age for GTEx tissue")
-ggsave("~/results/GTEx_plots/210806_sex_age_tissue_GTEx_precent.pdf")
+ggsave("~/results/GTEx_plots/210806_sex_age_tissue_GTEx_percent.pdf")
 ```
 
 plot the number of samples for each type of death across the tissues
@@ -317,7 +317,7 @@ ggplot(death_table, aes(fill = gtex.dthhrdy, y = Freq, x = gtex.smts)) +
     axis.ticks = element_blank()
   ) +
   ggtitle("Type of Death for GTEx tissue")
-ggsave("~/results/GTEx_plots/210806_death_tissue_GTEx_precent.pdf")
+ggsave("~/results/GTEx_plots/210806_death_tissue_GTEx_percent.pdf")
 ```
 
 
@@ -418,7 +418,7 @@ ggplot(sex_sub_table, aes(fill = gtex.sex, y = Freq, x = gtex.smtsd)) +
     axis.ticks = element_blank()
   ) +
   ggtitle("Sex for GTEx tissue")
-ggsave("~/results/GTEx_plots/210806_sex_tissue_structures_GTEx_precent.pdf")
+ggsave("~/results/GTEx_plots/210806_sex_tissue_structures_GTEx_percent.pdf")
 ```
 
 Plot the number of samples for each age group across the sub-tissue groups
@@ -482,7 +482,7 @@ ggplot(age_sex_sub_table, aes(fill = SEX_AGE, y = Freq, x = gtex.smtsd)) +
     axis.ticks = element_blank()
   ) +
   ggtitle("Sex and Age for GTEx tissue")
-ggsave("~/results/GTEx_plots/210806_sex_age_tissue_structures_GTEx_precent.pdf")
+ggsave("~/results/GTEx_plots/210806_sex_age_tissue_structures_GTEx_percent.pdf")
 ```
 
 Plot the number of samples for each type of death across the sub-tissue groups
@@ -498,7 +498,7 @@ ggplot(death_sub_table, aes(fill = gtex.dthhrdy, y = Freq, x = gtex.smtsd)) +
     axis.ticks = element_blank()
   ) +
   ggtitle("Type of Death for GTEx tissue")
-ggsave("~/results/GTEx_plots/210806_death_tissue_structures_GTEx_precent.pdf")
+ggsave("~/results/GTEx_plots/210806_death_tissue_structures_GTEx_percent.pdf")
 ```
 
 Plot the RIN score for each sex across the sub-tissue groups
@@ -534,7 +534,7 @@ ggplot(autolysis_score, aes(fill = gtex.smatsscr, y = Freq, x = gtex.smts)) +
     axis.ticks = element_blank()
   ) +
   ggtitle("Autolysis Score for GTEx tissue")
-ggsave("~/results/GTEx_plots/210806_autolysis_score_tissue_GTEx_precent.pdf")
+ggsave("~/results/GTEx_plots/210806_autolysis_score_tissue_GTEx_percent.pdf")
 ```
 
 Plot the total number of reads aligned/map 
@@ -621,7 +621,7 @@ ggplot(autolysis_score, aes(fill = gtex.smatsscr, y = Freq, x = gtex.smtsd)) +
   ) +
   ggtitle("Autolysis Score for GTEx tissue")
 ggsave(
-  "~/results/GTEx_plots/210806_autolysis_score_tissue_structure_GTEx_precent.pdf"
+  "~/results/GTEx_plots/210806_autolysis_score_tissue_structure_GTEx_percent.pdf"
 )
 ```
 
