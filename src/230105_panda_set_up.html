@@ -514,18 +514,18 @@ library(recount3)</code></pre>
 <pre><code>## Loading required package: IRanges</code></pre>
 <pre><code>## Loading required package: GenomeInfoDb</code></pre>
 <pre class="r"><code>human_projects&lt;- available_projects()</code></pre>
-<pre><code>## 2023-04-10 11:04:07 caching file sra.recount_project.MD.gz.</code></pre>
-<pre><code>## 2023-04-10 11:04:08 caching file gtex.recount_project.MD.gz.</code></pre>
-<pre><code>## 2023-04-10 11:04:09 caching file tcga.recount_project.MD.gz.</code></pre>
+<pre><code>## 2023-04-10 11:09:49 caching file sra.recount_project.MD.gz.</code></pre>
+<pre><code>## 2023-04-10 11:09:50 caching file gtex.recount_project.MD.gz.</code></pre>
+<pre><code>## 2023-04-10 11:09:50 caching file tcga.recount_project.MD.gz.</code></pre>
 <pre class="r"><code>test&lt;- create_rse(human_projects[(human_projects$project == &quot;SRP118922&quot;),])</code></pre>
-<pre><code>## 2023-04-10 11:04:17 downloading and reading the metadata.</code></pre>
-<pre><code>## 2023-04-10 11:04:17 caching file sra.sra.SRP118922.MD.gz.</code></pre>
-<pre><code>## 2023-04-10 11:04:18 caching file sra.recount_project.SRP118922.MD.gz.</code></pre>
-<pre><code>## 2023-04-10 11:04:19 caching file sra.recount_qc.SRP118922.MD.gz.</code></pre>
-<pre><code>## 2023-04-10 11:04:19 caching file sra.recount_seq_qc.SRP118922.MD.gz.</code></pre>
-<pre><code>## 2023-04-10 11:04:20 caching file sra.recount_pred.SRP118922.MD.gz.</code></pre>
-<pre><code>## 2023-04-10 11:04:20 downloading and reading the feature information.</code></pre>
-<pre><code>## 2023-04-10 11:04:21 caching file human.gene_sums.G026.gtf.gz.</code></pre>
+<pre><code>## 2023-04-10 11:09:58 downloading and reading the metadata.</code></pre>
+<pre><code>## 2023-04-10 11:09:59 caching file sra.sra.SRP118922.MD.gz.</code></pre>
+<pre><code>## 2023-04-10 11:09:59 caching file sra.recount_project.SRP118922.MD.gz.</code></pre>
+<pre><code>## 2023-04-10 11:10:00 caching file sra.recount_qc.SRP118922.MD.gz.</code></pre>
+<pre><code>## 2023-04-10 11:10:01 caching file sra.recount_seq_qc.SRP118922.MD.gz.</code></pre>
+<pre><code>## 2023-04-10 11:10:01 caching file sra.recount_pred.SRP118922.MD.gz.</code></pre>
+<pre><code>## 2023-04-10 11:10:02 downloading and reading the feature information.</code></pre>
+<pre><code>## 2023-04-10 11:10:02 caching file human.gene_sums.G026.gtf.gz.</code></pre>
 <pre><code>## Found more than one class &quot;file&quot; in cache; using the first, from namespace &#39;BiocGenerics&#39;</code></pre>
 <pre><code>## Also defined by &#39;RJSONIO&#39;</code></pre>
 <pre><code>## Found more than one class &quot;file&quot; in cache; using the first, from namespace &#39;BiocGenerics&#39;</code></pre>
@@ -536,9 +536,9 @@ library(recount3)</code></pre>
 <pre><code>## Also defined by &#39;RJSONIO&#39;</code></pre>
 <pre><code>## Found more than one class &quot;connection&quot; in cache; using the first, from namespace &#39;BiocGenerics&#39;</code></pre>
 <pre><code>## Also defined by &#39;RJSONIO&#39;</code></pre>
-<pre><code>## 2023-04-10 11:04:22 downloading and reading the counts: 35 samples across 63856 features.</code></pre>
-<pre><code>## 2023-04-10 11:04:23 caching file sra.gene_sums.SRP118922.G026.gz.</code></pre>
-<pre><code>## 2023-04-10 11:04:26 construcing the RangedSummarizedExperiment (rse) object.</code></pre>
+<pre><code>## 2023-04-10 11:10:04 downloading and reading the counts: 35 samples across 63856 features.</code></pre>
+<pre><code>## 2023-04-10 11:10:04 caching file sra.gene_sums.SRP118922.G026.gz.</code></pre>
+<pre><code>## 2023-04-10 11:10:07 construcing the RangedSummarizedExperiment (rse) object.</code></pre>
 <pre class="r"><code>feature_info &lt;- test@rowRanges
 rm(test)</code></pre>
 <pre class="r"><code>saveRDS(feature_info, paste0(dir_path, &quot;data/recount3_feature_info.rds&quot;))</code></pre>
@@ -580,7 +580,6 @@ tissues&lt;- tissues[! grepl(&quot;Cell&quot;, tissues)]</code></pre>
     &quot;_gtex_processed_expression.rds&quot;, sep = &quot;&quot;))
   
   panda_tissue_fix(expression, expression_file = file_expression)
-}
 }</code></pre>
 </div>
 <div id="save-data" class="section level3">
