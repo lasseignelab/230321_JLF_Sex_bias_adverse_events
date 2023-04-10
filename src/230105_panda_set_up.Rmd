@@ -129,9 +129,13 @@ for( i in 1:length(tissues)){
   print(tissues[i])
   file_name<- paste(dir_path, "data/gtex_qsmooth/", tissues[i], "_gtex_qsmooth_expression.rds", sep = "")
   expression <- readRDS(file_name)
-  file_expression <- paste(dir_path, "results/lioness/processed_normalized_expression/", tissues[i], "_gtex_processed_expression.rds", sep = "")
+  file_expression <- gsub(" ", "_", paste(
+    dir_path, "results/lioness/processed_normalized_expression/", 
+    tissues[i], 
+    "_gtex_processed_expression.rds", sep = ""))
   
   panda_tissue_fix(expression, expression_file = file_expression)
+}
 }
 ```
 
