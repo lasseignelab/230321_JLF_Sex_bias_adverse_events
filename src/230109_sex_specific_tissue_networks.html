@@ -392,16 +392,16 @@ System which operations were done on:
 Cheaha
 
 GitHub Repo:
-Sex_Bias_Adverse_Events
+230321_JLF_Sex_bias_adverse_events
 
 Docker/Singularity: 
 rstudio_sex_bias_drugs
 
 Directory of operations: 
-&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events&quot;
+&quot;/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events&quot;
 
 Scripts being edited for operations:
-created a new function xx in the sex_bias_functions.R for the data wrangling 
+created a new function in the sex_bias_functions.R for building the sex-specific networks
 
 Data being used: 
 the proccessed gene expression from the ./output/proccessed_normalized_expression and meta data from the 210806_GTEx_Age_Sex.Rmd script
@@ -414,8 +414,8 @@ panda and alpaca from the netzzor package</code></pre>
 <div id="set-working-directory" class="section level3">
 <h3>Set working directory</h3>
 <pre class="r"><code>#change this path to match your paths 
-dir_path &lt;- &quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/&quot;</code></pre>
-<pre class="r"><code>source(paste0(dir_path, &quot;script/sex_bias_drug_functions.R&quot;))
+dir_path &lt;- &quot;/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/&quot;</code></pre>
+<pre class="r"><code>source(paste0(dir_path, &quot;src/sex_bias_drug_functions.R&quot;))
 library(Biobase)</code></pre>
 <pre><code>## Loading required package: BiocGenerics</code></pre>
 <pre><code>## 
@@ -481,22 +481,22 @@ ppi_net &lt;- readRDS(paste0(dir_path, &quot;data/panda_input_data/230104_symbol
 
 tissues &lt;- unique(metadata$gtex.smtsd)
 #remove cell tissues
-tissues&lt;- tissues[! grepl(&quot;Cell&quot;, tissues)]</code></pre>
-<p>note processed data had the white sapce removed</p>
+tissues &lt;- tissues[! grepl(&quot;Cell&quot;, tissues)]</code></pre>
+<p>note processed data had the white space removed</p>
 <pre class="r"><code>tissues_wo_ws &lt;- gsub(&quot; &quot;, &quot;_&quot;, tissues, fixed = TRUE)</code></pre>
 <pre class="r"><code>for (i in 1:length(tissues_wo_ws)){
   
   print(tissues[i])
-  file_name&lt;- paste(paste0(dir_path, &quot;output/lioness/processed_normalized_expression/&quot;), tissues_wo_ws[i], &quot;_gtex_processed_expression.rds&quot;,sep = &quot;&quot;)
+  file_name &lt;- paste(paste0(dir_path, &quot;results/lioness/processed_normalized_expression/&quot;), tissues_wo_ws[i], &quot;_gtex_processed_expression.rds&quot;,sep = &quot;&quot;)
   #print(file_name)
   expression &lt;- readRDS(file_name)
   
-  tisssue_meta_file&lt;- paste(paste0(dir_path, &quot;data/gtex_qsmooth/&quot;), tissues[i], &quot;_gtex_metadata.rds&quot;, sep = &quot;&quot;)
-  tisssue_meta&lt;-readRDS(tisssue_meta_file)
+  tisssue_meta_file &lt;- paste(paste0(dir_path, &quot;results/gtex_qsmooth/&quot;), tissues[i], &quot;_gtex_metadata.rds&quot;, sep = &quot;&quot;)
+  tisssue_meta &lt;- readRDS(tisssue_meta_file)
   
-  file_male &lt;- paste(paste0(dir_path, &quot;output/alpaca/sex_specific_networks/&quot;), tissues_wo_ws[i], &quot;_M_panda.rds&quot;, sep = &quot;&quot;)
+  file_male &lt;- paste(paste0(dir_path, &quot;results/alpaca/sex_specific_networks/&quot;), tissues_wo_ws[i], &quot;_M_panda.rds&quot;, sep = &quot;&quot;)
   
-  file_female &lt;- paste(paste0(dir_path, &quot;output/alpaca/sex_specific_networks/&quot;), tissues_wo_ws[i], &quot;_F_panda.rds&quot;, sep = &quot;&quot;)
+  file_female &lt;- paste(paste0(dir_path, &quot;results/alpaca/sex_specific_networks/&quot;), tissues_wo_ws[i], &quot;_F_panda.rds&quot;, sep = &quot;&quot;)
   
   try(sex_networks(expression, 
                    tisssue_meta, 
@@ -512,11 +512,11 @@ tissues&lt;- tissues[! grepl(&quot;Cell&quot;, tissues)]</code></pre>
 <div id="end" class="section level1">
 <h1>END</h1>
 <pre><code>Location of final scripts:
-scripts
+src
 
 
 Location of data produced:
-/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/data/panda_input_data
+/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/results/alpaca/sex_specific_networks
 
 Dates when operations were done:
 230104</code></pre>

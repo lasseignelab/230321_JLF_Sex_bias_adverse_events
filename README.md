@@ -21,6 +21,8 @@ Download the Docker image from Docker Hub (only done once)
 docker pull jenfisher7/rstudio_sex_bias_drugs
 ````
 
+Adjust Docker Desktop settings to CPUs = 12 ; Memory = 64 GB; swap = 1 GB; disk size = 1.6 TB
+
 Mount the github as your working directory to match file paths and to avoid upstream files that could affect results. 
 ```
 docker run -d --rm -p 8787:8787 -e PASSWORD=NBI -v [Replace with your path to the github directory]/230321_JLF_Sex_bias_adverse_events:/home/rstudio/ jenfisher7/rstudio_sex_bias_drugs
@@ -37,10 +39,11 @@ Go to the github directory
 cd [Replace with your path to the github directory]/230321_JLF_Sex_bias_adverse_events
 module load Singularity/3.5.2-GCC-5.4.0-2.26
 ````
-Pull the docker image from Dockerhub and create sif file
+Pull the docker image from Dockerhub and create sif file (only done once)
 ````
-singularity pull jenfisher7/rstudio_sex_bias_drugs
+singularity pull docker://jenfisher7/rstudio_sex_bias_drugs
 ````
+
 create files need to run singularity (only do this step once).
 ````
 mkdir -p run var-lib-rstudio-server
@@ -76,27 +79,52 @@ Correct the path your conda environment R libraries in the 230213_fares_fisher_t
 #SR_TAU_CELL
 .libPaths("/data/user/<YOU>/.conda/envs/SR_TAU_CELL/lib/R/library")
 ````
-To run the scripts, you use the commands in 230213_fares_fisher_test.txt in the src directory. This will run the .sh file which will use the R script. This is an array job so you can run several jobs in parrallel. I suggest running this on the weekend when you don't need cheaha. It is about one day run time. 
+To run the scripts, you use the commands in 230213_fares_fisher_test.txt in the src directory. This will run the .sh file which will use the R script. With the .sh script, please adjust lines 3, 14 to be your email and directories. In .R file, please adjust lines 2 and 8 to point to the right directores.
+These scripts run as an array job so you can run several jobs in parrallel. I suggest running this on the weekend when you don't need cheaha. It is about one day run time. 
+
+## Some saved output might be in the older verison of this project on Cheaha
+````
+/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/
+````
 
 
 ## Scripts
+
+Note for all .Rmd files there is a knitted .html file with outputs of code. Some of the code takes awhile to run (i.e., more than ~1 hour) so the ouput is not in the knit file. 
+
 **GTEx data download and exploration**
 - 210806_GTEx_Age_Sex.Rmd
 
-This is important script. Update Jen on any issues with script. 
+ - This is important script. Update Jen on any issues with script. 
 
 **Network analysis scripts**
 - 230103_network_qsmooth.Rmd
+  
+  - 12 hour-short job on cheaha. important script. Update Jen on any issues with script. 
+  
 - 230104_panda_network_inputs.Rmd
+
+  - 2 hour-express job on cheaha. important script. Update Jen on any issues with script. 
+  
+- 230105_panda_set_up.Rmd
+
+   - 12 hour-short job on cheaha. important script. Update Jen on any issues with script. 
+
 - 230109_sex_specific_tissue_networks.Rmd
+
+   - 48 hour-medium job on cheaha (more time than you need). important script. Update Jen on any issues with script. 
+ 
+- 230130_alpaca_sex_tissues.Rmd
+   - 12 hour-short job on cheaha. important script. Update Jen on any issues with script. 
 - 230206_alpaca_results_exploration.Rmd
 - 230221_liver_sex_specific_com.Rmd
 
 **FARES scripts**
-- 220722_FDA_OPEN_FARES_Exploration.Rmd
+- 220722_Meddra_mapping.Rmd
 - 230124_fares_sbae_drugs.Rmd
+  - 2 hour express ; 3 cpu and 80GB per cpu in cheaha.
 <br>
-The following 230213_fares_fisher_test scripts use the conda enviroment. 
+The following 230213_fares_fisher_test scripts use the conda enviroment. 1 day run on cheaha. Suggest running over the weekend. 
 
 - 230213_fares_fisher_test.txt
 - 230213_fares_fisher_test.sh
@@ -145,8 +173,6 @@ remove in the future but noting here for now
 - src/221031_transfer_sex_diff_test.Rmd
 - src/230105_lioness_function_script.R
 - src/230105_lioness_function_script.sh
-- src/230105_lioness_set_up.Rmd
-- src/230105_lioness_set_up.html
 - src/230106_lioness_tissue_runs.txt
 - src/230112_lioness_function_script_smaller.R
 - src/230112_lioness_function_script_smaller.sh

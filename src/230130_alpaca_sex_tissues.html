@@ -383,7 +383,7 @@ working directory</a></li>
 <div id="start" class="section level1">
 <h1>START</h1>
 <pre><code>Goal/Purpose of operations: 
-I need to convert the data format of the sex specific tissue networks outputs to longer by dataframes for alpaca differential community analysis 
+I need to convert the data format of the sex specific tissue networks outputs to longer by dataframes for alpaca differential community analysis and then run the alpaca analysis.
 
 Finished psedocode on:
 230130
@@ -392,16 +392,16 @@ System which operations were done on:
 Cheaha
 
 GitHub Repo:
-Sex_Bias_Adverse_Events
+230321_JLF_Sex_bias_adverse_events
 
 Docker/Singularity: 
 rstudio_sex_bias_drugs
 
 Directory of operations: 
-&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events&quot;
+&quot;/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events&quot;
 
 Scripts being edited for operations:
-created a new function xx in the sex_bias_functions.R for the data wrangling 
+created a new functions in the sex_bias_functions.R for the data wrangling and the alpaca analysis
 
 Data being used: 
 the sex -spcific tissue networks from ./output/alpaca/sex_specific_networks
@@ -414,8 +414,8 @@ panda and alpaca from the netzoor package</code></pre>
 <div id="set-working-directory" class="section level3">
 <h3>Set working directory</h3>
 <pre class="r"><code>#change this path to match your paths 
-dir_path &lt;- &quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events&quot;</code></pre>
-<pre class="r"><code>source(paste0(dir_path, &quot;/script/sex_bias_drug_functions.R&quot;))
+dir_path &lt;- &quot;/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events&quot;</code></pre>
+<pre class="r"><code>source(paste0(dir_path, &quot;/src/sex_bias_drug_functions.R&quot;))
 library(tidyverse)</code></pre>
 <pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
 ## ✔ ggplot2 3.4.0      ✔ purrr   1.0.0 
@@ -505,10 +505,10 @@ library(tidyverse)</code></pre>
 
 tissues &lt;- unique(metadata$gtex.smtsd)
 #remove cell tissues
-tissues&lt;- tissues[! grepl(&quot;Cell&quot;, tissues)]</code></pre>
-<p>note processed data had the white sapce removed</p>
+tissues &lt;- tissues[! grepl(&quot;Cell&quot;, tissues)]</code></pre>
+<p>note processed data had the white space removed</p>
 <pre class="r"><code>tissues_wo_ws &lt;- gsub(&quot; &quot;, &quot;_&quot;, tissues, fixed = TRUE)</code></pre>
-<pre class="r"><code>panda_output_files &lt;- list.files(paste0(dir_path, &quot;/output/alpaca/sex_specific_networks&quot;))</code></pre>
+<pre class="r"><code>panda_output_files &lt;- list.files(paste0(dir_path, &quot;/results/alpaca/sex_specific_networks&quot;))</code></pre>
 <p>create input files for alpaca analysis (male then female)</p>
 <pre class="r"><code>for (i in seq(1, 86, by =2)){
   #print(i)
@@ -530,30 +530,30 @@ tissues&lt;- tissues[! grepl(&quot;Cell&quot;, tissues)]</code></pre>
 <pre class="r"><code>#liver test 
 #Liver__topNet_regnet_male_female_long &lt;- readRDS(&quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/alpaca/alpaca_adjusted_inputs/Liver__topNet_regnet_male_female_long.rds&quot;)
 #liver_regnet_sex_alp&lt;- alpaca(Liver__topNet_regnet_male_female_long, &quot;/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/alpaca/alpaca_run/liver_test&quot;, verbose = TRUE)</code></pre>
-<pre class="r"><code>panda_adjusted_files &lt;- list.files(paste0(dir_path, &quot;/output/alpaca/alpaca_adjusted_inputs&quot;))</code></pre>
+<pre class="r"><code>panda_adjusted_files &lt;- list.files(paste0(dir_path, &quot;/results/alpaca/alpaca_adjusted_inputs&quot;))</code></pre>
 <pre class="r"><code># female specific communities
 for (i in 1:length(panda_adjusted_files)){
   print(panda_adjusted_files[i])
-  input&lt;- readRDS(paste0(paste0(dir_path, &quot;/output/alpaca/alpaca_adjusted_inputs/&quot;),  panda_adjusted_files[i], sep = &quot;&quot;))
+  input&lt;- readRDS(paste0(paste0(dir_path, &quot;/results/alpaca/alpaca_adjusted_inputs/&quot;),  panda_adjusted_files[i], sep = &quot;&quot;))
   
   tissue_name &lt;- unlist(str_split(panda_adjusted_files[i], &quot;__&quot;)[[1]])[1]
   print(tissue_name)
   
-  file_header&lt;- paste0(paste0(dir_path, &quot;/output/alpaca/alpaca_run/&quot;),  tissue_name, &quot;_&quot;,sep = &quot;&quot;)
+  file_header &lt;- paste0(paste0(dir_path, &quot;/results/alpaca/alpaca_run/&quot;),  tissue_name, &quot;_&quot;,sep = &quot;&quot;)
   
-  regnet_sex_alp&lt;- alpaca(input, file_header, verbose = TRUE)
+  regnet_sex_alp &lt;- alpaca(input, file_header, verbose = TRUE)
 }</code></pre>
 <pre class="r"><code>#change the order for male specific communities
 for (i in 1:length(panda_adjusted_files)){
   print(panda_adjusted_files[i])
-  input&lt;- readRDS(paste0(paste0(dir_path, &quot;/output/alpaca/alpaca_adjusted_inputs/&quot;),  panda_adjusted_files[i], sep = &quot;&quot;))
-  input_adj&lt;- input[,c(1,2,4,3)]
+  input &lt;- readRDS(paste0(paste0(dir_path, &quot;/results/alpaca/alpaca_adjusted_inputs/&quot;),  panda_adjusted_files[i], sep = &quot;&quot;))
+  input_adj &lt;- input[,c(1,2,4,3)]
   tissue_name &lt;- unlist(str_split(panda_adjusted_files[i], &quot;__&quot;)[[1]])[1]
   print(tissue_name)
   
-  file_header&lt;- paste0(paste0(dir_path, &quot;/output/alpaca/alpaca_run/&quot;),  tissue_name, &quot;female&quot;, &quot;male&quot; , &quot;_&quot;,sep = &quot;&quot;)
+  file_header &lt;- paste0(paste0(dir_path, &quot;/results/alpaca/alpaca_run/&quot;), tissue_name, &quot;female&quot;, &quot;male&quot; , &quot;_&quot;,sep = &quot;&quot;)
   
-  regnet_sex_alp_flipped&lt;- alpaca(input_adj, file_header, verbose = TRUE)
+  regnet_sex_alp_flipped &lt;- alpaca(input_adj, file_header, verbose = TRUE)
 }</code></pre>
 </div>
 <div id="save-data" class="section level3">
@@ -568,7 +568,7 @@ scripts
 
 
 Location of data produced:
-/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/lioness/adjusted_lioness_outputs
+/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/results/lioness/adjusted_lioness_outputs
 
 Dates when operations were done:
 230130</code></pre>
