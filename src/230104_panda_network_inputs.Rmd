@@ -45,7 +45,18 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Set working directory 
 ```{r}
 #change this path to match your paths 
-dir_path <- "/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/"
+dir_path <- "/home/clarkad/CR/230321_JLF_Sex_bias_adverse_events/"
+
+# again I think a combination of your method with here 
+# will be helpful for readability and adherence for 
+# other scripts
+data_path <- here::here(
+  "data",
+  "panda_input_data")
+results_path <- here::here(
+  "results",
+  "ac_results"
+)
 ```
 
 ```{r}
@@ -56,8 +67,12 @@ library(stringr)
 Done within the script
 ### Analysis
 
-```{r eval= FALSE}
-download.file('https://stringdb-static.org/download/protein.links.v11.5/9606.protein.links.v11.5.txt.gz', destfile = paste0(dir_path, "data/panda_input_data/stringi_database_11_5_9606.txt.gz"), method = "wget", extra= "--no-check-certificate")
+```{r }
+download.file(
+  'https://stringdb-static.org/download/protein.links.v11.5/9606.protein.links.v11.5.txt.gz', 
+  destfile = paste0(dir_path, "data/panda_input_data/stringi_database_11_5_9606.txt.gz"), 
+  method = "wget", 
+  extra= "--no-check-certificate")
 ```
 make sure to unzip the file outside of the script
 ```{r}
@@ -86,8 +101,12 @@ ppi_table$combined_score <- ifelse(ppi_table$protein1 == ppi_table$protein2, 1, 
 hist(ppi_table$combined_score)
 ```
 
-```{r eval= FALSE}
-download.file('https://stringdb-static.org/download/protein.info.v11.5/9606.protein.info.v11.5.txt.gz', destfile = paste0(dir_path, "data/panda_input_data/9606.protein.info.v11.5.txt.gz"), method = "wget", extra= "--no-check-certificate")
+```{r }
+download.file(
+  'https://stringdb-static.org/download/protein.info.v11.5/9606.protein.info.v11.5.txt.gz', 
+  destfile = paste0(dir_path, "data/panda_input_data/9606.protein.info.v11.5.txt.gz"), 
+  method = "wget", 
+  extra= "--no-check-certificate")
 ```
 
 make sure to unzip file outside the script
@@ -124,7 +143,7 @@ symbol_ppi_table$scores <- as.numeric(symbol_ppi_table$scores)
 ```
 
 
-```{r eval =FALSE}
+```{r }
 saveRDS(symbol_ppi_table, paste0(dir_path, "data/panda_input_data/230104_symbol_ppi_network_11_5_0.rds"))
 ```
 
@@ -134,6 +153,10 @@ protein1_symbols[is.na(protein1_symbols)]
 protein2_symbols[protein2_symbols == "NA"]
 protein2_symbols[is.na(protein2_symbols)]
 ```
+character(0)
+character(0)
+character(0)
+character(0)
 
 ```{r}
 head(symbol_ppi_table)
@@ -193,7 +216,7 @@ symbol_motif_table <- as.data.frame(symbol_motif_table)
 symbol_motif_table$V3 <- as.numeric(symbol_motif_table$V3)
 ```
 
-```{r eval =FALSE}
+```{r }
 saveRDS(symbol_motif_table, paste0(dir_path, "data/panda_input_data/230104_symbol_motif_table.rds"))
 ```
 
@@ -216,4 +239,31 @@ Done in script
 sessionInfo()
 ```
 
+R version 4.2.2 (2022-10-31)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 22.04.1 LTS
 
+Matrix products: default
+BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.20.so
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods  
+[7] base     
+
+other attached packages:
+[1] stringr_1.5.0
+
+loaded via a namespace (and not attached):
+ [1] compiler_4.2.2  here_1.0.1      magrittr_2.0.3  cli_3.6.1      
+ [5] rprojroot_2.0.3 tools_4.2.2     glue_1.6.2      rstudioapi_0.14
+ [9] vctrs_0.6.1     stringi_1.7.12  knitr_1.42      xfun_0.38      
+[13] lifecycle_1.0.3 rlang_1.1.0

@@ -514,18 +514,18 @@ library(recount3)</code></pre>
 <pre><code>## Loading required package: IRanges</code></pre>
 <pre><code>## Loading required package: GenomeInfoDb</code></pre>
 <pre class="r"><code>human_projects&lt;- available_projects()</code></pre>
-<pre><code>## 2023-03-28 15:15:53 caching file sra.recount_project.MD.gz.</code></pre>
-<pre><code>## 2023-03-28 15:15:54 caching file gtex.recount_project.MD.gz.</code></pre>
-<pre><code>## 2023-03-28 15:15:54 caching file tcga.recount_project.MD.gz.</code></pre>
+<pre><code>## 2023-04-10 11:09:49 caching file sra.recount_project.MD.gz.</code></pre>
+<pre><code>## 2023-04-10 11:09:50 caching file gtex.recount_project.MD.gz.</code></pre>
+<pre><code>## 2023-04-10 11:09:50 caching file tcga.recount_project.MD.gz.</code></pre>
 <pre class="r"><code>test&lt;- create_rse(human_projects[(human_projects$project == &quot;SRP118922&quot;),])</code></pre>
-<pre><code>## 2023-03-28 15:15:58 downloading and reading the metadata.</code></pre>
-<pre><code>## 2023-03-28 15:15:58 caching file sra.sra.SRP118922.MD.gz.</code></pre>
-<pre><code>## 2023-03-28 15:15:59 caching file sra.recount_project.SRP118922.MD.gz.</code></pre>
-<pre><code>## 2023-03-28 15:15:59 caching file sra.recount_qc.SRP118922.MD.gz.</code></pre>
-<pre><code>## 2023-03-28 15:16:00 caching file sra.recount_seq_qc.SRP118922.MD.gz.</code></pre>
-<pre><code>## 2023-03-28 15:16:00 caching file sra.recount_pred.SRP118922.MD.gz.</code></pre>
-<pre><code>## 2023-03-28 15:16:00 downloading and reading the feature information.</code></pre>
-<pre><code>## 2023-03-28 15:16:01 caching file human.gene_sums.G026.gtf.gz.</code></pre>
+<pre><code>## 2023-04-10 11:09:58 downloading and reading the metadata.</code></pre>
+<pre><code>## 2023-04-10 11:09:59 caching file sra.sra.SRP118922.MD.gz.</code></pre>
+<pre><code>## 2023-04-10 11:09:59 caching file sra.recount_project.SRP118922.MD.gz.</code></pre>
+<pre><code>## 2023-04-10 11:10:00 caching file sra.recount_qc.SRP118922.MD.gz.</code></pre>
+<pre><code>## 2023-04-10 11:10:01 caching file sra.recount_seq_qc.SRP118922.MD.gz.</code></pre>
+<pre><code>## 2023-04-10 11:10:01 caching file sra.recount_pred.SRP118922.MD.gz.</code></pre>
+<pre><code>## 2023-04-10 11:10:02 downloading and reading the feature information.</code></pre>
+<pre><code>## 2023-04-10 11:10:02 caching file human.gene_sums.G026.gtf.gz.</code></pre>
 <pre><code>## Found more than one class &quot;file&quot; in cache; using the first, from namespace &#39;BiocGenerics&#39;</code></pre>
 <pre><code>## Also defined by &#39;RJSONIO&#39;</code></pre>
 <pre><code>## Found more than one class &quot;file&quot; in cache; using the first, from namespace &#39;BiocGenerics&#39;</code></pre>
@@ -536,9 +536,9 @@ library(recount3)</code></pre>
 <pre><code>## Also defined by &#39;RJSONIO&#39;</code></pre>
 <pre><code>## Found more than one class &quot;connection&quot; in cache; using the first, from namespace &#39;BiocGenerics&#39;</code></pre>
 <pre><code>## Also defined by &#39;RJSONIO&#39;</code></pre>
-<pre><code>## 2023-03-28 15:16:01 downloading and reading the counts: 35 samples across 63856 features.</code></pre>
-<pre><code>## 2023-03-28 15:16:02 caching file sra.gene_sums.SRP118922.G026.gz.</code></pre>
-<pre><code>## 2023-03-28 15:16:03 construcing the RangedSummarizedExperiment (rse) object.</code></pre>
+<pre><code>## 2023-04-10 11:10:04 downloading and reading the counts: 35 samples across 63856 features.</code></pre>
+<pre><code>## 2023-04-10 11:10:04 caching file sra.gene_sums.SRP118922.G026.gz.</code></pre>
+<pre><code>## 2023-04-10 11:10:07 construcing the RangedSummarizedExperiment (rse) object.</code></pre>
 <pre class="r"><code>feature_info &lt;- test@rowRanges
 rm(test)</code></pre>
 <pre class="r"><code>saveRDS(feature_info, paste0(dir_path, &quot;data/recount3_feature_info.rds&quot;))</code></pre>
@@ -574,7 +574,10 @@ tissues&lt;- tissues[! grepl(&quot;Cell&quot;, tissues)]</code></pre>
   print(tissues[i])
   file_name&lt;- paste(dir_path, &quot;data/gtex_qsmooth/&quot;, tissues[i], &quot;_gtex_qsmooth_expression.rds&quot;, sep = &quot;&quot;)
   expression &lt;- readRDS(file_name)
-  file_expression &lt;- paste(dir_path, &quot;results/lioness/processed_normalized_expression/&quot;, tissues[i], &quot;_gtex_processed_expression.rds&quot;, sep = &quot;&quot;)
+  file_expression &lt;- gsub(&quot; &quot;, &quot;_&quot;, paste(
+    dir_path, &quot;results/lioness/processed_normalized_expression/&quot;, 
+    tissues[i], 
+    &quot;_gtex_processed_expression.rds&quot;, sep = &quot;&quot;))
   
   panda_tissue_fix(expression, expression_file = file_expression)
 }</code></pre>

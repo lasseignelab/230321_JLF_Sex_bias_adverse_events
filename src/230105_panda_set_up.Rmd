@@ -48,7 +48,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Set working directory 
 ```{r}
 #change this path to match your paths 
-dir_path <- "/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/"
+dir_path <- "~/CR/230321_JLF_Sex_bias_adverse_events/"
+
 ```
 
 
@@ -129,8 +130,11 @@ for( i in 1:length(tissues)){
   print(tissues[i])
   file_name<- paste(dir_path, "data/gtex_qsmooth/", tissues[i], "_gtex_qsmooth_expression.rds", sep = "")
   expression <- readRDS(file_name)
-  file_expression <- paste(dir_path, "results/lioness/processed_normalized_expression/", tissues[i], "_gtex_processed_expression.rds", sep = "")
-  
+  file_expression <- gsub(" ", "_", paste(
+    dir_path, "results/lioness/processed_normalized_expression/", 
+    tissues[i], 
+    "_gtex_processed_expression.rds", sep = ""))
+
   panda_tissue_fix(expression, expression_file = file_expression)
 }
 ```
@@ -151,5 +155,7 @@ Done in script
     
 ## Versions
 ```{r}
-sessionInfo()
+sinfo <- sessionInfo()
+saveRDS(sinfo, here::here(
+  "results", "ac_results", "230105_panda_setup_sInfo.RDS"))
 ```
