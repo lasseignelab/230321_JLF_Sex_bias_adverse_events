@@ -117,7 +117,8 @@ Note for all .Rmd files there is a knitted .html file with outputs of code. Some
 - 230130_alpaca_sex_tissues.Rmd
    - 12 hour-short job on cheaha. important script. Update Jen on any issues with script. 
 - 230206_alpaca_results_exploration.Rmd
-- 230221_liver_sex_specific_com.Rmd
+- 230221_liver_sex_specific_targeting.Rmd
+- 230417_liver_drug_edges.Rmd
 
 **FARES scripts**
 - 220722_Meddra_mapping.Rmd
