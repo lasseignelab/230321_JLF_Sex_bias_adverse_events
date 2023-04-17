@@ -1,0 +1,177 @@
+---
+title: "230221_liver_sex_specific_targeting"
+author: "Jennifer Fisher"
+date: "2023-02-21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# START 
+    Goal/Purpose of operations: 
+    I am going to be looking at the results for the sex-specific networks across the 43 different tissues. 
+    
+    Finished psedocode on:
+    230206
+    
+    System which operations were done on: 
+    my laptop
+    
+    GitHub Repo:
+    230321_JLF_Sex_bias_adverse_events
+    
+    Docker: 
+    jenfisher7/rstudio_sex_bias_drugs
+    
+    Directory of operations:
+    ~/Documents/230321_JLF_Sex_bias_adverse_events
+    
+    Scripts being edited for operations:
+    NA
+    
+    Data being used:
+    results/alpaca/alpaca_runs
+    
+    Papers and tools: 
+    NA
+
+# STEPS
+
+### Set working directory 
+
+```{r}
+source("~/src/sex_bias_drug_functions.R")
+library(gprofiler2)
+library(viridis)
+library(RColorBrewer)
+library(ComplexHeatmap)
+library(netZooR)
+library(ggplot2)
+library(GOSemSim)
+library(parallel)
+```
+
+```{r}
+metadata <- readRDS("~/data/metadata_gtex_filter_samples.rds")
+```
+
+Start by looking at Liver by itself
+```{r}
+Liver_M_panda <- readRDS("~/results/alpaca/sex_specific_networks/Liver_M_panda.rds")
+Liver_F_panda <- readRDS("~/results/alpaca/sex_specific_networks/Liver_F_panda.rds")
+Liver__male_female_long <- readRDS("~/results/alpaca/alpaca_adjusted_inputs/Liver__topNet_regnet_male_female_long.rds")
+```
+
+look at the differential degrees 
+```{r}
+diff_genes_liver <- calcDegreeDifference(Liver_F_panda, Liver_M_panda, type = "gene")
+```
+look at the drug genes
+```{r}
+drug_genes <- c("ADH1A"	,"ADH1B", "ADH1C", "ADH4",	"ADH5",	"ADH6",	"ADH7",	
+                "ALDH1A3",	"ALDH3A1",	"ALDH3B1", "ALDH3B2", "AOX1", "CYP1A2",
+                "CYP2A13", "CYP2A6", "CYP2A7",	"CYP2B6",	"CYP2C18",	"CYP2C19",
+                "CYP2C8",	"CYP2C9",	"CYP2D6",	"CYP2E1",	"CYP3A4",	"CYP3A43",	"CYP3A5",
+                "CYP3A7",	"FMO1",	"FMO2",	"FMO3", "FMO4",	"FMO5",  "GSTA1", "GSTA2", 	"GSTA3",	"GSTA4",
+                "GSTA5",	"GSTK1",	"GSTM1",	"GSTM2",	"GSTM3",	"GSTM4",	"GSTM5",	"GSTO1",
+                "GSTO2",	"GSTP1",	"GSTT1",	"GSTT2",	"GSTZ1",	"MAOA",	"MAOB",	"MGST1",
+                "MGST2",	"MGST3",	"UGT1A1",	"UGT1A10",	"UGT1A3",	"UGT1A4",
+                "UGT1A5",	"UGT1A6",	"UGT1A7",	"UGT1A8", "UGT1A9",	"UGT2A1",	"UGT2A3", "UGT2B10",
+                "UGT2B11",	"UGT2B15",	"UGT2B17",	"UGT2B28",	"UGT2B4",	"UGT2B7")
+```
+
+```{r}
+diff_drug_genes_liver <- diff_genes_liver[names(diff_genes_liver) %in% drug_genes]
+```
+compare to other genes in the liver network
+```{r}
+diff_other_genes_liver <- diff_genes_liver[!names(diff_genes_liver) %in% drug_genes]
+```
+
+```{r}
+diff_all_genes_liver<- rbind(data.frame(gene_list =rep( "Drug\nMetabolism", length(diff_drug_genes_liver)), Gene_Degree_Diff= as.numeric(diff_drug_genes_liver)), data.frame(gene_list =rep( "Other", length(diff_other_genes_liver)), Gene_Degree_Diff= as.numeric(diff_other_genes_liver)))
+```
+
+conduct wilcox test to compare drug genes vs other genes
+```{r}
+res <- wilcox.test(diff_drug_genes_liver , diff_other_genes_liver  )
+label_tissue <- paste("Wilcoxon signed\nrank test\np-value =\n",  res$p.value, sep = " ")
+```
+Plot the results
+```{r}
+diff_all_genes_liver$gene_list<- factor(diff_all_genes_liver$gene_list, levels= c("Other","Drug\nMetabolism" ))
+ggplot(diff_all_genes_liver, aes(x=Gene_Degree_Diff, y= gene_list, fill = gene_list)) +
+  geom_violin() +geom_point() +geom_text(y="Drug\nMetabolism", x=-250, label= label_tissue, size= 6) +
+  xlab("Degree Difference (FEMALE-MALE)") + ylab("Genes") +
+  scale_fill_viridis( alpha=0.7, option= "H" ,discrete = TRUE) +
+  theme(text = element_text(size = 30,  face="bold"))+ theme(legend.position = "none")
+```
+
+Look at the all the tissues
+```{r}
+tissues <- unique(metadata$gtex.smtsd)
+#remove cell tissues
+tissues<- tissues[! grepl("Cell", tissues)]
+```
+note processed data had the white sapce removed 
+```{r}
+tissues_wo_ws <- gsub(" ", "_", tissues, fixed = TRUE)
+```
+
+Below runs for over an hour 
+```{r eval=FALSE}
+test_p<- c()
+test_diff <- c()
+for (j in 1:length(tissues_wo_ws)){ #length(tissues_wo_ws)
+  print(tissues_wo_ws[j])
+  test <- drug_target_diff_analysis( tissues_wo_ws[j],  path="~/results/alpaca/drug_metabolism_genes/")
+  test_p[j]<- test[1]
+  test_diff[j]<- test[2]
+}
+```
+
+
+```{r eval=FALSE}
+sig_drug_gene_set <- as.data.frame(cbind(tissues_wo_ws, unlist(test_p), as.numeric(unlist(test_diff))))
+colnames(sig_drug_gene_set)<- c("Tissue", "p_value", "Degree Difference")
+```
+
+```{r eval=FALSE}
+sig_drug_gene_set$neg_log_p <- -log(as.numeric(sig_drug_gene_set$p_value))
+sig_drug_gene_set$`Degree Difference`<- as.numeric(sig_drug_gene_set$`Degree Difference`)
+```
+
+```{r eval=FALSE}
+p_value_cut<- -log(0.05/43)
+sig_drug_gene_set$Tissue_2 <- ifelse(sig_drug_gene_set$neg_log_p > p_value_cut,sig_drug_gene_set$Tissue, NA )
+```
+
+```{r eval=FALSE}
+sig_drug_gene_set$Tissue<- factor(sig_drug_gene_set$Tissue, levels= sig_drug_gene_set$Tissue[order(sig_drug_gene_set$neg_log_p)])
+ggplot(sig_drug_gene_set, aes(y=Tissue, x= neg_log_p, fill=`Degree Difference` ))+ geom_bar(stat="identity",  color= "black") + scale_fill_gradient2(low= "#21908CFF", mid= "white", high= "#440154FF") +theme(text = element_text(size = 20,  face="bold"))+ geom_vline(xintercept=p_value_cut, linetype="dashed", color = "black")+ xlab("-log(p-value)")
+ggsave("~/results/alpaca/drug_metabolism_genes/230301_differential_degree_drug_genes_wilcox_test.png", height=12, width=10)
+```
+
+ calculate the in-degree for everything and save it; another hour long section
+```{r eval=FALSE}
+for (i in 1:length(tissues_wo_ws)){ #length(tissues_wo_ws)
+  calc_targeting( tissues_wo_ws[i],  path="~/results/alpaca/")
+}
+```
+
+# END
+    Location of final scripts:
+    src
+    Location of data produced:
+    ~/results/alpaca/
+    Dates when operations were done:
+    230221
+    
+## Versions
+```{r}
+sessionInfo()
+```
+
+

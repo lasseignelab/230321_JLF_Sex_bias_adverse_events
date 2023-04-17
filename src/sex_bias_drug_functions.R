@@ -655,9 +655,215 @@ go_term_heatmap<- function(female_pathways, male_pathways, threshold = 0.95, fil
   # 
 }
 
+drug_target_diff_analysis<- function(tissue, path){
+  #input 
+  #tissue- name of the tissues (match file names)
+  #path- directory path to sex specific networks
+  
+  #outputs 
+  # plot of the degree of drug metabolism genes vs other genes
+  # p_value- wilcox of degree difference between drug metabolism genes and other genes
+  # diff- median of the degree difference of drug metabolism genes (female-male)
+  male_file<- paste0("~/results/alpaca/sex_specific_networks/", tissue, "_M_panda.rds")
+  M_panda <- readRDS(male_file)
+  female_file<- paste0("~/results/alpaca/sex_specific_networks/", tissue, "_F_panda.rds")
+  F_panda <- readRDS(female_file)
+  
+  diff_genes <- calcDegreeDifference( F_panda , M_panda, type="gene", filter = TRUE)
+  
+  
+  
+  diff_drug_genes <- diff_genes[names(diff_genes) %in% drug_genes]
+  diff_other_genes <- diff_genes[!names(diff_genes) %in% drug_genes]
+  
+  diff_all_genes<- rbind(data.frame(gene_list =rep( "Drug\nMetabolism", length(diff_drug_genes)), Gene_Degree_Diff= as.numeric(diff_drug_genes)), data.frame(gene_list =rep( "Other", length(diff_other_genes)), Gene_Degree_Diff= as.numeric(diff_other_genes)))
+  
+  res <- wilcox.test(diff_drug_genes , diff_other_genes  )
+  label_tissue <- paste("Wilcoxon signed\nrank test\np-value =\n",  res$p.value, sep = " ")
+  title_tissue<- paste("Degree difference of drug metabolismgenes\nbetween", tissue, "sex-specific gene regulatory networks", sep = " ")
+  diff_all_genes$gene_list<- factor(diff_all_genes$gene_list, levels= c("Other","Drug\nMetabolism" ))
+  
+  
+  ggplot(diff_all_genes, aes(x=Gene_Degree_Diff, y= gene_list, fill = gene_list)) + geom_violin() +geom_point() +geom_text(y="Drug\nMetabolism", x=-250, label= label_tissue, size= 10) +ggtitle(title_tissue) +xlab("Degree Difference (FEMALE-MALE)") + ylab("Genes")  + scale_fill_viridis( alpha=0.7, option= "H" ,discrete = TRUE)+theme(text = element_text(size = 30,  face="bold"))+ theme(legend.position = "none")
+  
+  file_name<- paste(path, "sex_degree_difference_plots/", tissue, "_sex_degree_difference_plot.png", sep = "")
+  ggsave(file_name, width = 20, height=10, units= "in")
+  
+  p_value<- res$p.value
+  diff<- median(diff_drug_genes)
+  #return p_value 
+  obj<- list(p_value, diff)
+  return(obj)
+}
 
+calc_targeting<- function(tissue, path){
+  #input 
+  #tissue- name of the tissues (match file names)
+  #path- directory path to sex specific networks
+  male_file<- paste0("~/results/alpaca/sex_specific_networks/", tissue, "_M_panda.rds")
+  M_panda <- readRDS(male_file)
+  female_file<- paste0("~/results/alpaca/sex_specific_networks/", tissue, "_F_panda.rds")
+  F_panda <- readRDS(female_file)
+  
+  f_degree_genes <- calcDegree( F_panda , type="gene", filter = TRUE, trim=TRUE)
+  m_degree_genes <- calcDegree( M_panda, type="gene", filter = TRUE, trim=TRUE)
+  
+  #save degree in here
+  
+  #panda_in_degree
+  file<- paste(path, "panda_in_degree/", tissue, "_female_sex_degree_gene.rds", sep = "")
+  saveRDS(f_degree_genes, file)
+  file<- paste(path, "panda_in_degree/", tissue, "_male_sex_degree_gene.rds", sep = "")
+  saveRDS(m_degree_genes, file)
+  all_degree <-  f_degree_genes  + m_degree_genes
+  
+  f_prop_degree <- f_degree_genes / all_degree
+  file<- paste(path, "panda_in_degree/", tissue, "_female_sex_degree_gene_prop.rds", sep = "")
+  saveRDS(f_prop_degree, file)
+  
+  m_prop_degree <- m_degree_genes / all_degree
+  file<- paste(path, "panda_in_degree/", tissue, "_male_sex_degree_gene_prop.rds", sep = "")
+  saveRDS(m_prop_degree, file)
+  
+  #find sex divergent here
+  #the proportion of sex-biased edges in the male- and female-biased directions is between 0.4 and 0.6
+  sex_div <- names(f_prop_degree)[ f_prop_degree > 0.4 &  f_prop_degree< 0.6]
+  
+  #find female-bias here 
+  f_bias<- names(f_prop_degree)[ f_prop_degree >0.6]
+  #the proportion of sex-biased edges in the female direction is greater than 0.6
+  
+  #find male-bias here
+  #male-biased genes (the proportion of sex-biased edges in the male direction is greater than 0.6),
+  m_bias<- names(m_prop_degree)[ m_prop_degree >0.6]
+  #create list 
+  list_bias<- list(sex_div, f_bias, m_bias)
+  
+  #save 
+  file<- paste(path, "panda_in_degree/", tissue, "_sex_bias_gene_list.rds", sep = "")
+  saveRDS(list_bias, file)
+  
+  
+  #out- degree
+  f_degree_tf <- calcDegree( F_panda , type="tf", filter = TRUE, trim=TRUE)
+  m_degree_tf <- calcDegree( M_panda, type="tf", filter = TRUE, trim=TRUE)
+  
+  #save degree in here
+  file<- paste(path, "panda_out_degree/", tissue, "_female_sex_degree_tf.rds", sep = "")
+  saveRDS(f_degree_tf, file)
+  file<- paste(path, "panda_out_degree/", tissue, "_male_sex_degree_tf.rds", sep = "")
+  saveRDS(m_degree_tf, file)
+  all_degree <-  f_degree_tf  + m_degree_tf
+  
+  f_prop_degree <- f_degree_tf / all_degree
+  file<- paste(path, "panda_out_degree/", tissue, "_female_sex_degree_tf_prop.rds", sep = "")
+  saveRDS(f_prop_degree, file)
+  
+  m_prop_degree <- m_degree_tf / all_degree
+  file<- paste(path, "panda_out_degree/", tissue, "_male_sex_degree_tf_prop.rds", sep = "")
+  saveRDS(m_prop_degree, file)
+  
+  #find sex divergent here
+  #the proportion of sex-biased edges in the male- and female-biased directions is between 0.4 and 0.6
+  sex_div <- names(f_prop_degree)[ f_prop_degree > 0.4 &  f_prop_degree< 0.6]
+  
+  #find female-bias here 
+  f_bias<- names(f_prop_degree)[ f_prop_degree >0.6]
+  #the proportion of sex-biased edges in the female direction is greater than 0.6
+  
+  #find male-bias here
+  #male-biased tf (the proportion of sex-biased edges in the male direction is greater than 0.6),
+  m_bias<- names(m_prop_degree)[ m_prop_degree >0.6]
+  #create list 
+  list_bias<- list(sex_div, f_bias, m_bias)
+  
+  #save 
+  file<- paste(path, "panda_out_degree/", tissue, "_sex_bias_tf_list.rds", sep = "")
+  saveRDS(list_bias, file)
+  
+}  
 
-
+go_term_heatmap_v2<- function(female_act_pathways, female_repress_pathways, male_act_pathways, male_repress_pathways, threshold = 0.95, file_name){
+  #input
+  #limma_pathways, deseqq2_pathways, TFL_pathways- the gprofiler result data frame for each method with the last column (named set)
+  #indicating if the pathway was from the up or down group
+  #list_type- up or down regulated 
+  #threshold- is the threshold of how far up or down the go ontology tree to go. default to 0.95
+  #file name for the parent go term results
+  
+  #output 
+  #heatmap
+  
+  #get terms
+  female_act_bp<- female_act_pathways$term_id[ female_act_pathways$source == "GO:BP" ]
+  female_repress_bp <- female_repress_pathways$term_id[ female_repress_pathways$source == "GO:BP"]
+  male_act_bp<- male_act_pathways$term_id[ male_act_pathways$source == "GO:BP" ]
+  male_repress_bp <- male_repress_pathways$term_id[ male_repress_pathways$source == "GO:BP"]
+  
+  #run the go term semantic similarity 
+  go1 <-  unique(c(female_act_bp, female_repress_bp, male_act_bp, male_repress_bp ))
+  go_sim <- mgoSim(go1, go1, semData=hsGO, measure="Wang", combine=NULL)
+  
+  #get the parent terms from rrvgo for the pathways
+  res <- reduceSimMatrix(go_sim, threshold = threshold)
+  res_v2<- res[match(colnames(go_sim), res$go),]
+  
+  
+  
+  #determine which pathway is enriched in the different methods for the heatmap annotation
+  female_act_list <- grepl(paste(female_act_bp,collapse="|"), colnames(go_sim)) 
+  female_repress_list <- grepl(paste(female_repress_bp,collapse="|"), colnames(go_sim)) 
+  male_act_list <- grepl(paste(male_act_bp,collapse="|"), colnames(go_sim)) 
+  male_repress_list <- grepl(paste(male_repress_bp,collapse="|"), colnames(go_sim)) 
+  
+  
+  #handing the case where there are no pathways enriched
+  if(length(female_act_list) ==0){ female_act_list <- rep(FALSE,ncol(go_sim) )} 
+  if(length(female_repress_list) ==0){ female_repress_list <- rep(FALSE,ncol(go_sim) )} 
+  if(length( male_act_list) ==0){  male_act_list <- rep(FALSE,ncol(go_sim) )} 
+  if(length(male_repress_list) ==0){ male_repress_list <- rep(FALSE,ncol(go_sim) )} 
+  
+  
+  #pick the number of colors note limit is about 9 
+  bp_color<- brewer.pal(n = length(unique(res_v2$parentTerm)), name = "Paired")
+  names(bp_color)<- unique(res_v2$parentTerm)
+  
+  #create heatmap
+  #"Female Repressor Edges"=f_repress_edge, "Male Activator Edges"=m_act_edge, "Male Repressor Edges"=m_repress_edge)
+  row_ha = HeatmapAnnotation("Female Activator Edges"=female_act_list, "Female Repressor Edges"= female_repress_list, "Male Activator Edges"=  male_act_list, "Male Repressor Edges" = male_repress_list, "Common Parent GO Term"= res_v2$parentTerm , col = list("Female Activator Edges"= c("TRUE" = "black", "FALSE" = "white"),"Female Repressor Edges" = c("TRUE" = "black", "FALSE" = "white"),"Male Activator Edges" = c("TRUE" = "black", "FALSE" = "white"),"Male Repressor Edges" = c("TRUE" = "black", "FALSE" = "white"),
+                                                                                                                                                                                                                                                                  "Common Parent GO Term"= bp_color ), annotation_name_gp= gpar(fontsize = 16,  fontface = "bold"), 
+                             annotation_legend_param = list("Female Repressor Edges"= list(title_gp = gpar(fontsize = 15, fontface = "bold"), labels_gp = gpar(fontsize = 13, fontface = "bold")), 
+                                                            "Female Activator Edges" = list(title_gp = gpar(fontsize = 15, fontface = "bold"), labels_gp = gpar(fontsize = 13, fontface = "bold")), 
+                                                            "Male Activator Edges"= list(title_gp = gpar(fontsize = 15, fontface = "bold"), labels_gp = gpar(fontsize = 13, fontface = "bold")),"Male Repressor Edges"= list(title_gp = gpar(fontsize = 15, fontface = "bold"), labels_gp = gpar(fontsize = 13, fontface = "bold")),
+                                                            "Common Parent GO Term" = list(title_gp = gpar(fontsize = 15, fontface = "bold"), labels_gp = gpar(fontsize = 13, fontface = "bold"))))
+  col_fun = colorRamp2(c(0,  1), c( "black", "yellow"))
+  
+  #SAVE THE PARENT MATCHES
+  res_v3<- cbind(res_v2,female_act_list, female_repress_list, male_act_list, male_repress_list )
+  write.csv(res_v3, file_name)
+  heatmap_v1 <- Heatmap(go_sim, nam= "GO Term Similarity (Wang)", col = col_fun, show_column_names = FALSE,  show_row_names = FALSE, top_annotation = row_ha,  
+                        clustering_distance_rows= "euclidean",
+                        clustering_distance_columns=  "euclidean",
+                        clustering_method_rows = "ward.D2" ,
+                        clustering_method_columns="ward.D2", heatmap_legend_param = list( title_gp = gpar(fontsize = 15 , fontface = "bold"), labels_gp = gpar(fontsize = 12, fontface = "bold")))
+  #draw(heatmap_v1, annotation_legend_side = "bottom")
+  #heatmap
+  Heatmap(go_sim, nam= "GO Term Similarity (Wang)", col = col_fun, show_column_names = FALSE,  show_row_names = FALSE, top_annotation = row_ha,  
+          clustering_distance_rows= "euclidean",
+          clustering_distance_columns=  "euclidean",
+          clustering_method_rows = "ward.D2" ,
+          clustering_method_columns="ward.D2", heatmap_legend_param = list( title_gp = gpar(fontsize = 15 , fontface = "bold"), labels_gp = gpar(fontsize = 12, fontface = "bold")))
+  
+  column_dend = hclust(dist(t(go_sim)), method = "ward.D2")
+  
+  heatmap_v2 <- Heatmap(matrix(nrow = 0, ncol = ncol(go_sim)),
+                        cluster_columns = column_dend, 
+                        show_column_names = FALSE,  
+                        show_row_names = FALSE, 
+                        top_annotation = row_ha) 
+  draw(heatmap_v2, annotation_legend_side = "bottom")
+  
+}
 
 #old functions no longer used in main project
 lioness_output_adjustment <- function(index){
