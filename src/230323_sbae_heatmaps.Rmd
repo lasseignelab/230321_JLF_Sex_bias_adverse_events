@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # START 
     Goal/Purpose of operations: 
-    I am going to be looking at the enriched drug targets from the SBAE drugs and looking at gene expression and core genes of sex-specific communitites. 
+    I am going to be looking at the enriched drug targets from the SBAE drugs and looking at gene expression and core genes of sex-specific communities. 
     
     Finished psedocode on:
     230308
@@ -262,6 +262,209 @@ unique(c(rownames(sbae_target_exp_top), rownames(sbae_target_core_top)))
 
 ```{r}
 68/84
+```
+
+
+```{r}
+sex_bias_genes<- unique(c(rownames(sbae_target_exp_top), rownames(sbae_target_core_top)))
+```
+
+```{r}
+drug_ae_res_info <- readRDS("~/results/FARES_plots/drug_ae_res_info.rds")
+```
+
+```{r}
+drug_info_sbae_drugs <- readRDS("~/results/FARES_plots/drug_info_sbae_drugs.rds")
+```
+
+```{r}
+dim(drug_info_sbae_drugs)
+```
+
+```{r}
+length(grep(paste0(sex_bias_genescollapse="|")  , drug_info_sbae_drugs$targets ))
+```
+
+```{r}
+389/416
+```
+
+
+look at top targets
+
+```{r}
+drug_target_drugs <- drug_info_sbae_drugs$drug_ids[grep("ADRA1A", drug_info_sbae_drugs$targets)]
+```
+
+```{r}
+length(drug_target_drugs)
+```
+26
+
+```{r}
+drug_ae_res_info <- readRDS("~/results/FARES_plots/drug_ae_res_info.rds")
+```
+
+```{r}
+res_drug_target_subset <- drug_ae_res_info[drug_ae_res_info$drug %in% drug_target_drugs,]
+```
+
+
+```{r}
+res_drug_target_subset<- res_drug_target_subset[res_drug_target_subset$BH < 0.05 & res_drug_target_subset$logROR < -1,]
+```
+
+
+```{r}
+adverse_event_counts <- as.data.frame(table(res_drug_target_subset$soc_term))
+```
+
+
+```{r}
+ggplot(adverse_event_counts, aes(x= Freq, y= Var1, label= Freq)) + geom_bar(stat="identity", fill =  "#21908CFF", color= "black", alpha=0.7)+ 
+    geom_text(size = 10, position = position_stack(vjust = 0.9)) + xlab("Number of male-bias drug-adverse event pairs with drugs with drug target") + ylab("Drug")+theme(text = element_text(size = 12,  face="bold"))
+```
+
+```{r}
+drug_target_drugs <- drug_info_sbae_drugs$drug_ids[grep("ADRA2A", drug_info_sbae_drugs$targets)]
+```
+
+```{r}
+length(drug_target_drugs)
+```
+24
+
+
+```{r}
+res_drug_target_subset <- drug_ae_res_info[drug_ae_res_info$drug %in% drug_target_drugs,]
+```
+
+
+```{r}
+res_drug_target_subset<- res_drug_target_subset[res_drug_target_subset$BH < 0.05 & res_drug_target_subset$logROR < -1,]
+```
+
+
+```{r}
+adverse_event_counts <- as.data.frame(table(res_drug_target_subset$soc_term))
+```
+
+
+```{r}
+ggplot(adverse_event_counts, aes(x= Freq, y= Var1, label= Freq)) + geom_bar(stat="identity", fill =  "#21908CFF", color= "black", alpha=0.7)+ 
+    geom_text(size = 10, position = position_stack(vjust = 0.9)) + xlab("Number of male-bias drug-adverse event pairs with drugs with drug target") + ylab("Drug")+theme(text = element_text(size = 12,  face="bold"))
+```
+
+
+```{r}
+drug_target_drugs <- drug_info_sbae_drugs$drug_ids[grep("CHRNA4", drug_info_sbae_drugs$targets)]
+```
+
+```{r}
+length(drug_target_drugs)
+```
+8
+
+
+```{r}
+res_drug_target_subset <- drug_ae_res_info[drug_ae_res_info$drug %in% drug_target_drugs,]
+```
+
+
+```{r}
+res_drug_target_subset<- res_drug_target_subset[res_drug_target_subset$BH < 0.05 & res_drug_target_subset$logROR < -1,]
+```
+
+
+```{r}
+adverse_event_counts <- as.data.frame(table(res_drug_target_subset$pt_term))
+```
+
+
+```{r}
+ggplot(adverse_event_counts, aes(x= Freq, y= Var1, label= Freq)) + geom_bar(stat="identity", fill =  "#21908CFF", color= "black", alpha=0.7)+ 
+    geom_text(size = 10, position = position_stack(vjust = 0.9)) + xlab("Number of male-bias drug-adverse event pairs with drugs with drug target") + ylab("Drug")+theme(text = element_text(size = 12,  face="bold"))
+```
+
+
+```{r}
+female_ae_test <- drug_ae_res_info[drug_ae_res_info$pt_term == "Alopecia" & abs(drug_ae_res_info$logROR) > 1 & drug_ae_res_info$BH < 0.05,]
+```
+only 153 have a female-bias for Alopecia
+
+```{r}
+hist(female_ae_test$c /(female_ae_test$a+female_ae_test$b+female_ae_test$c+female_ae_test$d))
+```
+
+```{r}
+hist((female_ae_test$a-female_ae_test$c)/(female_ae_test$a+female_ae_test$b+female_ae_test$c+female_ae_test$d))
+```
+
+
+
+```{r}
+female_ae_test <- drug_ae_res_info[drug_ae_res_info$pt_term == "Urinary tract infection" & abs(drug_ae_res_info$logROR) > 1 & drug_ae_res_info$BH < 0.05,]
+```
+only 88 have a female-bias for Alopecia
+
+```{r}
+hist(female_ae_test$c /(female_ae_test$a+female_ae_test$b+female_ae_test$c+female_ae_test$d))
+```
+
+```{r}
+hist((female_ae_test$a-female_ae_test$c)/(female_ae_test$a+female_ae_test$b+female_ae_test$c+female_ae_test$d))
+```
+
+```{r}
+drug_ae_res_info[drug_ae_res_info$pt_term == "Alopecia" & drug_ae_res_info$logROR > 1 & drug_ae_res_info$BH < 0.05,]
+```
+
+
+
+```{r}
+Liver_F_panda <- readRDS("~/results/alpaca/sex_specific_networks/Liver_F_panda.rds")
+```
+
+
+```{r}
+drug_gene_core_test<- function( count = 5, all_drug_targets_list= colnames(Liver_F_panda@regNet), core_list= c(core_gene_list$Liver, female_core_gene_list$Liver), seed= 101){
+  res<- c()
+  set.seed(seed)
+  for (i in 1:1000){
+    #t<- table(grepl("",))
+    sub<- sample( all_drug_targets_list, 64, replace = FALSE)
+
+    res1 <- table(sub %in% core_list)
+    res2<- res1[names(res1) == "TRUE"]
+    if (length(res2) ==1){
+      res[i]<-res2
+    }else{
+      res[i]<- 0
+    }
+    
+  }
+  #print(res)
+  test<- wilcox.test(res, mu= count, alternative = "less")
+  #print(count)
+  #print(hist(res))
+  plot_data<- as.data.frame(cbind(1:1000, res))
+  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() + geom_vline(xintercept = count) + xlab("Number of genes that are core genes")
+  
+  res_list<- list(test$p.value, plot1)
+  return(res_list)
+}
+```
+
+```{r}
+drug_gene_core_test()
+```
+
+```{r}
+drug_gene_core_test( count = 5, all_drug_targets_list= colnames(Liver_F_panda@regNet), core_list= core_gene_list$Liver, seed= 101)
+```
+
+```{r}
+drug_gene_core_test( count = 0, all_drug_targets_list= colnames(Liver_F_panda@regNet), core_list= female_core_gene_list$Liver, seed= 101)
 ```
 
 
