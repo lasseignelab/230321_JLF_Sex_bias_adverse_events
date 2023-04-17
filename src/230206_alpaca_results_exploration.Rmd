@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # START 
     Goal/Purpose of operations: 
-    I am going to be looking at the results from Alpaca for the sex-specific networks across the 43 different tissue s
+    I am going to be looking at the results from Alpaca for the sex-specific networks across the 43 different tissue by applying pathway analysis. 
     
     Finished psedocode on:
     230206
@@ -43,11 +43,14 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Set working directory 
 
 ```{r}
+source("~/src/sex_bias_drug_functions.R")
 library(gprofiler2)
 library(viridis)
 library(RColorBrewer)
 library(ComplexHeatmap)
 library(GOSemSim)
+library(stringr)
+library(ggplot2)
 ```
 
 
@@ -64,7 +67,6 @@ note processed data had the white sapce removed
 ```{r}
 tissues_wo_ws <- gsub(" ", "_", tissues, fixed = TRUE)
 ```
-
 
 ```{r eval= FALSE}
 for (j in 1:length(tissues_wo_ws)){
@@ -120,13 +122,9 @@ test<- as.data.frame(table(all_pathway_res_filter_KEGG[,3]))
 go_bp_all_tissues<- test[test$Freq == 43,1]
 ```
 
-
-
 ```{r}
 hsGO <- godata('org.Hs.eg.db', ont="BP")
 ```
-
-
 
 ```{r}
 go_sim <- mgoSim(as.character(go_bp_all_tissues), as.character(go_bp_all_tissues), semData=hsGO, measure="Wang", combine=NULL)
@@ -134,7 +132,6 @@ go_sim <- mgoSim(as.character(go_bp_all_tissues), as.character(go_bp_all_tissues
 res <- reduceSimMatrix(go_sim , threshold = 0.85)
 res_v2<- res[match(colnames(go_sim ), res$go),]
 ```
-
 
 ```{r}
 sem_res <- as.data.frame(table(res_v2$parentTerm))
@@ -146,11 +143,10 @@ ggplot(sem_res, aes(y= Var1, x= Freq, label=Freq)) + geom_bar(stat="identity", f
     geom_text(size = 10, position = position_stack(vjust = 0.9)) + ylab("Parent BP terms") + xlab("number of GO:BP terms enriched once\nin all tissues" ) +theme(text = element_text(size = 10,  face="bold"))
 ```
 
-
+look for some drug related pathways
 ```{r}
 all_pathway_res[grep("cytochrome", all_pathway_res$term_name),]
 ```
-
 
 ```{r}
 all_pathway_res[grep("p450", all_pathway_res$term_name),]
@@ -165,8 +161,7 @@ small intestine and whole blood are interesting. no chromchrome p450 genes
 all_pathway_res[grep("small molecule", all_pathway_res$term_name),]
 ```
 
-
-
+look at the pathways around drug metabolism tissues
 drug metabolism- tissue: liver, kidney, intestine ( small and large), lung, adrenal, blood, and skin
 
 Skin_-_Sun_Exposed_(Lower_leg), Skin_-_Not_Sun_Exposed_(Suprapubic), Lung, Adrenal_Gland,
@@ -177,27 +172,24 @@ Liver, Small_Intestine_-_Terminal_Ileum,  Whole_Blood, Kidney_-_Cortex
 all_pathway_res_drug_tissues<- all_pathway_res[all_pathway_res$tissue %in% c("Liver", "Small_Intestine_-_Terminal_Ileum",  "Whole_Blood", "Kidney_-_Cortex"),]
 ```
 
-
-
 ```{r}
-
-all_pathway_res_filter<- cbind(all_pathway_res_drug_tissues$term_name,all_pathway_res_drug_tissues$source, all_pathway_res_drug_tissues$term_id, all_pathway_res_drug_tissues$tissue)
-colnames(all_pathway_res_filter)<- c("term_name", "source", "id", "tissue")
-all_pathway_res_filter<- all_pathway_res_filter[!duplicated(all_pathway_res_filter),]
+all_pathway_res_filter <- cbind(all_pathway_res_drug_tissues$term_name,all_pathway_res_drug_tissues$source, all_pathway_res_drug_tissues$term_id, all_pathway_res_drug_tissues$tissue)
+colnames(all_pathway_res_filter) <- c("term_name", "source", "id", "tissue")
+all_pathway_res_filter <- all_pathway_res_filter[!duplicated(all_pathway_res_filter),]
 
 all_pathway_res_filter_KEGG <- all_pathway_res_filter[all_pathway_res_filter[,2] %in% c("GO:BP"),]
 test<- as.data.frame(table(all_pathway_res_filter_KEGG[,3]))
 ```
 
 ```{r}
-go_bp_all_tissues<- test[test$Freq == 4,1]
+go_bp_all_tissues <- test[test$Freq == 4, 1]
 ```
 
 ```{r}
 go_sim <- mgoSim(as.character(go_bp_all_tissues), as.character(go_bp_all_tissues), semData=hsGO, measure="Wang", combine=NULL)
 #get the parent terms from rrvgo for the pathways
 res <- reduceSimMatrix(go_sim , threshold = 0.9)
-res_v2<- res[match(colnames(go_sim ), res$go),]
+res_v2 <- res[match(colnames(go_sim ), res$go),]
 ```
 
 
@@ -207,8 +199,11 @@ sem_res <- as.data.frame(table(res_v2$parentTerm))
 
 ```{r}
 sem_res$Var1<- factor(sem_res$Var1, levels=sem_res$Var1[order(sem_res$Freq)] )
-ggplot(sem_res, aes(y= Var1, x= Freq, label=Freq)) + geom_bar(stat="identity", fill = "white", color= "black")+ 
-    geom_text(size = 10, position = position_stack(vjust = 0.9)) + ylab("Parent BP terms") + xlab("number of GO:BP terms enriched once\nin Liver, Small Intestine- Terminal Ileum, Whole Blood, & Kidney -Cortex" ) +theme(text = element_text(size = 10,  face="bold"))
+ggplot(sem_res, aes(y= Var1, x= Freq, label=Freq)) +
+  geom_bar(stat="identity", fill = "white", color= "black") +
+    geom_text(size = 10, position = position_stack(vjust = 0.9)) +
+  ylab("Parent BP terms") + xlab("number of GO:BP terms enriched once\nin Liver, Small Intestine- Terminal Ileum, Whole Blood, & Kidney -Cortex" ) +
+  theme(text = element_text(size = 10,  face="bold"))
 ```
 
 
@@ -228,12 +223,6 @@ drug_genes <- c("ADH1A"	,"ADH1B", "ADH1C", "ADH4",	"ADH5",	"ADH6",	"ADH7",
                 "UGT2B11",	"UGT2B15",	"UGT2B17",	"UGT2B28",	"UGT2B4",	"UGT2B7")
 ```
 
-
-```{r}
-#alpaca_gene_set_analysis( "Liver", genes="drugs", gene_set_name= "Drug Metabolism Genes", path="~/results/alpaca/drug_metabolism_genes/")
-#alpaca_gene_set_analysis( "Lung", genes="drugs", gene_set_name= "Drug Metabolism Genes", path="~/results/alpaca/drug_metabolism_genes/")
-```
-
 ```{r}
 test_p<- c()
 test_change <- c()
@@ -246,31 +235,37 @@ for (j in 1:length(tissues_wo_ws)){ #
 
 ```{r}
 sig_drug_gene_set <- as.data.frame(cbind(tissues_wo_ws, unlist(test_p), as.numeric(unlist(test_change))))
-colnames(sig_drug_gene_set)<- c("Tissue", "p_value", "log2fold_Change")
+colnames(sig_drug_gene_set) <- c("Tissue", "p_value", "log2fold_Change")
 ```
 
 ```{r}
 sig_drug_gene_set$neg_log_p <- -log(as.numeric(sig_drug_gene_set$p_value))
-sig_drug_gene_set$log2fold_Change<- as.numeric(sig_drug_gene_set$log2fold_Change)
+sig_drug_gene_set$log2fold_Change <- as.numeric(sig_drug_gene_set$log2fold_Change)
 ```
 
+volcano plot (not nice looking)
 ```{r}
-p_value_cut<- -log(0.05/43)
-sig_drug_gene_set$Tissue_2 <- ifelse(sig_drug_gene_set$neg_log_p > p_value_cut,sig_drug_gene_set$Tissue, NA )
+p_value_cut <- -log(0.05/43)
+sig_drug_gene_set$Tissue_2 <- ifelse(sig_drug_gene_set$neg_log_p > p_value_cut, sig_drug_gene_set$Tissue, NA )
 
-ggplot(sig_drug_gene_set, aes(x=log2fold_Change, y= neg_log_p, label=Tissue_2  ))+ geom_point()+ xlab("log(Fold Change)") + ylab("-log(p-value)") + geom_hline(yintercept=p_value_cut, linetype="dashed", color = "black") + 
-    geom_text(size = 5, position = position_stack(vjust = 0.95)) + xlim(c(-3, 3))
+ggplot(sig_drug_gene_set, aes(x=log2fold_Change, y= neg_log_p, label=Tissue_2)) +
+  geom_point() + xlab("log(Fold Change)") + 
+  ylab("-log(p-value)") + geom_hline(yintercept=p_value_cut, linetype="dashed", color = "black") + 
+  geom_text(size = 5, position = position_stack(vjust = 0.95)) + xlim(c(-3, 3))
 ```
 
 ```{r}
 sig_drug_gene_set$Tissue<- factor(sig_drug_gene_set$Tissue, levels= sig_drug_gene_set$Tissue[order(sig_drug_gene_set$neg_log_p)])
-ggplot(sig_drug_gene_set, aes(y=Tissue, x= neg_log_p, fill= log2fold_Change))+ geom_bar(stat="identity",  color= "black") + scale_fill_gradient2(low= "#21908CFF", mid= "white", high= "#440154FF")  +theme(text = element_text(size = 20,  face="bold"))+ geom_vline(xintercept=p_value_cut, linetype="dashed", color = "black")+ xlab("-log(p-value)")
+ggplot(sig_drug_gene_set, aes(y=Tissue, x= neg_log_p, fill= log2fold_Change)) + 
+  geom_bar(stat="identity",  color= "black") +
+  scale_fill_gradient2(low= "#21908CFF", mid= "white", high= "#440154FF") +
+  theme(text = element_text(size = 20,  face="bold")) +
+  geom_vline(xintercept=p_value_cut, linetype="dashed", color = "black") + xlab("-log(p-value)")
 ggsave("~/results/alpaca/drug_metabolism_genes/230220_differential_mod_drug_genes_wilcox_test.png", height=12, width=10)
 ```
 
-#make new function for jaccard similarity
 
-
+Make a list of genes in each community
 need to apply this to all the communities
 ```{r}
 female_com_list <- list()
@@ -290,6 +285,7 @@ for ( i in 1:length(tissues_wo_ws)){
 all_com_list<- append(female_com_list, male_com_list)
 ```
 
+calculate the jacard similarity for every community
 ```{r}
 res<- matrix(nrow= length(all_com_list), ncol= length(all_com_list))
 for( i in 1:length(all_com_list)){ #i 
@@ -300,13 +296,10 @@ for( i in 1:length(all_com_list)){ #i
 rownames(res) <- names(all_com_list)
 colnames(res) <- names(all_com_list)                     
 ```
-
-
+look at the similiarty of the liver communities
 ```{r}
 res[grep("Liver",colnames(res)),grep("Liver",colnames(res))]
 ```
-
-
 
 ```{r}
 tissue_all <- str_split(rownames(res), "@" , simplify = TRUE)[,1]
@@ -314,7 +307,6 @@ sex_all <- str_split(rownames(res), "@" , simplify = TRUE)[,2]
 com_all <- str_split(rownames(res), "@" , simplify = TRUE)[,3]
 
 png("~/results/alpaca/alpaca_pathway_analysis/230220_jaccard_all_com_genes_clustering.png",width=20,height=10,units="in",res=1200)
-#Your heat-map code
 set.seed(105)
 row_ha<-  HeatmapAnnotation(Tissue=tissue_all, Sex=sex_all, Community_Number= com_all)
 column_dend <- hclust(dist(t(res)), method = "ward.D2")
@@ -327,8 +319,7 @@ heatmap_v2 <- Heatmap(matrix(nrow = 0, ncol = ncol(res)),
 dev.off()
 ```
 
-
-need to apply this to all the communities
+need to apply this to all the communities but core genes
 ```{r}
 female_core_list <- list()
 male_core_list<- list()
@@ -376,15 +367,14 @@ dev.off()
 ```
 
 
-
+Just look at community number one across communities
 ```{r}
-
 res_core_1_3 <- res_core[com_all == 1, com_all == 1]
 tissue_1_3 <- str_split(rownames(res_core_1_3), "@" , simplify = TRUE)[,1]
 sex_1_3 <- str_split(rownames(res_core_1_3), "@" , simplify = TRUE)[,2]
 #com_1_3 <- str_split(rownames(res_core_1_3), "@" , simplify = TRUE)[,3]
 
-#png("~/results/alpaca/alpaca_pathway_analysis/230220_jaccard_core_com_genes_clustering.png",width=20,height=10,units="in",res=1200)
+png("~/results/alpaca/alpaca_pathway_analysis/230220_jaccard_core_1_com_genes_clustering.png",width=20,height=10,units="in",res=1200)
 set.seed(105)
 row_ha<-  HeatmapAnnotation(Tissue=tissue_1_3, Sex=sex_1_3)
   column_dend <-  hclust(dist(t(res_core_1_3)), method = "ward.D2")
@@ -392,17 +382,17 @@ heatmap_v2 <- Heatmap(matrix(nrow = 0, ncol = ncol(res_core_1_3)),
           cluster_columns = column_dend, 
           top_annotation = row_ha) 
 draw(heatmap_v2,  annotation_legend_side = "bottom")
-#dev.off()
+dev.off()
 ```
 
-
+look at the different brain regions
 ```{r}
 res_core_brain <- res_core_1_3[ grep("Brain", tissue_1_3), grep("Brain", tissue_1_3)]
 tissue_brain<- str_split(rownames(res_core_brain), "@" , simplify = TRUE)[,1]
 sex_brain <- str_split(rownames(res_core_brain), "@" , simplify = TRUE)[,2]
 #com_1_3 <- str_split(rownames(res_core_1_3), "@" , simplify = TRUE)[,3]
 
-#png("~/results/alpaca/alpaca_pathway_analysis/230220_jaccard_core_com_genes_clustering.png",width=20,height=10,units="in",res=1200)
+png("~/results/alpaca/alpaca_pathway_analysis/230220_jaccard_core_com_genes_clustering_brain_regions.png",width=20,height=10,units="in",res=1200)
 set.seed(120)
 row_ha<-  HeatmapAnnotation(Tissue=tissue_brain, Sex=sex_brain)
   column_dend <-  hclust(dist(t(res_core_brain)), method = "ward.D2")
@@ -410,20 +400,17 @@ heatmap_v2 <- Heatmap(matrix(nrow = 0, ncol = ncol(res_core_brain)),
           cluster_columns = column_dend, 
           top_annotation = row_ha) 
 draw(heatmap_v2,  annotation_legend_side = "bottom")
-#dev.off()
+dev.off()
 ```
 
 try the drug metabolism tissues only
 ```{r}
-
-#all_pathway_res_drug_tissues<- all_pathway_res[all_pathway_res$tissue %in% c("Liver", "Small_Intestine_-_Terminal_Ileum",  "Whole_Blood", "Kidney_-_Cortex"),]
-
 res_core_drug_tissues <- res_core[ grep(paste(c("Liver", "Small_Intestine_-_Terminal_Ileum",  "Whole_Blood", "Kidney_-_Cortex"), collapse =  "|"), tissue_all), grep(paste(c("Liver", "Small_Intestine_-_Terminal_Ileum",  "Whole_Blood", "Kidney_-_Cortex"), collapse =  "|"), tissue_all)]
 tissue_drug<- str_split(rownames(res_core_drug_tissues), "@" , simplify = TRUE)[,1]
 sex_drug <- str_split(rownames(res_core_drug_tissues), "@" , simplify = TRUE)[,2]
 com_drug <- str_split(rownames(res_core_drug_tissues), "@" , simplify = TRUE)[,3]
 
-#png("~/results/alpaca/alpaca_pathway_analysis/230220_jaccard_core_com_genes_clustering.png",width=20,height=10,units="in",res=1200)
+png("~/results/alpaca/alpaca_pathway_analysis/230220_jaccard_core_com_genes_clustering_drug_metabolism_tissues.png",width=20,height=10,units="in",res=1200)
 set.seed(110)
 row_ha<-  HeatmapAnnotation(Tissue=tissue_drug, Sex=sex_drug, Community= com_drug)
   column_dend <-  hclust(dist(t(res_core_drug_tissues)), method = "ward.D2")
@@ -431,198 +418,22 @@ heatmap_v2 <- Heatmap(matrix(nrow = 0, ncol = ncol(res_core_drug_tissues)),
           cluster_columns = column_dend, 
           top_annotation = row_ha) 
 draw(heatmap_v2,  annotation_legend_side = "bottom")
-#dev.off()
+dev.off()
 ```
 
-communitiy one is cllustering for both sexx and tissue
+community one is clustering for both sex and tissue
 
+# END
+    Location of final scripts:
+    src
+    Location of data produced:
+    ~/results/alpaca/
+    Dates when operations were done:
+    230206
+    
+## Versions
 ```{r}
-liver_pathway_drug_com <- all_pathway_res[all_pathway_res$set %in% c("Liver_female_3_community", "Liver_male_2_community"),]
-```
-
-```{r}
-go_bp_3_2_liver<- unique(liver_pathway_drug_com$term_id[liver_pathway_drug_com$source == "GO:BP"])
-```
-
-```{r}
-counts<- as.data.frame(table(liver_pathway_drug_com$term_name))
-```
-
-```{r}
-#counts$Var1[counts$Freq == 2]
-```
-
-
-```{r}
-go_sim <- mgoSim(as.character(go_bp_3_2_liver), as.character(go_bp_3_2_liver), semData=hsGO, measure="Wang", combine=NULL)
-#get the parent terms from rrvgo for the pathways
-res <- reduceSimMatrix(go_sim , threshold = 0.6)
-res_v2<- res[match(colnames(go_sim ), res$go),]
-```
-
-```{r}
-#all_pathway_res[all_pathway_res$set %in% c("Liver_female_3_community", "Liver_male_5_community"),]
-go_term_heatmap(all_pathway_res[all_pathway_res$set=="Liver_female_3_community",], all_pathway_res[all_pathway_res$set=="Liver_male_3_community",], threshold = 0.9, file_name= "~/results/alpaca/alpaca_pathway_analysis/liver_female_3_male_2_go_sem_bp.csv" )
-```
-
-
-```{r}
-unique(liver_female_3_male_5_go_sem_bp$parentTerm)
-```
-```{r}
-sim_go_groups<- c()
-enriched_group<- c()
-for (i in 1:10){
-  female_3<- liver_female_3_male_5_go_sem_bp$term[liver_female_3_male_5_go_sem_bp$parentTerm == unique(liver_female_3_male_5_go_sem_bp$parentTerm)[i] & liver_female_3_male_5_go_sem_bp$female_drugs]
-  male_5<- liver_female_3_male_5_go_sem_bp$term[liver_female_3_male_5_go_sem_bp$parentTerm == unique(liver_female_3_male_5_go_sem_bp$parentTerm)[i] & liver_female_3_male_5_go_sem_bp$male_drugs]
-  sim_go_groups[i]<- jaccard(female_3, male_5)
-  enriched_group[i]<- length(female_3) > length(male_5)
-}
-names(sim_go_groups)<- unique(liver_female_3_male_5_go_sem_bp$parentTerm)
-```
-
-```{r}
-sim_go_groups<- as.data.frame(sim_go_groups)
-```
-
-```{r}
-sim_go_groups$Jaccard<- sim_go_groups$sim_go_groups
-sim_go_groups$sim_go_groups<- rownames(sim_go_groups)
-sim_go_groups$sex<- ifelse(enriched_group, "female", "male")
-```
-```{r}
-#fill = "#0D0887B3",
-sim_go_groups$sim_go_groups <- factor(sim_go_groups$sim_go_groups, levels= sim_go_groups$sim_go_groups[order(sim_go_groups$Jaccard)])
-ggplot(sim_go_groups, aes(x=Jaccard, y=sim_go_groups, fill =sex )) + geom_bar(stat="identity",  color= "black", alpha=0.7) + scale_fill_manual(values= c("#0D0887B3","#F0F921B3" ))
-```
-
-
-```{r}
-Whole_Blood_male_core_genes <- readRDS("~/results/alpaca/alpaca_core_gene_lists/Whole_Blood_male_core_genes.rds")
-Whole_Blood_female_core_genes <- readRDS("~/results/alpaca/alpaca_core_gene_lists/Whole_Blood_female_core_genes.rds")
-```
-
-```{r}
-table(Whole_Blood_male_core_genes$symbol %in% drug_genes)
-table(Whole_Blood_female_core_genes$symbol %in% drug_genes)
-```
-
-
-```{r}
-> `Small_Intestine_-_Terminal_Ileum_male_core_genes` <- readRDS("~/results/alpaca/alpaca_core_gene_lists/Small_Intestine_-_Terminal_Ileum_male_core_genes.rds")
-> `Small_Intestine_-_Terminal_Ileum_female_core_genes` <- readRDS("~/results/alpaca/alpaca_core_gene_lists/Small_Intestine_-_Terminal_Ileum_female_core_genes.rds")
-```
-
-
-```{r}
-table(`Small_Intestine_-_Terminal_Ileum_male_core_genes`$symbol %in% drug_genes)
-table(`Small_Intestine_-_Terminal_Ileum_male_core_genes`$symbol %in% drug_genes)
-```
-
-
-```{r}
-scores_file <- paste0("~/results/alpaca/alpaca_run/", tissues_wo_ws[41], "__ALPACA_scores.txt")
-comms_file <- paste0("~/results/alpaca/alpaca_run/", tissues_wo_ws[41], "__ALPACA_final_memb.txt")
-  file_scores <- read.delim(scores_file, header=FALSE)
-  file_comms<- read.delim(comms_file, header=FALSE)
-test<- alpaca_output_dw_all(file_scores, file_comms)
-```
-
-```{r}
-drug_subset <- test[test$symbol %in% drug_genes,]
-```
-
-```{r}
-drug_subset_list <- factor(drug_subset$com, levels=1:length(unique(test$com)))
-drug_gene_count<- as.data.frame(table(drug_subset_list))
-drug_gene_count$drug_subset_list <-  paste0( "female", drug_gene_count$drug_subset_list)
-ggplot(drug_gene_count, aes(x= drug_subset_list, y= Freq, label=Freq)) + geom_bar(stat="identity", fill = "#0D0887B3", color= "black")+                                                     geom_text(size = 10, position = position_stack(vjust = 0.9)) + xlab("Communities") + ylab("Number of Drug Metabolism Genes")
-```
-
-
-```{r}
-scores_file <- paste0("~/results/alpaca/alpaca_run/", tissues_wo_ws[41], "femalemale__ALPACA_scores.txt")
-comms_file <- paste0("~/results/alpaca/alpaca_run/", tissues_wo_ws[41], "femalemale__ALPACA_final_memb.txt")
-  file_scores <- read.delim(scores_file, header=FALSE)
-  file_comms<- read.delim(comms_file, header=FALSE)
-test2<- alpaca_output_dw_all(file_scores, file_comms)
-```
-
-```{r}
-drug_subset2 <- test2[test2$symbol %in% drug_genes,]
-```
-
-```{r}
-table(drug_subset2$com)
-```
-
-```{r}
-drug_subset_list <- factor(drug_subset2$com, levels=1:length(unique(test2$com)))
-drug_gene_count<- as.data.frame(table(drug_subset_list))
-drug_gene_count$drug_subset_list <-  paste0( "male", drug_gene_count$drug_subset_list)
-ggplot(drug_gene_count, aes(x= drug_subset_list, y= Freq, label=Freq)) + geom_bar(stat="identity", fill = "#F0F921B3", color= "black")+                                                     geom_text(size = 10, position = position_stack(vjust = 0.9)) + xlab("Communities") + ylab("Number of Drug Metabolism Genes")
-```
-
-
-```{r}
-drug_subset2$sex<- rep("male", 64)
-drug_subset$sex<- rep("female",64)
-```
-
-```{r}
-liver_drug_subset<- rbind(drug_subset, drug_subset2)
-```
-
-```{r}
-ggplot(liver_drug_subset, aes(y=score, x= sex, fill = sex)) + geom_violin() +geom_point()
-```
-
-```{r}
-liver_drug_subset<- liver_drug_subset[order(liver_drug_subset$symbol),]
-liver_drug_subset_female<- liver_drug_subset[liver_drug_subset$sex == "female",]
-liver_drug_subset_male<- liver_drug_subset[liver_drug_subset$sex == "male",]
-```
-
-
-
-```{r}
-res <- wilcox.test(liver_drug_subset_female$score, liver_drug_subset_male$score, paired = TRUE)
-res
-```
-```{r}
-ggplot(liver_drug_subset, aes(y=score, x= sex, fill = sex)) + geom_violin() +geom_point() + geom_text(x="female", y=0.002, label= "Paired Wilcoxon signed rank test\np-value = 1.949e-09") +ylab("Differential modularity score") + xlab("Sex") + ggtitle("Differential modularity scoreof drug metabolism genes\nin liver sex-specific gene regulatory networks") + scale_fill_viridis( alpha=0.7, option= "C", discrete = TRUE)
-```
-
-
-
-```{r}
-res<- matrix(nrow= length(unique(test$com)), ncol= length(unique(test2$com)))
-for( i in 1:length(unique(test$com))){ #i is female 
-  for (j in 1:length(unique(test2$com)) ){ #j is male
-    female_1<- test$symbol[test$com == i]
-    male_1<- test2$symbol[test2$com == j]
-    res[i,j]<- jaccard(female_1, male_1)
-  }
-}
-rownames(res) <- paste0("female ", 1:length(unique(test$com)))
-colnames(res) <- paste0("male ", 1:length(unique(test2$com)))                        
-```
-
-
-```{r}
-col_fun <- colorRamp2(c(0,  1), c( "black", "yellow"))
-Heatmap(res, nam= "Jaccard Similarity", col = col_fun, 
-          clustering_distance_rows= "euclidean",
-          clustering_distance_columns=  "euclidean",
-          clustering_method_rows = "ward.D2" , column_names_rot = 45,
-          clustering_method_columns="ward.D2", heatmap_legend_param = list( title_gp = gpar(fontsize = 15 , fontface = "bold"), labels_gp = gpar(fontsize = 12, fontface = "bold")))
-```
-
-
-
-
-```{r}
-jaccard(female_1, male_5)
+sessionInfo()
 ```
 
 
