@@ -96,8 +96,11 @@ for (i in seq(1, 86, by =2)){
 
 ```{r}
 #liver test 
-#Liver__topNet_regnet_male_female_long <- readRDS("/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/alpaca/alpaca_adjusted_inputs/Liver__topNet_regnet_male_female_long.rds")
-#liver_regnet_sex_alp<- alpaca(Liver__topNet_regnet_male_female_long, "/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/output/alpaca/alpaca_run/liver_test", verbose = TRUE)
+#Liver__topNet_regnet_male_female_long <- readRDS("/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/results/alpaca/alpaca_adjusted_inputs/Liver__topNet_regnet_male_female_long.rds")
+#set.seed(101)
+#liver_regnet_sex_alp1<- alpaca(Liver__topNet_regnet_male_female_long, "/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/results/alpaca/alpaca_run/liver_test_seed1", verbose = TRUE)
+#set.seed(501)
+#liver_regnet_sex_alp2<- alpaca(Liver__topNet_regnet_male_female_long, "/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/results/alpaca/alpaca_run/liver_test_seed2", verbose = TRUE)
 
 ```
 
@@ -116,7 +119,7 @@ for (i in 1:length(panda_adjusted_files)){
   print(tissue_name)
   
   file_header <- paste0(paste0(dir_path, "/results/alpaca/alpaca_run/"),  tissue_name, "_",sep = "")
-  
+  set.seed(101)
   regnet_sex_alp <- alpaca(input, file_header, verbose = TRUE)
 }
 ```
@@ -132,7 +135,7 @@ for (i in 1:length(panda_adjusted_files)){
   print(tissue_name)
   
   file_header <- paste0(paste0(dir_path, "/results/alpaca/alpaca_run/"), tissue_name, "female", "male" , "_",sep = "")
-  
+  set.seed(101)
   regnet_sex_alp_flipped <- alpaca(input_adj, file_header, verbose = TRUE)
 }
 ```
