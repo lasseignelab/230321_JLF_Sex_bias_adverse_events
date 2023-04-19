@@ -1,8 +1,10 @@
 ---
 title: "230417_liver_drug_edges"
-output: html_document
 date: "2023-04-17"
-output: html_document
+output:
+  html_document:
+    toc: true
+    theme: united
 ---
 
 ```{r setup, include=FALSE}
@@ -11,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # START 
     Goal/Purpose of operations: 
-    I am going to be looking at the drug metabloism gene edges for the sex-specific networks across the 43 different tissues. 
+    I am going to be looking at the drug metabolism gene edges for the sex-specific networks across in the liver sex-specific networks. 
     
     Finished psedocode on:
     230206
@@ -51,6 +53,8 @@ library(netZooR)
 library(ggplot2)
 library(GOSemSim)
 library(parallel)
+library(tidyverse)
+library(circlize)
 ```
 
 Start by looking at Liver by itself
@@ -61,6 +65,21 @@ Liver__male_female_long <- readRDS("~/results/alpaca/alpaca_adjusted_inputs/Live
 ```
 
 
+```{r}
+drug_genes <- c("ADH1A"	,"ADH1B", "ADH1C", "ADH4",	"ADH5",	"ADH6",	"ADH7",	
+                "ALDH1A3",	"ALDH3A1",	"ALDH3B1", "ALDH3B2", "AOX1", "CYP1A2",
+                "CYP2A13", "CYP2A6", "CYP2A7",	"CYP2B6",	"CYP2C18",	"CYP2C19",
+                "CYP2C8",	"CYP2C9",	"CYP2D6",	"CYP2E1",	"CYP3A4",	"CYP3A43",	"CYP3A5",
+                "CYP3A7",	"FMO1",	"FMO2",	"FMO3", "FMO4",	"FMO5",  "GSTA1", "GSTA2", 	"GSTA3",	"GSTA4",
+                "GSTA5",	"GSTK1",	"GSTM1",	"GSTM2",	"GSTM3",	"GSTM4",	"GSTM5",	"GSTO1",
+                "GSTO2",	"GSTP1",	"GSTT1",	"GSTT2",	"GSTZ1",	"MAOA",	"MAOB",	"MGST1",
+                "MGST2",	"MGST3",	"UGT1A1",	"UGT1A10",	"UGT1A3",	"UGT1A4",
+                "UGT1A5",	"UGT1A6",	"UGT1A7",	"UGT1A8", "UGT1A9",	"UGT2A1",	"UGT2A3", "UGT2B10",
+                "UGT2B11",	"UGT2B15",	"UGT2B17",	"UGT2B28",	"UGT2B4",	"UGT2B7")
+```
+
+
+
 Now look at edges of drug metabolism genes in the liver
  
 ```{r}
@@ -68,7 +87,7 @@ Liver_tf_gene_sex_drug_only <- Liver__male_female_long[Liver__male_female_long$g
 ```
 
 ```{r}
-Liver_tf_gene_sex_drug_only<- Liver_tf_gene_sex_drug_only[ Liver_tf_gene_sex_drug_only$male ==1 | Liver_tf_gene_sex_drug_only$female == 1,]
+Liver_tf_gene_sex_drug_only <- Liver_tf_gene_sex_drug_only[ Liver_tf_gene_sex_drug_only$male == 1 | Liver_tf_gene_sex_drug_only$female == 1, ]
 ```
 
 ```{r}
@@ -127,13 +146,17 @@ liver_drug_edges<- liver_drug_edges[,-1]
 colors<- 1:4
 names(colors)<- c("1e-10", "-1", "0", "1")
 colors[1]<- "white"
-colors[2]<- "#21908CFF" #"#440154FF", "#21908CFF"
+colors[2]<- "#21908CFF" 
 colors[3]<- "lightgray"
 colors[4]<- "#440154FF"
 
 png("~/results/alpaca/drug_metabolism_genes/liver_drug_metabolism_edge_heatmap.png",width=15,height=10,units="in",res=1400)
 Heatmap(liver_drug_edges, name = "Edge Present", col = colors, show_row_names = FALSE,
-    column_title = "Male and female edges in liver networks",heatmap_legend_param = list(at = c("1e-10", "-1", "0", "1"),labels= c("no edge", "male", "both", "female"), column_names_gp =gpar(fontsize = 18 , fontface = "bold"), labels_gp = gpar(fontsize = 12, fontface = "bold") ))
+    column_title = "Male and female edges in liver networks", 
+    heatmap_legend_param = list(at = c("1e-10", "-1", "0", "1"),
+                                labels= c("no edge", "male", "both", "female"),
+                                column_names_gp =gpar(fontsize = 18 , fontface = "bold"),
+                                labels_gp = gpar(fontsize = 12, fontface = "bold")))
 dev.off()
 ```
 
@@ -151,7 +174,7 @@ rownames(tf_count_table)<- rownames(liver_drug_edges)
 ```
 
 ```{r}
-hist(tf_count_table[,4]- tf_count_table[,1])
+hist(tf_count_table[,4] - tf_count_table[,1])
 ```
 
 ```{r}
@@ -166,14 +189,19 @@ female_tf <- rownames(tf_count_table)[(tf_count_table[,4]- tf_count_table[,1]) >
 ```{r}
 tf_sub  <- c(female_tf, male_tf )
 tf_location <- (1:nrow(liver_drug_edges))[rownames(liver_drug_edges) %in% tf_sub]
-Tf_anno<- anno_mark(at = tf_location, labels= rownames(liver_drug_edges)[tf_location], which = "row")
+Tf_anno <- anno_mark(at = tf_location, labels = rownames(liver_drug_edges)[tf_location], which = "row")
 ```
 
 
 ```{r}
 png("~/results/alpaca/drug_metabolism_genes/liver_drug_metabolism_edge_heatmap_v2.png",width=15,height=10,units="in",res=1400)
 Heatmap(liver_drug_edges, name = "Edge Present", col = colors, show_row_names = FALSE,
-    column_title = "Male and female edges in liver networks",heatmap_legend_param = list(at = c("1e-10", "-1", "0", "1"),labels= c("no edge", "male", "both", "female"), column_names_gp =gpar(fontsize = 18 , fontface = "bold"), labels_gp = gpar(fontsize = 12, fontface = "bold") )) + rowAnnotation(mark = Tf_anno)
+    column_title = "Male and female edges in liver networks",
+    heatmap_legend_param = list(at = c("1e-10", "-1", "0", "1"),
+                                labels= c("no edge", "male", "both", "female"),
+                                column_names_gp =gpar(fontsize = 18 , fontface = "bold"),
+                                labels_gp = gpar(fontsize = 12, fontface = "bold") )) +
+  rowAnnotation(mark = Tf_anno)
 dev.off()
 ```
 
@@ -206,44 +234,44 @@ Liver_gtex_qsmooth_expression_long$sex <- ifelse(Liver_gtex_qsmooth_expression_l
 table(Liver_gtex_qsmooth_expression_long$sex)
 ```
 
-Calculating correaltion for all the TF and drug genes
+Calculating correlation for all the TF and drug genes- estimate 30-40mins
 ```{r}
-all_cor<- c()
-all_p<- c()
-f_cor<- c()
-f_p<- c()
+all_cor <- c()
+all_p <- c()
+f_cor <- c()
+f_p <- c()
 m_cor <- c()
-m_p<- c()
+m_p <- c()
 for (i in 1:nrow(Liver_tf_gene_sex_drug_only)){ 
-  tf_name<- Liver_tf_gene_sex_drug_only[i,1]
-  gene_name<- Liver_tf_gene_sex_drug_only[i,2]
+  tf_name <- Liver_tf_gene_sex_drug_only[i, 1]
+  gene_name <- Liver_tf_gene_sex_drug_only[i, 2]
   #get tf expression
   tf <- Liver_gtex_qsmooth_expression_long$expression[Liver_gtex_qsmooth_expression_long$genes == tf_name]
-  gene<-  Liver_gtex_qsmooth_expression_long$expression[Liver_gtex_qsmooth_expression_long$genes == gene_name]
-  res<- cor.test(tf, gene, method= "pearson",exact=FALSE)
-  all_cor[i]<- res$estimate
-  all_p[i]<- res$p.value
+  gene <-  Liver_gtex_qsmooth_expression_long$expression[Liver_gtex_qsmooth_expression_long$genes == gene_name]
+  res <- cor.test(tf, gene, method = "pearson", exact = FALSE)
+  all_cor[i] <- res$estimate
+  all_p[i] <- res$p.value
   
   tf <- Liver_gtex_qsmooth_expression_long$expression[Liver_gtex_qsmooth_expression_long$genes == tf_name & Liver_gtex_qsmooth_expression_long$sex == "female"]
-  gene<-  Liver_gtex_qsmooth_expression_long$expression[Liver_gtex_qsmooth_expression_long$genes == gene_name & Liver_gtex_qsmooth_expression_long$sex == "female"]
-  res<- cor.test(tf, gene, method= "pearson",exact=FALSE)
-  f_cor[i]<- res$estimate
-  f_p[i]<- res$p.value
+  gene <-  Liver_gtex_qsmooth_expression_long$expression[Liver_gtex_qsmooth_expression_long$genes == gene_name & Liver_gtex_qsmooth_expression_long$sex == "female"]
+  res <- cor.test(tf, gene, method= "pearson",exact=FALSE)
+  f_cor[i] <- res$estimate
+  f_p[i] <- res$p.value
   
    tf <- Liver_gtex_qsmooth_expression_long$expression[Liver_gtex_qsmooth_expression_long$genes == tf_name & Liver_gtex_qsmooth_expression_long$sex == "male"]
-  gene<-  Liver_gtex_qsmooth_expression_long$expression[Liver_gtex_qsmooth_expression_long$genes == gene_name & Liver_gtex_qsmooth_expression_long$sex == "male"]
-  res<- cor.test(tf, gene, method= "pearson",exact=FALSE)
-  m_cor[i]<- res$estimate
-  m_p[i]<- res$p.value
+  gene <-  Liver_gtex_qsmooth_expression_long$expression[Liver_gtex_qsmooth_expression_long$genes == gene_name & Liver_gtex_qsmooth_expression_long$sex == "male"]
+  res <- cor.test(tf, gene, method = "pearson", exact = FALSE)
+  m_cor[i] <- res$estimate
+  m_p[i] <- res$p.value
 }
 Liver_tf_gene_sex_drug_only<- cbind(Liver_tf_gene_sex_drug_only, all_cor,all_p, m_cor, m_p, f_cor, f_p)
 ```
 
 note the type of relationships between TF and gene
 ```{r}
-Liver_tf_gene_sex_drug_only$all_rel <- ifelse(Liver_tf_gene_sex_drug_only$all_cor >0, "pos", "neg")
-Liver_tf_gene_sex_drug_only$f_rel <- ifelse(Liver_tf_gene_sex_drug_only$f_cor >0, "pos", "neg")
-Liver_tf_gene_sex_drug_only$m_rel <- ifelse(Liver_tf_gene_sex_drug_only$m_cor >0, "pos", "neg")
+Liver_tf_gene_sex_drug_only$all_rel <- ifelse(Liver_tf_gene_sex_drug_only$all_cor > 0, "pos", "neg")
+Liver_tf_gene_sex_drug_only$f_rel <- ifelse(Liver_tf_gene_sex_drug_only$f_cor > 0, "pos", "neg")
+Liver_tf_gene_sex_drug_only$m_rel <- ifelse(Liver_tf_gene_sex_drug_only$m_cor > 0, "pos", "neg")
 ```
 
 pvalue correction (BH)
@@ -253,12 +281,11 @@ Liver_tf_gene_sex_drug_only$all_p_adj <- p.adjust(Liver_tf_gene_sex_drug_only$al
 Liver_tf_gene_sex_drug_only$f_p_adj <- p.adjust(Liver_tf_gene_sex_drug_only$f_p, method= "BH")
 Liver_tf_gene_sex_drug_only$m_p_adj <- p.adjust(Liver_tf_gene_sex_drug_only$m_p, method= "BH")
 ```
-
+determine it was significant
 ```{r}
 Liver_tf_gene_sex_drug_only$all_p_adj_tf <- ifelse( Liver_tf_gene_sex_drug_only$all_p_adj < 0.05, "yes", "no")
 Liver_tf_gene_sex_drug_only$f_p_adj_tf <- ifelse( Liver_tf_gene_sex_drug_only$f_p_adj < 0.05, "yes", "no")
 Liver_tf_gene_sex_drug_only$m_p_adj_tf <- ifelse( Liver_tf_gene_sex_drug_only$m_p_adj < 0.05, "yes", "no")
-
 ```
 
 ```{r}
@@ -271,9 +298,9 @@ saveRDS(Liver_tf_gene_sex_drug_only, "~/results/alpaca/drug_metabolism_genes/liv
 
 
 ```{r}
-Liver_tf_gene_sex_drug_both <- Liver_tf_gene_sex_drug_only[Liver_tf_gene_sex_drug_only$edge_diff == 0,]
+Liver_tf_gene_sex_drug_both <- Liver_tf_gene_sex_drug_only[Liver_tf_gene_sex_drug_only$edge_diff == 0, ]
 
-df_edge_cor_counts<- as.data.frame( table(Liver_tf_gene_sex_drug_both$summary ))
+df_edge_cor_counts<- as.data.frame(table(Liver_tf_gene_sex_drug_both$summary))
 ```
 
 ```{r}
@@ -290,57 +317,56 @@ Liver_tf_gene_sex_drug_only$edge <- paste(Liver_tf_gene_sex_drug_only$TF, Liver_
 
 tfs activating in females
 ```{r}
-f_act_edge<- unique(Liver_tf_gene_sex_drug_only$edge[Liver_tf_gene_sex_drug_only$f_cor > 0 & Liver_tf_gene_sex_drug_only$f_p_adj < 0.05 & Liver_tf_gene_sex_drug_only$female== 1 ])
+f_act_edge <- unique(Liver_tf_gene_sex_drug_only$edge[Liver_tf_gene_sex_drug_only$f_cor > 0 & Liver_tf_gene_sex_drug_only$f_p_adj < 0.05 & Liver_tf_gene_sex_drug_only$female == 1 ])
 ```
-
 
 tfs repressing in females
 ```{r}
-f_repress_edge<-unique(Liver_tf_gene_sex_drug_only$edge[Liver_tf_gene_sex_drug_only$f_cor < 0 & Liver_tf_gene_sex_drug_only$f_p_adj < 0.05 & Liver_tf_gene_sex_drug_only$female== 1])
+f_repress_edge <-unique(Liver_tf_gene_sex_drug_only$edge[Liver_tf_gene_sex_drug_only$f_cor < 0 & Liver_tf_gene_sex_drug_only$f_p_adj < 0.05 & Liver_tf_gene_sex_drug_only$female == 1])
 ```
 
 tfs activating in males
 ```{r}
-m_act_edge<-unique(Liver_tf_gene_sex_drug_only$edge[Liver_tf_gene_sex_drug_only$m_cor > 0 & Liver_tf_gene_sex_drug_only$m_p_adj < 0.05  & Liver_tf_gene_sex_drug_only$male== 1])
+m_act_edge <- unique(Liver_tf_gene_sex_drug_only$edge[Liver_tf_gene_sex_drug_only$m_cor > 0 & Liver_tf_gene_sex_drug_only$m_p_adj < 0.05  & Liver_tf_gene_sex_drug_only$male== 1])
 ```
 
 ```{r}
-m_repress_edge<-unique(Liver_tf_gene_sex_drug_only$edge[Liver_tf_gene_sex_drug_only$m_cor < 0 & Liver_tf_gene_sex_drug_only$m_p_adj < 0.05  & Liver_tf_gene_sex_drug_only$male== 1])
+m_repress_edge <- unique(Liver_tf_gene_sex_drug_only$edge[Liver_tf_gene_sex_drug_only$m_cor < 0 & Liver_tf_gene_sex_drug_only$m_p_adj < 0.05  & Liver_tf_gene_sex_drug_only$male== 1])
 ```
 
-m3 = make_comb_mat(lt, mode = "union")
-
+make upset plot
 ```{r}
 comb_mat<- make_comb_mat(list("Female Activator Edges"=f_act_edge, "Female Repressor Edges"=f_repress_edge, "Male Activator Edges"=m_act_edge, "Male Repressor Edges"=m_repress_edge), mode = "distinct")
 ```
 
 ```{r}
-png("~/results/alpaca/drug_metabolism_genes/liver_drug_metabolism_edge_upset_plot.png",width=15,height=10,units="in",res=1400)
+png("~/results/alpaca/drug_metabolism_genes/liver_drug_metabolism_edge_upset_plot.png",width=15,height=5,units="in",res=1200, type="cairo")
 cs <-  comb_size(comb_mat)
+
 plot<- UpSet(comb_mat, comb_order = order(-comb_size(comb_mat)), top_annotation = HeatmapAnnotation(
         "Intersection size" = anno_barplot(cs, 
             ylim = c(0, max(cs)*1.1),
             border = FALSE, 
-            gp = gpar(fill = "black"), 
-            height = unit(4, "cm")
-        ), 
+            gp = gpar(fill = "black", fontsize = 11, face="bold"), 
+            height = unit(4, "cm")), 
         annotation_name_side = "left", 
         annotation_name_rot = 90))
+
 plot_draw <- draw(plot)
 od <- column_order(plot_draw)
+
 decorate_annotation("Intersection size", {
     grid.text(cs[od], x = seq_along(cs), y = unit(cs[od], "native") + unit(2, "pt"), 
         default.units = "native", just = c("left", "bottom"), 
-        gp = gpar(fontsize = 11, face="bold",col = "#404040"), rot = 45)
-})
+        gp = gpar(fontsize = 11, face="bold",col = "#404040"), rot = 45)})
+
 dev.off()
 ```
-
 
 pathway analysis on the different edges
 
 ```{r}
-only_male_act_edges<- setdiff(m_act_edge, c(m_repress_edge, f_repress_edge, f_act_edge ))
+only_male_act_edges <- setdiff(m_act_edge, c(m_repress_edge, f_repress_edge, f_act_edge))
 ```
 
 ```{r}
@@ -352,7 +378,8 @@ only_male_act_tf_genes <- unique(unlist(str_split(only_male_act_edges, "_")))
 set.seed(101)
   pathway_results_male_act <- gost(query = only_male_act_tf_genes , 
                                organism = "hsapiens", ordered_query = FALSE, 
-                               multi_query = FALSE, significant = TRUE, exclude_iea= FALSE, measure_underrepresentation = FALSE, evcodes = FALSE,
+                               multi_query = FALSE, significant = TRUE, exclude_iea= FALSE,
+                               measure_underrepresentation = FALSE, evcodes = FALSE,
                                user_threshold = 0.05, correction_method = "g_SCS", 
                                domain_scope = "annotated", custom_bg = NULL, 
                                numeric_ns = "", as_short_link = FALSE)
@@ -360,19 +387,19 @@ set.seed(101)
 ```
 
 ```{r}
-only_male_repress_edges<- setdiff(m_repress_edge, c(f_repress_edge, f_act_edge ,m_act_edge))
+only_male_repress_edges <- setdiff(m_repress_edge, c(f_repress_edge, f_act_edge ,m_act_edge))
 ```
 
 ```{r}
 only_male_repress_tf_genes <- unique(unlist(str_split(only_male_repress_edges, "_")))
 ```
 
-
 ```{r}
 set.seed(101)
   pathway_results_male_repress <- gost(query = only_male_repress_tf_genes , 
                                organism = "hsapiens", ordered_query = FALSE, 
-                               multi_query = FALSE, significant = TRUE, exclude_iea= FALSE, measure_underrepresentation = FALSE, evcodes = FALSE,
+                               multi_query = FALSE, significant = TRUE, exclude_iea= FALSE,
+                               measure_underrepresentation = FALSE, evcodes = FALSE,
                                user_threshold = 0.05, correction_method = "g_SCS", 
                                domain_scope = "annotated", custom_bg = NULL, 
                                numeric_ns = "", as_short_link = FALSE)
@@ -381,19 +408,19 @@ set.seed(101)
 
 
 ```{r}
-only_female_act_edges<- setdiff(f_act_edge, c(f_repress_edge, m_repress_edge, m_act_edge ))
+only_female_act_edges <- setdiff(f_act_edge, c(f_repress_edge, m_repress_edge, m_act_edge))
 ```
 
 ```{r}
 only_female_act_tf_genes <- unique(unlist(str_split(only_female_act_edges, "_")))
 ```
 
-
 ```{r}
 set.seed(101)
   pathway_results_female_act <- gost(query = only_female_act_tf_genes , 
                                organism = "hsapiens", ordered_query = FALSE, 
-                               multi_query = FALSE, significant = TRUE, exclude_iea= FALSE, measure_underrepresentation = FALSE, evcodes = FALSE,
+                               multi_query = FALSE, significant = TRUE, exclude_iea= FALSE,
+                               measure_underrepresentation = FALSE, evcodes = FALSE,
                                user_threshold = 0.05, correction_method = "g_SCS", 
                                domain_scope = "annotated", custom_bg = NULL, 
                                numeric_ns = "", as_short_link = FALSE)
@@ -401,7 +428,7 @@ set.seed(101)
 ```
 
 ```{r}
-only_female_repress_edges<- setdiff(f_repress_edge, c(m_repress_edge, m_act_edge ,f_act_edge))
+only_female_repress_edges <- setdiff(f_repress_edge, c(m_repress_edge, m_act_edge ,f_act_edge))
 ```
 
 ```{r}
@@ -413,7 +440,8 @@ only_female_repress_tf_genes <- unique(unlist(str_split(only_female_repress_edge
 set.seed(101)
   pathway_results_female_repress <- gost(query = only_female_repress_tf_genes , 
                                organism = "hsapiens", ordered_query = FALSE, 
-                               multi_query = FALSE, significant = TRUE, exclude_iea= FALSE, measure_underrepresentation = FALSE, evcodes = FALSE,
+                               multi_query = FALSE, significant = TRUE, exclude_iea= FALSE,
+                               measure_underrepresentation = FALSE, evcodes = FALSE,
                                user_threshold = 0.05, correction_method = "g_SCS", 
                                domain_scope = "annotated", custom_bg = NULL, 
                                numeric_ns = "", as_short_link = FALSE)
@@ -421,91 +449,145 @@ set.seed(101)
 ```
 
 
-
+Go semantic similarity analysis
 
 ```{r}
 hsGO <- godata('org.Hs.eg.db', ont="BP")
 ```
 
 ```{r}
+png("~/results/alpaca/drug_metabolism_genes/liver_drug_metabolism_edge_go_term_heatmap.png",width=15,height=10,units="in",res=1200, type="cairo")
 go_term_heatmap_v2(pathway_results_female_res_act, pathway_results_female_res_repress, pathway_results_male_res_act , pathway_results_male_res_repress, threshold = 0.94, "~/results/alpaca/drug_metabolism_genes/liver_edge_differences_pathways.csv")
+dev.off()
+```
+
+
+Look at the targeting difference of activator vs repressor edges in male and female genes
+
+```{r}
+f_act_edge_df <- str_split(f_act_edge, "_", simplify = TRUE)
+f_repress_edge_df <- str_split(f_repress_edge, "_", simplify = TRUE)
+
+female_genes <- unique(c(f_act_edge_df[,2], f_repress_edge_df[,2]))
+Liver_reg <- Liver_F_panda@regNet
+diff_female <- c()
+
+for (i in 1:length(female_genes)){ 
+  
+  f_act_tf_gene_sub <- f_act_edge_df[f_act_edge_df[,2] == female_genes[i] , 1]
+  act_subnetwork <- Liver_reg[rownames(Liver_reg) %in% f_act_tf_gene_sub , colnames(Liver_reg) == female_genes[i]]
+  
+  f_repress_tf_gene_sub <- f_repress_edge_df[f_repress_edge_df[,2] == female_genes[i] , 1]
+  repress_subnetwork <- Liver_reg[rownames(Liver_reg) %in% f_repress_tf_gene_sub , colnames(Liver_reg) == female_genes[i]]
+  
+  diff_female[i] <- sum(act_subnetwork)- sum(repress_subnetwork )
+}
+
+diff_female <- cbind( female_genes, diff_female)
+colnames(diff_female) <- c("genes", "diff_female")
+```
+
+```{r}
+m_act_edge_df <- str_split(m_act_edge, "_", simplify = TRUE)
+m_repress_edge_df <- str_split(m_repress_edge, "_", simplify = TRUE)
+
+male_genes <- unique(c(m_act_edge_df[,2], m_repress_edge_df[,2]))
+Liver_reg <- Liver_M_panda@regNet
+diff_male <- c()
+
+for (i in 1:length(male_genes)){ 
+  
+  m_act_tf_gene_sub <- m_act_edge_df[m_act_edge_df[,2] == male_genes[i] , 1]
+  act_subnetwork <- Liver_reg[rownames(Liver_reg) %in% m_act_tf_gene_sub , colnames(Liver_reg) == male_genes[i]]
+  
+  m_repress_tf_gene_sub <- m_repress_edge_df[m_repress_edge_df[,2] == male_genes[i] , 1]
+  repress_subnetwork <- Liver_reg[rownames(Liver_reg) %in% m_repress_tf_gene_sub , colnames(Liver_reg) == male_genes[i]]
+  
+  diff_male[i] <- sum(act_subnetwork)- sum(repress_subnetwork )
+  
+}
+
+diff_male <- cbind( male_genes, diff_male)
+colnames(diff_male)<- c("genes", "diff_male")
+```
+
+```{r}
+diff_both <- merge(diff_male, diff_female, by= "genes", all =TRUE)
+```
+
+```{r}
+diff_both <- diff_both[complete.cases(diff_both),]
+```
+
+```{r}
+diff_both$diff_male <- as.numeric(diff_both$diff_male)
+diff_both$diff_female <- as.numeric(diff_both$diff_female)
+```
+
+```{r}
+rownames(diff_both) <- diff_both[, 1]
+diff_both <- diff_both[, -1]
+```
+
+```{r}
+colnames(diff_both) <- c("Male", "Female")
 ```
 
 
 ```{r}
-list("Female Activator Edges"=f_act_edge, "Female Repressor Edges"=f_repress_edge, "Male Activator Edges"=m_act_edge, "Male Repressor Edges"=m_repress_edge)
+saveRDS(diff_both, "~/results/alpaca/drug_metabolism_genes/targeting_difference_act_vs_repress_both_sexes.rds" )
 ```
 
 ```{r}
-f_act_edge_gene_count <- as.data.frame(table(str_split(f_act_edge, "_", simplify = TRUE)[,2]))
-f_repress_edge_gene_count <- as.data.frame(table(str_split(f_repress_edge, "_", simplify = TRUE)[,2]))
-m_act_edge_gene_count <- as.data.frame(table(str_split(m_act_edge, "_", simplify = TRUE)[,2]))
-m_repress_edge_gene_count <- as.data.frame(table(str_split(m_repress_edge, "_", simplify = TRUE)[,2]))
+#how many female act targetting
+table(diff_both$Female > 0)
+table(diff_both$Female < 0)
+```
+```{r}
+#how many male act targetting
+table(diff_both$Male > 0)
+table(diff_both$Male < 0)
 ```
 
 ```{r}
-count_act_repress <- merge(f_act_edge_gene_count, f_repress_edge_gene_count, by= "Var1", all =TRUE)
-count_act_repress <- merge(count_act_repress, m_act_edge_gene_count, by= "Var1", all =TRUE)
-count_act_repress <- merge(count_act_repress, m_repress_edge_gene_count, by= "Var1", all =TRUE)
-```
-
-```{r}
-rownames(count_act_repress) <- count_act_repress[,1]
-```
-
-```{r}
-count_act_repress<- count_act_repress[,-1]
-```
-
-```{r}
-colnames(count_act_repress)<- c("Female_Activator_Edges", "Female_Repressor_Edges", "Male_Activator_Edges", "Male_Repressor_Edges")
-```
-
-```{r}
-count_act_repress$Female_Activator_Edges<- ifelse( is.na(count_act_repress$Female_Activator_Edges), 0, count_act_repress$Female_Activator_Edges)
-count_act_repress$Female_Repressor_Edges<- ifelse( is.na(count_act_repress$Female_Repressor_Edges), 0, count_act_repress$Female_Repressor_Edges)
-count_act_repress$Male_Activator_Edges<- ifelse( is.na(count_act_repress$Male_Activator_Edges), 0, count_act_repress$Male_Activator_Edges)
-count_act_repress$Male_Repressor_Edges<- ifelse( is.na(count_act_repress$Male_Repressor_Edges), 0, count_act_repress$Male_Repressor_Edges)
+diff_both[sign(diff_both$Male) != sign(diff_both$Female), ]
 ```
 
 
 ```{r}
-col_fun = colorRamp2(c(0,  45), c( "black", "yellow"))
-Heatmap(t(count_act_repress), nam= "Number of Edges", col = col_fun, show_column_names = TRUE,  show_row_names = TRUE,
-          clustering_distance_rows= "euclidean",
-          clustering_distance_columns=  "euclidean",
-          clustering_method_rows = "ward.D2" ,
-          clustering_method_columns="ward.D2", heatmap_legend_param = list( title_gp = gpar(fontsize = 15 , fontface = "bold"), labels_gp = gpar(fontsize = 12, fontface = "bold")))
+res <- wilcox.test(diff_both$Female, diff_both$Male, paired = TRUE)
 ```
 
 ```{r}
-female_diff<-  count_act_repress$Female_Activator_Edges- count_act_repress$Female_Repressor_Edges
-male_diff<-  count_act_repress$Male_Activator_Edges- count_act_repress$Male_Repressor_Edges
+print(res)
 ```
 
 ```{r}
-diff_matrix<- cbind(female_diff, male_diff)
+png("~/results/alpaca/drug_metabolism_genes/liver_drug_metabolism_edge_act_repress_heatmap.png",width=12,height=20,units="in",res=1200, type="cairo")
+Heatmap(diff_both, nam= "Activator - Repressor\nEdges",col = colorRamp2(c(-75, 0,  75), c( "blue", "black", "yellow")), 
+          show_column_names = TRUE,  show_row_names = TRUE,
+          clustering_distance_rows = "euclidean",
+          clustering_distance_columns =  "euclidean",
+          clustering_method_rows = "ward.D2" , column_names_rot = 45, 
+          row_names_gp = gpar(fontface = "bold", fontsize = 18 ),
+          column_names_gp =gpar(fontsize = 18 , fontface = "bold"), 
+          clustering_method_columns="ward.D2", 
+        heatmap_legend_param = list( title_gp = gpar(fontsize = 20 , fontface = "bold", at = c(-75,0,75)),
+                                     labels_gp = gpar(fontsize = 12, fontface = "bold")))
+dev.off()
 ```
 
+# END
+    Location of final scripts:
+    src
+    Location of data produced:
+    ~/results/alpaca/drug_metabolism_genes
+    Dates when operations were done:
+    230418
+    
+## Versions
 ```{r}
-rownames(diff_matrix)<- rownames(count_act_repress)
-colnames(diff_matrix)<- c("Female_Edge_Differences", "Male_Edge_Differences")
+sessionInfo()
 ```
-
-```{r}
-diff_matrix[,1]<- as.numeric(diff_matrix[,1])
-diff_matrix[,2]<- as.numeric(diff_matrix[,2])
-```
-
-
-```{r}
-#col_fun <- colorRamp2(c(-30, 0,  30), c( "blue", "white", "yellow"))
-Heatmap(t(diff_matrix), nam= "Activator - Repressor\nEdges",col=colorRamp2(c(-26, 0,  26), c( "blue", "black", "yellow")), show_column_names = TRUE,  show_row_names = TRUE,
-          clustering_distance_rows= "euclidean",
-          clustering_distance_columns=  "euclidean",
-          clustering_method_rows = "ward.D2" ,
-          clustering_method_columns="ward.D2", heatmap_legend_param = list( title_gp = gpar(fontsize = 15 , fontface = "bold", at = c(-26,0,26)), labels_gp = gpar(fontsize = 12, fontface = "bold")))
-```
-
 
 
