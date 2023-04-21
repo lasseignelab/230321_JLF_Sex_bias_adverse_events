@@ -1,0 +1,2 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,00686576091017349;10352;93;70;0,752688172043011;0,00676197836166924;"TF:M03560_1";"TF";"Factor: PMX1; motif: TAATHA; match class: 1";20012;6655;"Brain_-_Amygdala_male_18_community"

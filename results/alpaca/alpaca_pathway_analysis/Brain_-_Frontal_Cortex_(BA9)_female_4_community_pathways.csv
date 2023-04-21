@@ -1,0 +1,7 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0144547678327252;424;88;9;0,102272727272727;0,0212264150943396;"GO:0005925";"GO:CC";"focal adhesion";22112;453;"Brain_-_Frontal_Cortex_(BA9)_female_4_community"
+"2";"query_1";TRUE;0,017297020418281;434;88;9;0,102272727272727;0,0207373271889401;"GO:0030055";"GO:CC";"cell-substrate junction";22112;875;"Brain_-_Frontal_Cortex_(BA9)_female_4_community"
+"3";"query_1";TRUE;0,0303079320570891;3;89;2;0,0224719101123595;0,666666666666667;"GO:0018636";"GO:MF";"phenanthrene 9,10-monooxygenase activity";20171;3410;"Brain_-_Frontal_Cortex_(BA9)_female_4_community"
+"4";"query_1";TRUE;0,0303079320570891;3;89;2;0,0224719101123595;0,666666666666667;"GO:0047115";"GO:MF";"trans-1,2-dihydrobenzene-1,2-diol dehydrogenase activity";20171;6469;"Brain_-_Frontal_Cortex_(BA9)_female_4_community"
+"5";"query_1";TRUE;0,0303079320570891;3;89;2;0,0224719101123595;0,666666666666667;"GO:0047718";"GO:MF";"indanol dehydrogenase activity";20171;7057;"Brain_-_Frontal_Cortex_(BA9)_female_4_community"
+"6";"query_1";TRUE;0,0421284738957878;2086;89;22;0,247191011235955;0,0105465004793864;"GO:0042802";"GO:MF";"identical protein binding";20171;5702;"Brain_-_Frontal_Cortex_(BA9)_female_4_community"

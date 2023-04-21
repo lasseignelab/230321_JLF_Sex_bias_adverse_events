@@ -1,0 +1,6 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,000177498533619023;5453;82;41;0,5;0,0075187969924812;"GO:0005829";"GO:CC";"cytosol";22122;380;"Pituitary_male_8_community"
+"2";"query_1";TRUE;0,0235428437384788;23;82;3;0,0365853658536585;0,130434782608696;"GO:0071682";"GO:CC";"endocytic vesicle lumen";22122;2758;"Pituitary_male_8_community"
+"3";"query_1";TRUE;1,59281440635863e-08;2155;83;33;0,397590361445783;0,0153132250580046;"TF:M04377";"TF";"Factor: IRX2; motif: NWACAYGACAWN";20011;4376;"Pituitary_male_8_community"
+"4";"query_1";TRUE;5,00159229285973e-08;3975;83;44;0,530120481927711;0,0110691823899371;"TF:M04378";"TF";"Factor: IRX5; motif: NWACAYRACAWN";20011;4382;"Pituitary_male_8_community"
+"5";"query_1";TRUE;5,44703841963373e-05;597;83;15;0,180722891566265;0,0251256281407035;"TF:M04378_1";"TF";"Factor: IRX5; motif: NWACAYRACAWN; match class: 1";20011;4383;"Pituitary_male_8_community"
