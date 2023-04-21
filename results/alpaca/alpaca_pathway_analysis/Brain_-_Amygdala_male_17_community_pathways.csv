@@ -1,0 +1,8 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0449768492236581;49;72;4;0,0555555555555556;0,0816326530612245;"GO:0034198";"GO:BP";"cellular response to amino acid starvation";21128;8985;"Brain_-_Amygdala_male_17_community"
+"2";"query_1";TRUE;0,0200818138101312;4;77;2;0,025974025974026;0,5;"GO:1990131";"GO:CC";"Gtr1-Gtr2 GTPase complex";22112;3780;"Brain_-_Amygdala_male_17_community"
+"3";"query_1";TRUE;0,0303968253417394;55;46;4;0,0869565217391304;0,0727272727272727;"REAC:R-HSA-9639288";"REAC";"Amino acids regulate mTORC1";10777;136;"Brain_-_Amygdala_male_17_community"
+"4";"query_1";TRUE;0,00224063740543616;9416;83;61;0,734939759036145;0,00647833474936279;"TF:M09972";"TF";"Factor: BTEB2; motif: WGGGTGKGGCNGGN";20012;616;"Brain_-_Amygdala_male_17_community"
+"5";"query_1";TRUE;0,00278413905271823;8711;83;58;0,698795180722892;0,00665824819194122;"TF:M10112";"TF";"Factor: Miz-1; motif: NNRGGWGGGGGAGGGGMRR";20012;5200;"Brain_-_Amygdala_male_17_community"
+"6";"query_1";TRUE;0,0188924309487963;13015;83;72;0,867469879518072;0,00553207837111026;"TF:M12160";"TF";"Factor: KLF15; motif: RCCMCRCCCMCN";20012;4550;"Brain_-_Amygdala_male_17_community"
+"7";"query_1";TRUE;0,0336989914306116;12255;83;69;0,831325301204819;0,00563035495716034;"TF:M08226";"TF";"Factor: Elk-1:Pax-9; motif: ACCGGAACYACGCWYSANTG";20012;1822;"Brain_-_Amygdala_male_17_community"

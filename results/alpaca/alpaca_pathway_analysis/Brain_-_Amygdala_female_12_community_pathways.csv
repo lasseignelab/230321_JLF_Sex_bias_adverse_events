@@ -1,7 +1,0 @@
-"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
-"1";"query_1";TRUE;0,0268075533188229;18;85;3;0,0352941176470588;0,166666666666667;"GO:0035615";"GO:MF";"clathrin adaptor activity";20171;5402;"Brain_-_Amygdala_female_12_community"
-"2";"query_1";TRUE;0,031737136542285;19;85;3;0,0352941176470588;0,157894736842105;"GO:0140312";"GO:MF";"cargo adaptor activity";20171;10647;"Brain_-_Amygdala_female_12_community"
-"3";"query_1";TRUE;0,00126353342463651;11326;88;72;0,818181818181818;0,00635705456471835;"TF:M12158";"TF";"Factor: KLF15; motif: NCCMCGCCCMCN";20012;4546;"Brain_-_Amygdala_female_12_community"
-"4";"query_1";TRUE;0,0313612380845099;6444;88;48;0,545454545454545;0,0074487895716946;"TF:M12657";"TF";"Factor: RELA; motif: GGGRMTKYCCC";20012;7144;"Brain_-_Amygdala_female_12_community"
-"5";"query_1";TRUE;0,0372816084726365;70;88;5;0,0568181818181818;0,0714285714285714;"TF:M07361_1";"TF";"Factor: MZF-1; motif: GKGGGGARNR; match class: 1";20012;5475;"Brain_-_Amygdala_female_12_community"
-"6";"query_1";TRUE;0,0427096538626798;12977;88;75;0,852272727272727;0,00577945596054558;"TF:M07486";"TF";"Factor: ZNF300; motif: SWGGGGGSN";20012;9900;"Brain_-_Amygdala_female_12_community"
