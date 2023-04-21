@@ -44,7 +44,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Set working directory 
 ```{r}
 #change this path to match your paths 
-dir_path <- "/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events"
+dir_path <- here::here()
 ```
 
 
@@ -70,7 +70,7 @@ tissues_wo_ws <- gsub(" ", "_", tissues, fixed = TRUE)
 ```
 
 ```{r}
-panda_output_files <- list.files(paste0(dir_path, "/results/alpaca/sex_specific_networks"))
+panda_output_files <- list.files(paste0(dir_path, "/results/ac_results/alpaca/sex_specific_networks"))
 ```
 
 create input files for alpaca analysis (male then female)
@@ -106,20 +106,25 @@ for (i in seq(1, 86, by =2)){
 
 
 ```{r}
-panda_adjusted_files <- list.files(paste0(dir_path, "/results/alpaca/alpaca_adjusted_inputs"))
+panda_adjusted_files <- list.files(paste0(dir_path, "/results/ac_results/alpaca/alpaca_adjusted_inputs"))
 ```
 
 ```{r eval = FALSE}
 # female specific communities
 for (i in 1:length(panda_adjusted_files)){
   print(panda_adjusted_files[i])
-  input<- readRDS(paste0(paste0(dir_path, "/results/alpaca/alpaca_adjusted_inputs/"),  panda_adjusted_files[i], sep = ""))
+  input<- readRDS(paste0(paste0(dir_path, "/results/ac_results/alpaca/alpaca_adjusted_inputs/"),  panda_adjusted_files[i], sep = ""))
   
   tissue_name <- unlist(str_split(panda_adjusted_files[i], "__")[[1]])[1]
   print(tissue_name)
   
+<<<<<<< Updated upstream
   file_header <- paste0(paste0(dir_path, "/results/alpaca/alpaca_run/"),  tissue_name, "_",sep = "")
   set.seed(101)
+=======
+  file_header <- paste0(paste0(dir_path, "/results/ac_results/alpaca/alpaca_run/"),  tissue_name, "_",sep = "")
+  
+>>>>>>> Stashed changes
   regnet_sex_alp <- alpaca(input, file_header, verbose = TRUE)
 }
 ```
@@ -129,13 +134,18 @@ for (i in 1:length(panda_adjusted_files)){
 #change the order for male specific communities
 for (i in 1:length(panda_adjusted_files)){
   print(panda_adjusted_files[i])
-  input <- readRDS(paste0(paste0(dir_path, "/results/alpaca/alpaca_adjusted_inputs/"),  panda_adjusted_files[i], sep = ""))
+  input <- readRDS(paste0(paste0(dir_path, "/results/ac_results/alpaca/alpaca_adjusted_inputs/"),  panda_adjusted_files[i], sep = ""))
   input_adj <- input[,c(1,2,4,3)]
   tissue_name <- unlist(str_split(panda_adjusted_files[i], "__")[[1]])[1]
   print(tissue_name)
   
+<<<<<<< Updated upstream
   file_header <- paste0(paste0(dir_path, "/results/alpaca/alpaca_run/"), tissue_name, "female", "male" , "_",sep = "")
   set.seed(101)
+=======
+  file_header <- paste0(paste0(dir_path, "/results/ac_results/alpaca/alpaca_run/"), tissue_name, "female", "male" , "_",sep = "")
+  
+>>>>>>> Stashed changes
   regnet_sex_alp_flipped <- alpaca(input_adj, file_header, verbose = TRUE)
 }
 ```

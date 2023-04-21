@@ -207,7 +207,7 @@ sex_networks <-  function(processed_expression,
 create_alpaca_input <- function(file_path_name_female, file_path_name_male, tissue_name){
   
   #make a longer dataframe for the male network
-  panda_M <- readRDS(paste0(paste0(dir_path, "/results/alpaca/sex_specific_networks/"), file_path_name_male, sep = ""))
+  panda_M <- readRDS(paste0(paste0(dir_path, "/results/ac_results/alpaca/sex_specific_networks/"), file_path_name_male, sep = ""))
   regNet_panda_intersection_male <- panda_M@regNet
   topNet_male <- topedges( panda_M, cutoff = 2)
   topNET_male_regnet <- as.data.frame(topNet_male@regNet)
@@ -215,7 +215,7 @@ create_alpaca_input <- function(file_path_name_female, file_path_name_male, tiss
   topNET_male_regnet_long <- topNET_male_regnet  %>%  pivot_longer(!TF, names_to = "gene", values_to = "male") 
   
   #make a longer dataframe for the female network
-  panda_F <- readRDS(paste0(paste0(dir_path, "results/alpaca/sex_specific_networks/"),  file_path_name_female, sep = ""))
+  panda_F <- readRDS(paste0(paste0(dir_path, "/results/ac_results/alpaca/sex_specific_networks/"),  file_path_name_female, sep = ""))
   regNet_panda_intersection_female <- panda_F@regNet
   topNet_female <- topedges( panda_F , cutoff = 2)
   topNET_female_regnet <- as.data.frame(topNet_female@regNet)
@@ -232,7 +232,7 @@ create_alpaca_input <- function(file_path_name_female, file_path_name_male, tiss
   
   colnames(topNet_regnet_male_female_long) <- c("TF", "gene", "male", "female")
   
-  file_name<- paste0(paste0(dir_path, "/results/alpaca/alpaca_adjusted_inputs/"),  tissue_name, "_topNet_regnet_male_female_long.rds")
+  file_name <- paste0(paste0(dir_path, "/results/ac_results/alpaca/alpaca_adjusted_inputs/"),  tissue_name, "_topNet_regnet_male_female_long.rds")
   
   saveRDS(topNet_regnet_male_female_long, file_name )
 }

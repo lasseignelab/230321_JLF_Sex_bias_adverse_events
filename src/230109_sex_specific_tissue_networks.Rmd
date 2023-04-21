@@ -44,12 +44,12 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Set working directory 
 ```{r}
 #change this path to match your paths 
-dir_path <- "/data/project/lasseigne_lab/JLF_scratch/230321_JLF_Sex_bias_adverse_events/"
+dir_path <- here::here()
 ```
 
 
 ```{r}
-source(paste0(dir_path, "src/sex_bias_drug_functions.R"))
+source(paste0(dir_path, "/src/sex_bias_drug_functions.R"))
 library(Biobase)
 library(netZooR)
 ```
@@ -58,8 +58,8 @@ library(netZooR)
 ### load in data
 the transcription factor and protein-protein interaction networks for panda 
 ```{r}
-motif_table <- readRDS(paste0(dir_path, "data/panda_input_data/230104_symbol_motif_table.rds"))
-ppi_net <- readRDS(paste0(dir_path, "data/panda_input_data/230104_symbol_numeric_ppi_network_11_5_0.rds"))
+motif_table <- readRDS(paste0(dir_path, "/data/panda_input_data/230104_symbol_motif_table.rds"))
+ppi_net <- readRDS(paste0(dir_path, "/data/panda_input_data/230104_symbol_numeric_ppi_network_11_5_0.rds"))
 ```
 
 loading in test data (liver tissue)
@@ -78,7 +78,7 @@ loading in test data (liver tissue)
 ### Analysis
 
 ```{r}
-metadata <- readRDS(paste0(dir_path, "data/metadata_gtex_filter_samples.rds"))
+metadata <- readRDS(paste0(dir_path, "/data/metadata_gtex_filter_samples.rds"))
 
 tissues <- unique(metadata$gtex.smtsd)
 #remove cell tissues
@@ -94,16 +94,16 @@ tissues_wo_ws <- gsub(" ", "_", tissues, fixed = TRUE)
 for (i in 1:length(tissues_wo_ws)){
   
   print(tissues[i])
-  file_name <- paste(paste0(dir_path, "results/lioness/processed_normalized_expression/"), tissues_wo_ws[i], "_gtex_processed_expression.rds",sep = "")
+  file_name <- paste(paste0(dir_path, "/results/ac_results/lioness/processed_normalized_expression/"), tissues_wo_ws[i], "_gtex_processed_expression.rds",sep = "")
   #print(file_name)
   expression <- readRDS(file_name)
   
-  tisssue_meta_file <- paste(paste0(dir_path, "results/gtex_qsmooth/"), tissues[i], "_gtex_metadata.rds", sep = "")
+  tisssue_meta_file <- paste(paste0(dir_path, "/data/gtex_qsmooth/"), tissues[i], "_gtex_metadata.rds", sep = "")
   tisssue_meta <- readRDS(tisssue_meta_file)
   
-  file_male <- paste(paste0(dir_path, "results/alpaca/sex_specific_networks/"), tissues_wo_ws[i], "_M_panda.rds", sep = "")
+  file_male <- paste(paste0(dir_path, "/results/ac_results/alpaca/sex_specific_networks/"), tissues_wo_ws[i], "_M_panda.rds", sep = "")
   
-  file_female <- paste(paste0(dir_path, "results/alpaca/sex_specific_networks/"), tissues_wo_ws[i], "_F_panda.rds", sep = "")
+  file_female <- paste(paste0(dir_path, "/results/ac_results/alpaca/sex_specific_networks/"), tissues_wo_ws[i], "_F_panda.rds", sep = "")
   
   try(sex_networks(expression, 
                    tisssue_meta, 
