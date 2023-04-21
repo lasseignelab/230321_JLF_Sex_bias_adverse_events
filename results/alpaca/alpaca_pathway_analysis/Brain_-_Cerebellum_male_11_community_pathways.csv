@@ -1,0 +1,2 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,031565564342843;3681;87;29;0,333333333333333;0,00787829394186362;"GO:0031090";"GO:CC";"organelle membrane";22112;1051;"Brain_-_Cerebellum_male_11_community"

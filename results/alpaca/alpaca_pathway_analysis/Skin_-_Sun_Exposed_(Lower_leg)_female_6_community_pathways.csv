@@ -1,0 +1,5 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0238838234026983;4;83;2;0,0240963855421687;0,5;"GO:0061689";"GO:CC";"tricellular tight junction";22112;2328;"Skin_-_Sun_Exposed_(Lower_leg)_female_6_community"
+"2";"query_1";TRUE;0,0289117174240726;49;87;4;0,0459770114942529;0,0816326530612245;"GO:0070888";"GO:MF";"E-box binding";20171;8856;"Skin_-_Sun_Exposed_(Lower_leg)_female_6_community"
+"3";"query_1";TRUE;0,0119497113346883;100;42;5;0,119047619047619;0,05;"KEGG:04914";"KEGG";"Progesterone-mediated oocyte maturation";8091;364;"Skin_-_Sun_Exposed_(Lower_leg)_female_6_community"
+"4";"query_1";TRUE;0,012202247135646;2177;88;25;0,284090909090909;0,0114836931557189;"TF:M04831_1";"TF";"Factor: ZEB1; motif: CAGGTGN; match class: 1";20012;9207;"Skin_-_Sun_Exposed_(Lower_leg)_female_6_community"
