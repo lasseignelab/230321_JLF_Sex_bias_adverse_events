@@ -1,0 +1,6 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0121734319975101;636;77;13;0,168831168831169;0,020440251572327;"MIRNA:hsa-miR-21-5p";"MIRNA";"hsa-miR-21-5p";14850;413;"Esophagus_-_Mucosa_male_7_community"
+"2";"query_1";TRUE;2,22304117271099e-06;6675;85;56;0,658823529411765;0,00838951310861423;"TF:M01070";"TF";"Factor: c-Maf; motif: NWNNNTGCTGACKNNNNNN";20011;880;"Esophagus_-_Mucosa_male_7_community"
+"3";"query_1";TRUE;3,66371735203647e-05;4696;85;44;0,517647058823529;0,00936967632027257;"TF:M04224";"TF";"Factor: NRL; motif: NNNNTGCTGAC";20011;6070;"Esophagus_-_Mucosa_male_7_community"
+"4";"query_1";TRUE;0,00191200961623281;2192;85;26;0,305882352941176;0,0118613138686131;"TF:M11352";"TF";"Factor: MafG; motif: TGCTGACNNN";20011;4918;"Esophagus_-_Mucosa_male_7_community"
+"5";"query_1";TRUE;0,0281537667646257;1909;85;22;0,258823529411765;0,0115243583027763;"TF:M11354";"TF";"Factor: MafG; motif: TGCTGACNTR";20011;4922;"Esophagus_-_Mucosa_male_7_community"

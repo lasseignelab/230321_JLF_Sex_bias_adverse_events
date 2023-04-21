@@ -363,7 +363,7 @@ alpaca_pathway_wrapper<- function(tissue_name, sex){
   file_comms<- read.delim(comms_file, header=FALSE)
   
   # top 100 genes in the community
-  alpaca_core_genes <- alpaca_results_dw_tf_genes(file_scores, file_comms)
+  alpaca_core_genes <- alpaca_output_dw_tf_genes(file_scores, file_comms)
   #save the tf and gene files for each community
   core_name<- paste(tissue_name, sex, "core_genes.rds", sep= "_")
   file_core_name<- paste0("~/results/alpaca/alpaca_core_gene_lists/",core_name)

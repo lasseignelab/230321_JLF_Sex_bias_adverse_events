@@ -1,5 +1,0 @@
-"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
-"1";"query_1";TRUE;0,00935910684469334;9840;93;61;0,655913978494624;0,00619918699186992;"GO:0016020";"GO:CC";"membrane";22112;725;"Adrenal_Gland_male_9_community"
-"2";"query_1";TRUE;0,048806934765838;147;39;5;0,128205128205128;0,0340136054421769;"KEGG:04145";"KEGG";"Phagosome";8091;276;"Adrenal_Gland_male_9_community"
-"3";"query_1";TRUE;0,0369762273628373;10824;94;71;0,75531914893617;0,00655949741315595;"TF:M12722";"TF";"Factor: ZXDL; motif: GSGSCNNGGGMRGCNCCGGGS";20012;11646;"Adrenal_Gland_male_9_community"
-"4";"query_1";TRUE;0,042740265306052;11335;94;73;0,776595744680851;0,00644022937803264;"TF:M11601_1";"TF";"Factor: TCF-1; motif: ACATCGRGRCGCTGW; match class: 1";20012;8407;"Adrenal_Gland_male_9_community"

@@ -1,0 +1,4 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,00909053551929828;117;78;6;0,0769230769230769;0,0512820512820513;"GO:0030518";"GO:BP";"intracellular steroid hormone receptor signaling pathway";21110;7198;"Bladder_female_11_community"
+"2";"query_1";TRUE;0,0234875849080667;138;78;6;0,0769230769230769;0,0434782608695652;"GO:0043401";"GO:BP";"steroid hormone mediated signaling pathway";21110;11260;"Bladder_female_11_community"
+"3";"query_1";TRUE;0,0359017132864167;55;80;4;0,05;0,0727272727272727;"GO:0005080";"GO:MF";"protein kinase C binding";20195;1273;"Bladder_female_11_community"

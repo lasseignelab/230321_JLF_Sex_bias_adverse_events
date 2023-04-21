@@ -74,6 +74,7 @@ for (j in 1:length(tissues_wo_ws)){
   alpaca_pathway_wrapper(tissues_wo_ws[j], "male")
 }
 ```
+Bad request, response code 503<- might occur this is a server issue
 
 # top pathways
 
@@ -119,7 +120,7 @@ test<- as.data.frame(table(all_pathway_res_filter_KEGG[,3]))
 ```
 
 ```{r}
-go_bp_all_tissues<- test[test$Freq == 43,1]
+go_bp_all_tissues<- test[test$Freq == 43, 1]
 ```
 
 ```{r}
@@ -155,7 +156,7 @@ all_pathway_res[grep("p450", all_pathway_res$term_name),]
 ```{r}
 all_pathway_res[grep("xenobiotic", all_pathway_res$term_name),]
 ```
-small intestine and whole blood are interesting. no chromchrome p450 genes
+small intestine is interesting. no chromchrome p450 genes
 
 ```{r}
 all_pathway_res[grep("small molecule", all_pathway_res$term_name),]
