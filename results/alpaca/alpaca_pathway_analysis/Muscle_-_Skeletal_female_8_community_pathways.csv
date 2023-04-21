@@ -1,2 +1,0 @@
-"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
-"1";"query_1";TRUE;0,0020597255574937;82;84;6;0,0714285714285714;0,0731707317073171;"GO:0072332";"GO:BP";"intrinsic apoptotic signaling pathway by p53 class mediator";21128;18457;"Muscle_-_Skeletal_female_8_community"
