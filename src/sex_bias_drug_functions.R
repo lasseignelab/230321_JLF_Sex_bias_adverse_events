@@ -557,7 +557,7 @@ alpaca_gene_set_analysis <- function(tissue_nam, genes="drugs", gene_set_name= "
   title_tissue<- paste("Differential modularity score of ", y_name2, "\nin", tissue_nam, "sex-specific gene regulatory networks", sep = " ")
   label_tissue <- paste("Paired Wilcoxon signed rank test\np-value =", p_value, sep = " ")
   
-  ggplot(liver_drug_subset, aes(y=score, x= sex, fill = sex)) + geom_violin() +geom_point() + geom_text(x="female", y=0.002, label= label_tissue, size= 15) +ylab("Differential modularity score") + xlab("Sex") + ggtitle(title_tissue) + scale_fill_manual(values= c( "#440154FF","#21908CFF")) +theme(text = element_text(size = 30,  face="bold"))
+  ggplot(liver_drug_subset, aes(y=score, x= sex, fill = sex)) + geom_violin() +geom_point() + geom_text(x="female", y=0.008, label= label_tissue, size= 15) +ylab("Differential modularity score") + xlab("Sex") + ggtitle(title_tissue) + scale_fill_manual(values= c( "#440154FF","#21908CFF")) +theme(text = element_text(size = 30,  face="bold"))
   #save the plot - sex_differential_modularity_plots
   file_name<- paste(path, "sex_differential_modularity_plots/", tissue_nam, "_sex_differential_modularity_plot.png", sep = "")
   ggsave(file_name, width = 20, height=10, units= "in")
