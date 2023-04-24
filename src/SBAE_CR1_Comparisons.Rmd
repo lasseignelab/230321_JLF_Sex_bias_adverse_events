@@ -120,7 +120,48 @@ ca_path <- here::here("results", "alpaca_jf", "alpaca_run")
 compare_delim(ca_path = ca_path, cr_path = cr_path, delim = "\t", patt = ".txt")
 
 ```
+Check objects created in fares_sbae_drugs
 
+```{r}
+cr_path <- here::here("data")
+ca_path <- here::here("data", "data_jf")
+
+# files that should be compared
+fares_files <- c("drug_ae_df.rds", "patient_safety_filtered_pt.rds")
+
+# lists of filenames from both 
+fares_compares_cr <- lapply(
+  fares_files, 
+  function(x) paste(cr_path,x, sep = "/")) # full path to file
+fares_compares_ca <- lapply(fares_files, function(x) paste(ca_path,x, sep = "/"))
+
+fares_comparesdf_cr<- lapply(
+  fares_compares_cr, 
+  function(x) readRDS(x)) # read in file
+fares_comparesdf_ca<- lapply(fares_compares_ca, function(x) readRDS(x))
+
+waldo::compare(fares_comparesdf_cr[[1]], fares_comparesdf_ca[[1]])
+waldo::compare(fares_comparesdf_cr[[2]], fares_comparesdf_ca[[2]])
+
+```
+
+Check meddra output
+
+```{r}
+cr_file <- readRDS(here::here("data", "ac_MedDRA_mapping_llt_pt_soc.rds"))
+ca_file <- readRDS(here::here("data", "MedDRA_mapping_llt_pt_soc.rds"))
+waldo::compare(ca_file, cr_file)
+```
+
+
+
+Check data/fisher_array_results
+
+```{r}
+cr_path <- here::here("data", "fisher_array_results")
+ca_path <- here::here("data", "fisher_array_results_jf")
+compare_obj(ca_path = ca_path, cr_path = cr_path)
+```
 
 
 ```{r sinfo}
