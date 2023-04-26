@@ -865,6 +865,267 @@ go_term_heatmap_v2<- function(female_act_pathways, female_repress_pathways, male
   
 }
 
+
+getAll2 <- function(db_path){
+  conn <- dbConnect(RSQLite::SQLite(), db_path)
+  dbdf <- dbGetQuery(conn,'SELECT * FROM dbdf')
+  dbDisconnect(conn)
+  return(dbdf)
+}
+getEnzymes <- function(ids, db_path){
+  len <- length(ids)
+  dbdf <- getAll2(db_path)
+  #print(res)
+  list<- rep(NA, length(ids))
+  for ( i in 1:length(ids)){
+    tartxt <- dbdf[dbdf$"drugbank-id" %in% ids[i],"enzymes"]
+    res <- str_match_all(tartxt, "UniProtKB\\s*(.*?)\\s*UniProt")
+    #print(res)
+    res<- res[[1]]
+    uni_gnsym <- tryCatch(suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys=res[,2], columns=c("UNIPROT", "SYMBOL"), keytype="UNIPROT")), error=function(e){})
+    if (is.null(uni_gnsym)){
+      #do it for each symbol incase of missing
+      uni_gnsym2<- c()
+      for (j in 1:length(res[,2])){
+        uni_gnsym3 <- tryCatch(suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys=res[j,2], columns=c("UNIPROT", "SYMBOL"), keytype="UNIPROT")), error=function(e){NA})
+        if(! is.na(uni_gnsym3)){
+          uni_gnsym2<- c(uni_gnsym2, uni_gnsym3[,2])
+        }
+      }
+      list[i] <-paste(uni_gnsym2, collapse =";")
+    }else{
+      list[i] <-paste(uni_gnsym[,2], collapse =";")
+    }
+    uni_gnsym <- NULL
+  }
+  names(list)<- ids
+  return(list)
+}
+
+getTransporter <- function(ids, db_path){
+  len <- length(ids)
+  dbdf <- getAll2(db_path)
+  #print(res)
+  list<- rep(NA, length(ids))
+  for ( i in 1:length(ids)){
+    tartxt <- dbdf[dbdf$"drugbank-id" %in% ids[i],"transporters"]
+    res <- str_match_all(tartxt, "UniProtKB\\s*(.*?)\\s*UniProt")
+    #print(res)
+    res<- res[[1]]
+    uni_gnsym <- tryCatch(suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys=res[,2], columns=c("UNIPROT", "SYMBOL"), keytype="UNIPROT")), error=function(e){NULL})
+    if (is.null(uni_gnsym)){
+      #do it for each symbol incase of missing
+      uni_gnsym2<- c()
+      for (j in 1:length(res[,2])){
+        print(i)
+        uni_gnsym3 <- tryCatch(suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys=res[j,2], columns=c("UNIPROT", "SYMBOL"), keytype="UNIPROT")), error=function(e){NA})
+        if(! is.na(uni_gnsym3)){
+          uni_gnsym2<- c(uni_gnsym2, uni_gnsym3[,2])
+        }
+      }
+      list[i] <-paste(uni_gnsym2, collapse =";")
+    }else{
+      list[i] <-paste(uni_gnsym[,2], collapse =";")
+    }
+  }
+  names(list)<- ids
+  return(list)
+}
+
+getCarriers <- function(ids, db_path){
+  len <- length(ids)
+  dbdf <- getAll2(db_path)
+  #print(res)
+  list<- rep(NA, length(ids))
+  for ( i in 1:length(ids)){
+    tartxt <- dbdf[dbdf$"drugbank-id" %in% ids[i],"carriers"]
+    res <- str_match_all(tartxt, "UniProtKB\\s*(.*?)\\s*UniProt")
+    #print(res)
+    res<- res[[1]]
+    uni_gnsym <- tryCatch(suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys=res[,2], columns=c("UNIPROT", "SYMBOL"), keytype="UNIPROT")), error=function(e){NULL})
+    if (is.null(uni_gnsym)){
+      #do it for each symbol incase of missing
+      uni_gnsym2<- c()
+      for (j in 1:length(res[,2])){
+        uni_gnsym3 <- tryCatch(suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys=res[j,2], columns=c("UNIPROT", "SYMBOL"), keytype="UNIPROT")), error=function(e){NA})
+        if(! is.na(uni_gnsym3)){
+          uni_gnsym2<- c(uni_gnsym2, uni_gnsym3[,2])
+        }
+      }
+      list[i] <-paste(uni_gnsym2, collapse =";")
+    }else{
+      list[i] <-paste(uni_gnsym[,2], collapse =";")
+    }
+    
+  }
+  names(list)<- ids
+  return(list)
+}
+
+getDrugAll<- function(ids, db_path){
+  print("done target")
+  targets <- queryDB(ids ,type = "getTargets", db_path) [,5]
+  print("done enzymes")
+  enzyme <- getEnzymes(ids, db_path)
+  print("done carrier")
+  carrier<- getCarriers(ids, db_path)
+  print("done transporter")
+  transporter<- getTransporter(ids, db_path)
+  
+  drug_info<- cbind(ids, targets, enzyme, transporter, carrier )
+}
+
+drug_gene_test<- function(gene_name, count, index_test, drug_info_others, seed= 101){
+  #inputs- 
+  #gene_name- name of the gene 
+  #count- how many in sbae drug list
+  #index_test- which colmun is the drug target or other item in 
+  #drug_info_others- the drug info for the other drugs in FARES
+  #seed is seed for analysis
+  
+  #output 
+  #res_list
+  #test$p.value- the p-value from wilcox.test
+  #plot1- histogram of test
+  #res- the 1000 random section results
+  res<- c()
+  set.seed(seed)
+  for (i in 1:1000){
+    #t<- table(grepl("",))
+    sub<- sample( drug_info_others[,index_test], 416, replace = FALSE)
+    genes <- unlist(str_split(sub, ";"))
+    genes <- genes[!is.na(genes )]
+    genes <- genes[!genes == "NA"]
+    genes <- genes[!genes == ""]
+    genes_df<- as.data.frame(table(genes))
+    t2<-genes_df$Freq[genes_df$genes == gene_name]
+    if (length(t2) ==1){
+      res[i]<-genes_df$Freq[genes_df$genes == gene_name]
+    }else{
+      res[i]<- 0
+    }
+    
+  }
+  #print(res)
+  test<- wilcox.test(res, mu= count, alternative = "less")
+  #print(count)
+  #print(hist(res))
+  plot_data<- as.data.frame(cbind(1:1000, res))
+  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() + geom_vline(xintercept = count)
+  
+  res_list<- list(test$p.value, plot1, res)
+  return(res_list)
+}
+
+drug_gene_core_test<- function( count, all_drug_targets_list, core_list, seed= 101){
+  #inputs
+  #count- number of genes that are core genes
+  #all_drug_targets_list- all the drug targets in the fares database
+  #core_list - core gene llist
+  #seed - seed for analysis 
+  
+  #output
+  #test$p.value- pvlaue from wilcox.test
+  #plot1- the histogram of the analysis
+  
+  res<- c()
+  set.seed(seed)
+  for (i in 1:1000){
+    #t<- table(grepl("",))
+    sub<- sample( all_drug_targets_list, 84, replace = FALSE)
+    
+    res1 <- table(sub %in% core_list)
+    res2<- res1[names(res1) == "TRUE"]
+    if (length(res2) ==1){
+      res[i]<-res2
+    }else{
+      res[i]<- 0
+    }
+    
+  }
+  #print(res)
+  test<- wilcox.test(res, mu= count, alternative = "less")
+  #print(count)
+  #print(hist(res))
+  plot_data<- as.data.frame(cbind(1:1000, res))
+  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() + geom_vline(xintercept = count)
+  
+  res_list<- list(test$p.value, plot1)
+  return(res_list)
+}
+
+drug_gene_expression_test<- function( count, all_drug_targets_list, expression_list, seed= 101){
+  #input
+  #count- nuber of sex-bias genes in SBAE drug targets
+  #all_drug_targets_list- all the drug targets
+  #expression_list- sex-bias gene list 
+  #seed for analysis 
+  
+  #output
+  #test$p.value- pvlaue from wilcox.test
+  #plot1- the histogram of the analysis
+  res<- c()
+  set.seed(seed)
+  for (i in 1:1000){
+    #t<- table(grepl("",))
+    sub<- sample( all_drug_targets_list, 84, replace = FALSE)
+    
+    res1 <- table(sub %in% expression_list)
+    res2<- res1[names(res1) == "TRUE"]
+    if (length(res2) ==1){
+      res[i]<-res2
+    }else{
+      res[i]<- 0
+    }
+    
+  }
+  #print(res)
+  test<- wilcox.test(res, mu= count, alternative = "less")
+  #print(count)
+  #print(hist(res))
+  plot_data<- as.data.frame(cbind(1:1000, res))
+  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() + geom_vline(xintercept = count)
+  
+  res_list<- list(test$p.value, plot1)
+  return(res_list)
+}
+
+drug_enzymes_gene_expression_test<- function( count, all_drug_targets_list, expression_list, seed= 101){
+  #input
+  #count- nuber of sex-bias genes in SBAE drug enzymes
+  #all_drug_targets_list- all the drug enzymes
+  #expression_list- sex-bias gene list 
+  #seed for analysis 
+  
+  #output
+  #test$p.value- pvlaue from wilcox.test
+  #plot1- the histogram of the analysis
+  res<- c()
+  set.seed(seed)
+  for (i in 1:1000){
+    #t<- table(grepl("",))
+    sub<- sample( all_drug_targets_list, 64, replace = FALSE)
+    
+    res1 <- table(sub %in% expression_list)
+    res2<- res1[names(res1) == "TRUE"]
+    if (length(res2) ==1){
+      res[i]<-res2
+    }else{
+      res[i]<- 0
+    }
+    
+  }
+  #print(res)
+  test<- wilcox.test(res, mu= count, alternative = "less")
+  #print(count)
+  #print(hist(res))
+  plot_data<- as.data.frame(cbind(1:1000, res))
+  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() + geom_vline(xintercept = count)
+  
+  res_list<- list(test$p.value, plot1)
+  return(res_list)
+}
+
 #old functions no longer used in main project
 lioness_output_adjustment <- function(index){
   #need to determine the number the lioness subsets

@@ -237,11 +237,19 @@ colors[3] <- "gray"
 colors[4] <- "#440154FF"
 
 png("~/results/FARES_plots/drug_target_sex_bias_core_genes_heatmap.png",width=15,height=10,units="in",res=1400)
-Heatmap(t(sbae_target_core_top), name = "Sex-bias Core Gene", col = colors, heatmap_legend_param = list(at = c("-1", "0","1e-15", "1"),labels= c("male", "not sex-bias","both", "female"), column_names_gp =gpar(fontsize = 18 , fontface = "bold"), labels_gp = gpar(fontsize = 12, fontface = "bold") ))
+core_heatmap <- Heatmap(t(sbae_target_core_top), name = "Sex-bias Core Gene", col = colors, column_names_max_height = unit(4, "cm"), heatmap_legend_param = list(at = c("-1", "0","1e-15", "1"),labels= c("male", "not sex-bias","both", "female"), column_names_gp =gpar(fontsize = 18 , fontface = "bold"), row_names_gp =gpar(fontsize = 6 , fontface = "bold"), labels_gp = gpar(fontsize = 12, fontface = "bold") ))
+
+draw( core_heatmap ,heatmap_legend_side="bottom")
 dev.off()
 ```
 
+```{r}
+length(unique(rownames(sbae_target_core_top)))
+```
 
+```{r}
+58/84
+```
 
 ```{r}
 setdiff(rownames(sbae_target_core_top), rownames(sbae_target_exp_top))
@@ -261,7 +269,7 @@ unique(c(rownames(sbae_target_exp_top), rownames(sbae_target_core_top)))
 ```
 
 ```{r}
-68/84
+71/84
 ```
 
 
@@ -281,12 +289,18 @@ drug_info_sbae_drugs <- readRDS("~/results/FARES_plots/drug_info_sbae_drugs.rds"
 dim(drug_info_sbae_drugs)
 ```
 
+
 ```{r}
-length(grep(paste0(sex_bias_genescollapse="|")  , drug_info_sbae_drugs$targets ))
+drug_info_sbae_drugs_targets <- drug_info_sbae_drugs[! is.na(drug_info_sbae_drugs$targets),]
+```
+
+
+```{r}
+length(grep(paste0(sex_bias_genes,collapse="|")  , drug_info_sbae_drugs_targets$targets ))
 ```
 
 ```{r}
-389/416
+194/389
 ```
 
 
@@ -427,7 +441,7 @@ Liver_F_panda <- readRDS("~/results/alpaca/sex_specific_networks/Liver_F_panda.r
 
 
 ```{r}
-drug_gene_core_test<- function( count = 5, all_drug_targets_list= colnames(Liver_F_panda@regNet), core_list= c(core_gene_list$Liver, female_core_gene_list$Liver), seed= 101){
+drug_gene_core_test<- function( count = 4, all_drug_targets_list= colnames(Liver_F_panda@regNet), core_list= c(core_gene_list$Liver, female_core_gene_list$Liver), seed= 101){
   res<- c()
   set.seed(seed)
   for (i in 1:1000){
@@ -455,12 +469,27 @@ drug_gene_core_test<- function( count = 5, all_drug_targets_list= colnames(Liver
 }
 ```
 
+
+```{r}
+drug_genes <- c("ADH1A"	,"ADH1B", "ADH1C", "ADH4",	"ADH5",	"ADH6",	"ADH7",	
+                "ALDH1A3",	"ALDH3A1",	"ALDH3B1", "ALDH3B2", "AOX1", "CYP1A2",
+                "CYP2A13", "CYP2A6", "CYP2A7",	"CYP2B6",	"CYP2C18",	"CYP2C19",
+                "CYP2C8",	"CYP2C9",	"CYP2D6",	"CYP2E1",	"CYP3A4",	"CYP3A43",	"CYP3A5",
+                "CYP3A7",	"FMO1",	"FMO2",	"FMO3", "FMO4",	"FMO5",  "GSTA1", "GSTA2", 	"GSTA3",	"GSTA4",
+                "GSTA5",	"GSTK1",	"GSTM1",	"GSTM2",	"GSTM3",	"GSTM4",	"GSTM5",	"GSTO1",
+                "GSTO2",	"GSTP1",	"GSTT1",	"GSTT2",	"GSTZ1",	"MAOA",	"MAOB",	"MGST1",
+                "MGST2",	"MGST3",	"UGT1A1",	"UGT1A10",	"UGT1A3",	"UGT1A4",
+                "UGT1A5",	"UGT1A6",	"UGT1A7",	"UGT1A8", "UGT1A9",	"UGT2A1",	"UGT2A3", "UGT2B10",
+                "UGT2B11",	"UGT2B15",	"UGT2B17",	"UGT2B28",	"UGT2B4",	"UGT2B7")
+```
+
+
 ```{r}
 drug_gene_core_test()
 ```
 
 ```{r}
-drug_gene_core_test( count = 5, all_drug_targets_list= colnames(Liver_F_panda@regNet), core_list= core_gene_list$Liver, seed= 101)
+drug_gene_core_test( count = 4, all_drug_targets_list= colnames(Liver_F_panda@regNet), core_list= core_gene_list$Liver, seed= 101)
 ```
 
 ```{r}
