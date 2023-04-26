@@ -71,7 +71,7 @@ This conda enviorment only applies the following scripts: 230213_fares_fisher_te
 Before running this script you need to create conda enviroment.
 ````
 module load Anaconda3/5.3.1
-conda create -n SR_TAU_CELL -f <path/to/SR_TAU_CELL_environment.yml>
+conda env create -n SR_TAU_CELL -f <path/to/SR_TAU_CELL_environment.yml>
 ````
 
 Correct the path your conda environment R libraries in the 230213_fares_fisher_test.R script.
