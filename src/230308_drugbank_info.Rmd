@@ -54,6 +54,9 @@ library(drugbankR)
 library(DBI)
 library(hash)
 library(org.Hs.eg.db)
+library(stringr)
+library(viridis)
+library(tidyverse)
 ```
 
 ```{r}
@@ -140,9 +143,9 @@ drug_info_all <- cbind(inital_drug_list, targets, enzyme, transporter, carrier)
 drug_info_all<- as.data.frame(drug_info_all)
 ```
 
-permutation testing 
+### Permutation testing- Drug targets
 
-count table of drug target in sbaes
+count table of drug target in SBAES
 ```{r}
 sbae_targets <- unlist(str_split(drug_info[,2], ";"))
 sbae_targets <- sbae_targets[!is.na(sbae_targets )]
@@ -219,7 +222,7 @@ sbae_targets_test_df$p_adj<-  p.adjust(pvalue, method= "BH")
 table(sbae_targets_test_df$p_adj < 0.001)
 ```
 
-Focus on SBAE drug targets that are shared by 5 SBAE drugs
+Focus on SBAE drug targets that are shared by 6 SBAE drugs
 ```{r}
 sbae_targets_df_filter <- sbae_targets_test_df[as.numeric(sbae_targets_test_df$Freq) > 5,]
 ```
@@ -276,7 +279,7 @@ ggsave("~/results/FARES_plots/230313_drug_target_box_plot.png", height=20, width
 ```
 
 
-different plot looking at the fraction of drug targets
+different plot looking at the fraction of drug targets of SBAE and all drugs
 ```{r}
 sbae_targets_df_top$neg_log_p <- -log(sbae_targets_df_top$p_adj)
 ```
@@ -321,36 +324,31 @@ fract_plot_data <- sbae_targets_df_top[, c(1,7,8)]
 ```
 
 ```{r}
+colnames(fract_plot_data)<- c("sbae_targets", "SBAE Drugs" , "All Drugs")
+```
+
+
+```{r}
 fract_plot_data_long <- pivot_longer(fract_plot_data, col = !sbae_targets)
 ```
 
 
 ```{r}
-ggplot(fract_plot_data_long, aes())
+fract_plot_data_long$sbae_targets<- factor(fract_plot_data_long$sbae_targets , levels= sbae_targets_df_top$sbae_targets)
 ```
-
-
-
 ```{r}
-ggplot(sbae_targets_df_top[1:30,], aes(y=sbae_targets, x= fraction , label= text))+ geom_bar(stat="identity",color= "black", fill= "white") + 
-    geom_text(size = 8, position = position_stack(vjust = 0.8)) + ylab("Drug Target") + xlab("The fraction of SBAE drugs over all drugs\nwith same target" ) +theme(text = element_text(size = 20,  face="bold")) 
+fract_plot_data_long$name<- factor(fract_plot_data_long$name, levels= c( "SBAE Drugs" , "All Drugs") )
 ```
 
 
 ```{r}
-sbae_targets_df_top<- sbae_targets_df_top[order(-sbae_targets_df_top$fraction),]
-sbae_targets_df_top$sbae_targets<- factor(sbae_targets_df_top$sbae_targets, levels= sbae_targets_df_top$sbae_targets)
-```
-
-```{r}
-sbae_targets_df_top$text <- paste0(sbae_targets_df_top$Freq, "/", sbae_targets_df_top$all_count)
-```
-
-
-```{r}
-ggplot(sbae_targets_df_top[1:30,], aes(y=sbae_targets, x= fraction , label= text))+ geom_bar(stat="identity",color= "black", fill= "white") + 
-    geom_text(size = 8, position = position_stack(vjust = 0.8)) + ylab("Drug Target") + xlab("The fraction of SBAE drugs over all drugs\nwith same target" ) +theme(text = element_text(size = 20,  face="bold")) 
-#ggsave("~/results/FARES_plots/230313_drug_target_barplot.png", height=15, width = 10)
+ggplot(fract_plot_data_long, aes(y= sbae_targets, x = value, fill= name))+ 
+    geom_bar(position="dodge", stat="identity", color= "black") +
+    scale_fill_viridis(discrete = T, option = "H", end= 0.8, name = "Drug Group") +
+    ylab("SBAE Drug Targets") +
+    xlab("Fraction of drugs with drug target") +
+    theme(text = element_text(size = 20,  face="bold")) 
+ggsave("~/results/FARES_plots/230313_drug_target_bar_plot.png", height=20, width = 10)
 ```
 
 
@@ -380,7 +378,7 @@ all_enz_df<- as.data.frame(table(all_enz))
 ```{r}
 length(all_enz_df$all_enz)
 ```
-2082- total targets
+345- total drug metabolism enzymes
 
 ```{r}
 not_sbae_enz_list <- all_enz_df$all_enz[!all_enz_df$all_enz %in% sbae_enz_df$sbae_enz]
@@ -389,7 +387,7 @@ not_sbae_enz_list <- all_enz_df$all_enz[!all_enz_df$all_enz %in% sbae_enz_df$sba
 add 0 counts to target targets that are not used by SBAE drugs
 ```{r}
 count <- rep(0, length(not_sbae_enz_list))
-other_enz <- cbind(as.character(not_sbae_targets_list), count)
+other_enz <- cbind(as.character(not_sbae_enz_list), count)
 colnames(other_enz) <- colnames(sbae_enz_df)
 ```
 
@@ -403,8 +401,9 @@ matrix for each adverse event and drug target
 pvalue<- c()
 plots2<- list()
 test2<- list()
-for ( j in 1:nrow(sbae_enz_df)){ #
-   res <- drug_gene_test(as.character(sbae_enz_df[j,1]),as.numeric(sbae_enz_df[j,2]), 3, drug_info_all )
+for ( j in 1:nrow(sbae_enz_test_df)){ #
+  print(j)
+  res <- drug_gene_test(as.character(sbae_enz_test_df[j,1]),as.numeric(sbae_enz_test_df[j,2]), 3, drug_info_all )
   pvalue[j]<- res[1]
   plots2[j]<- res[2]
   test2[j]<- res[3]
@@ -412,15 +411,16 @@ for ( j in 1:nrow(sbae_enz_df)){ #
 ```
 
 ```{r}
-sbae_enz_df$p_adj<-  p.adjust(pvalue, method= "BH")
+sbae_enz_test_df$p_adj<-  p.adjust(pvalue, method= "BH")
+```
+
+
+```{r}
+sbae_enz_df_top <- sbae_enz_df[sbae_enz_test_df$p_adj < 0.001, ]
 ```
 
 ```{r}
-sbae_enz_df_top <- sbae_enz_df[sbae_enz_df$p_adj < 0.001, ]
-```
-
-```{r}
-names(test2) <- sbae_enz_df[, 1]
+names(test2) <- sbae_enz_test_df[, 1]
 ```
 
 ```{r}
@@ -435,29 +435,44 @@ test2_long_df <- pivot_longer(test2_df, cols=everything(), names_to = "Drug_Enzy
 test2_long_df$Drug_Enzyme<- ifelse(test2_long_df$Drug_Enzyme == "CYP3A7.CYP3A51P", "CYP3A7-CYP3A51P", test2_long_df$Drug_Enzyme)
 ```
 
+only work on the drug enzymes that are more than 6 in sbae drugs
+```{r}
+#as.numeric(sbae_enz_test_df$Freq) > 0
+test2_long_df_v2 <- test2_long_df[test2_long_df$Drug_Enzyme %in% sbae_enz_test_df$sbae_enz[as.numeric(sbae_enz_test_df$Freq) > 5], ]
+```
+
+
 ```{r}
 sbae_counts<- c()
-for(i in 1:nrow(test2_long_df)){
-  sbae_counts[i] <- sbae_enz_df$Freq[sbae_enz_df$sbae_enz == test2_long_df$Drug_Enzyme[i]]
+for(i in 1:nrow(test2_long_df_v2 )){
+  sbae_counts[i] <- sbae_enz_test_df$Freq[sbae_enz_test_df$sbae_enz == test2_long_df_v2$Drug_Enzyme[i]]
 }
 ```
 
 ```{r}
-test2_long_df$sbae_number<- sbae_counts
+test2_long_df_v2$sbae_number<- as.numeric(sbae_counts)
 ```
 
 ```{r}
 sbae_enz_df_top<- sbae_enz_df_top[order(-sbae_enz_df_top$Freq),]
-test2_long_df$Drug_Enzyme<- factor(test2_long_df$Drug_Enzyme, levels= sbae_enz_df_top$sbae_enz)
+test2_long_df_v2$Drug_Enzyme<- factor(test2_long_df_v2$Drug_Enzyme, levels= sbae_enz_df_top$sbae_enz)
 ```
-
 
 ```{r}
-ggplot(test2_long_df, aes(x=Count, y= Drug_Enzyme ))+ geom_boxplot() +geom_point( aes(y=Drug_Enzyme,x= sbae_number ), color= "forestgreen",size =5) + xlab("Number of drugs with drug enzyme\nafter random selection" ) +theme(text = element_text(size = 20,  face="bold")) + ylab("Drug Enzyme")
+ggplot(test2_long_df_v2, aes(x=Count, y= Drug_Enzyme ))+ 
+  geom_boxplot() +
+  geom_point( aes(y=Drug_Enzyme,x= sbae_number ), color= "forestgreen",size =5) +
+  xlab("Number of drugs with drug enzyme\nafter random selection" ) +
+  theme(text = element_text(size = 20,  face="bold")) + ylab("Drug Enzyme")
 ggsave("~/results/FARES_plots/230313_drug_enzyme_box_plot.png", height=20, width = 10)
+```
+Number of significant drug metabolism enzymes with more than 5 drugs with the enzyme
+```{r}
+length(unique(test2_long_df_v2$Drug_Enzyme))
 ```
 
 
+Look at the fraction of drug with drug enzyme in SBAE and all drugs
 ```{r}
 all_enz <- unlist(str_split(drug_info_all[,3], ";"))
 all_enz <- all_enz[!is.na(all_enz )]
@@ -467,6 +482,11 @@ all_enz <- all_enz[!all_enz == "NA"]
 ```{r}
 all_enz_df<- as.data.frame(table(all_enz))
 ```
+
+```{r}
+sbae_enz_df_top<- sbae_enz_df_top[sbae_enz_df_top$Freq > 5,]
+```
+
 
 ```{r}
 all_counts<- c()
@@ -479,23 +499,52 @@ for (i in 1:nrow(sbae_enz_df_top)){
 sbae_enz_df_top$all_count<- all_counts
 ```
 
+
+
 ```{r}
-sbae_enz_df_top$fraction <- sbae_enz_df_top$Freq/sbae_enz_df_top$all_count
+sbae_enz_df_top$sbae_fraction <- as.numeric(sbae_enz_df_top$Freq)/416 # number of sbae drugs 
+```
+
+
+```{r}
+sbae_enz_df_top$all_fraction <- as.numeric(sbae_enz_df_top$all_count)/2945 # number of all. drugs
+```
+
+
+```{r}
+table(sbae_enz_df_top$sbae_fraction > sbae_enz_df_top$all_fraction )
 ```
 
 ```{r}
-sbae_enz_df_top<- sbae_enz_df_top[order(-sbae_enz_df_top$fraction),]
-sbae_enz_df_top$sbae_enz<- factor(sbae_enz_df_top$sbae_enz, levels= sbae_enz_df_top$sbae_enz)
+fract_plot_data <- sbae_enz_df_top[, c(1,4,5)]
 ```
 
 ```{r}
-sbae_enz_df_top$text <- paste0(sbae_enz_df_top$Freq, "/", sbae_enz_df_top$all_count)
+colnames(fract_plot_data)<- c("sbae_enz", "SBAE Drugs" , "All Drugs")
 ```
 
+
 ```{r}
-ggplot(sbae_enz_df_top, aes(y=sbae_enz, x= fraction , label= text))+ geom_bar(stat="identity",color= "black", fill= "white") + 
-    geom_text(size = 8, position = position_stack(vjust = 0.7)) + ylab("Drug Metabolism Enzyme") + xlab("The fraction of SBAE drugs over all drugs\nwith same drug metabolism enzyme" ) +theme(text = element_text(size = 20,  face="bold")) 
-ggsave("~/results/FARES_plots/230313_drug_metabolism_enzyme_barplot.png", height=15, width = 10)
+fract_plot_data_long <- pivot_longer(fract_plot_data, col = !sbae_enz)
+```
+
+
+```{r}
+fract_plot_data_long$sbae_enz <- factor(fract_plot_data_long$sbae_enz , levels= sbae_enz_df_top$sbae_enz)
+```
+```{r}
+fract_plot_data_long$name<- factor(fract_plot_data_long$name, levels= c( "SBAE Drugs" , "All Drugs") )
+```
+
+
+```{r}
+ggplot(fract_plot_data_long, aes(y= sbae_enz, x = value, fill= name))+ 
+    geom_bar(position="dodge", stat="identity", color= "black") +
+    scale_fill_viridis(discrete = T, option = "H", end= 0.8, name = "Drug Group") +
+    ylab("SBAE Drug Metabolism Enzymes") +
+    xlab("Fraction of drugs with drug metabolism enzyme") +
+    theme(text = element_text(size = 20,  face="bold")) 
+ggsave("~/results/FARES_plots/230313_drug_enzyme_bar_plot.png", height=20, width = 10)
 ```
 
 save everything here... 

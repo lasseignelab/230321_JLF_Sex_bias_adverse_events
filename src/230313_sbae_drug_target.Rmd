@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # START 
     Goal/Purpose of operations: 
-    I am going to be looking at the enriched drug targets from the SBAE drugs and looking at gene expression and core genes of sex-specific communitites. 
+    I am going to be looking at the enriched drug targets from the SBAE drugs and looking at gene expression and core genes of sex-specific communities. 
     
     Finished psedocode on:
     230308
@@ -24,10 +24,13 @@ knitr::opts_chunk$set(echo = TRUE)
     my laptop
     
     GitHub Repo:
-    Sex_Bias_Adverse_Events
+    230321_JLF_Sex_bias_adverse_events
+    
+    Docker: 
+    jenfisher7/rstudio_sex_bias_drugs
     
     Directory of operations:
-    ~/Documents/Sex_Bias_Adverse_Events
+    ~/Documents/230321_JLF_Sex_bias_adverse_events
     
     Scripts being edited for operations:
     NA
@@ -36,12 +39,16 @@ knitr::opts_chunk$set(echo = TRUE)
     output/alpaca/alpaca_runs
     
     Papers and tools: 
-    NA
+    "~/results/FARES_plots/drug_info_sbae_drugs.rds"- drug info from drugbank for SBAE drugs
+    "~/results/FARES_plots/drug_info_all.rds"- drug info from drugbank for all FAERS drugs
+    "~/results/FARES_plots/sbae_targets_df_top.rds"- the SBAE drug targets
+    ~/results/alpaca/alpaca_core_gene_lists- the core gene sets
 
 # STEPS
 
 ### Set working directory 
 ```{r}
+source("~/src/sex_bias_drug_functions.R")
 library(ggplot2)
 library(circlize)
 library(ComplexHeatmap)
@@ -50,12 +57,14 @@ library(DBI)
 library(hash)
 library(org.Hs.eg.db)
 library(EnsDb.Hsapiens.v75)
+library(stringr)
 ```
 
+
 ```{r}
-drug_info_sbae_drugs <- readRDS("~/output/FARES_plots/drug_info_sbae_drugs.rds")
-drug_info_all <- readRDS("~/output/FARES_plots/drug_info_all.rds")
-sbae_targets_df_top <- readRDS("~/output/FARES_plots/sbae_targets_df_top.rds")
+drug_info_sbae_drugs <- readRDS("~/results/FARES_plots/drug_info_sbae_drugs.rds")
+drug_info_all <- readRDS("~/results/FARES_plots/drug_info_all.rds")
+sbae_targets_df_top <- readRDS("~/results/FARES_plots/sbae_targets_df_top.rds")
 ```
 
 
@@ -68,10 +77,10 @@ table(sbae_targets_df_top$p_adj < 0.001)
 
 
 ```{r}
-SBAE_drug_targets<- unfactor(sbae_targets_df_top$sbae_targets)
+SBAE_drug_targets <- unfactor(sbae_targets_df_top$sbae_targets)
 ```
 
-
+remove missing names
 ```{r}
 all_targets <- unlist(str_split(drug_info_all[,2], ";"))
 all_targets <- all_targets[!is.na(all_targets )]
@@ -79,62 +88,18 @@ all_targets <- all_targets[!all_targets == "NA"]
 ```
 
 ```{r}
-all_targets_df<- as.data.frame(table(all_targets))
+all_targets_df <- as.data.frame(table(all_targets))
 ```
 
 ```{r}
-all_drug_targets<- unfactor(all_targets_df$all_targets)
+all_drug_targets <- unfactor(all_targets_df$all_targets)
 ```
 
 
 core gene analysis 
 
 ```{r}
-#BA9_female_core_genes <- readRDS("~/output/alpaca/alpaca_core_gene_lists/Brain_-_Frontal_Cortex_(BA9)_female_core_genes.rds")
-#BA9_male_core_genes <- readRDS("~/output/alpaca/alpaca_core_gene_lists/Brain_-_Frontal_Cortex_(BA9)_male_core_genes.rds")
-#BA9_list <- unique(BA9_female_core_genes$symbol, BA9_male_core_genes$symbol)
-#table(SBAE_drug_targets %in% BA9_list)
-#table(all_drug_targets %in% BA9_list)
-```
-
-
-```{r}
-drug_gene_core_test<- function( count, all_drug_targets_list, core_list, seed= 101){
-  res<- c()
-  set.seed(seed)
-  for (i in 1:1000){
-    #t<- table(grepl("",))
-    sub<- sample( all_drug_targets_list, 84, replace = FALSE)
-
-    res1 <- table(sub %in% core_list)
-    res2<- res1[names(res1) == "TRUE"]
-    if (length(res2) ==1){
-      res[i]<-res2
-    }else{
-      res[i]<- 0
-    }
-    
-  }
-  #print(res)
-  test<- wilcox.test(res, mu= count, alternative = "less")
-  #print(count)
-  #print(hist(res))
-  plot_data<- as.data.frame(cbind(1:1000, res))
-  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() + geom_vline(xintercept = count)
-  
-  res_list<- list(test$p.value, plot1)
-  return(res_list)
-}
-```
-
-
-```{r}
-#drug_gene_core_test(5, all_drug_targets,BA9_list )
-```
-
-
-```{r}
-files <- list.files(path = "~/output/alpaca/alpaca_core_gene_lists")
+files <- list.files(path = "~/results/alpaca/alpaca_core_gene_lists")
 ```
 
 
@@ -145,53 +110,53 @@ tissues<- unique(tissues)
 ```
 
 
-male core genes
+Run permutation testing for male core genes
 ```{r}
-pvalue<- c()
-plots<- list()
+pvalue <- c()
+plots <- list()
 core_gene_count <- c()
 core_gene_list <- list()
 for( i in 1:length(tissues)){
   print(tissues[i])
-  male_core_genes <- readRDS(paste("~/output/alpaca/alpaca_core_gene_lists/", tissues[i],"_male_core_genes.rds", sep=""))
+  male_core_genes <- readRDS(paste("~/results/alpaca/alpaca_core_gene_lists/", tissues[i],"_male_core_genes.rds", sep=""))
   
   sbae_res <- table(SBAE_drug_targets %in% unique(male_core_genes$symbol))
   
-  sbae_count<- sbae_res[names(sbae_res) == "TRUE"]
+  sbae_count <- sbae_res[names(sbae_res) == "TRUE"]
   
-  outcome<- drug_gene_core_test(sbae_count, all_drug_targets, core_list)
+  outcome <- drug_gene_core_test(sbae_count, all_drug_targets, male_core_genes$symbol)
   
-  pvalue[i]<- outcome[1]
-  plots[i]<- outcome[2]
-  core_gene_count[i]<- sbae_count
+  pvalue[i] <- outcome[1]
+  plots[i] <- outcome[2]
+  core_gene_count[i] <- sbae_count
   core_gene_list[[i]] <- SBAE_drug_targets[SBAE_drug_targets %in% unique(male_core_genes$symbol)]
 }
 ```
 
 
 ```{r}
-p_adj<-  p.adjust(pvalue, method= "BH")
+p_adj <-  p.adjust(pvalue, method = "BH")
 ```
 
 ```{r}
-male_sex_core_gene <- data.frame(tissue= tissues, count_core_gene= core_gene_count) #, p_value= pvalue, BH_adj_p= p_adj)
+male_sex_core_gene <- data.frame(tissue = tissues, count_core_gene = core_gene_count)
 ```
 
 ```{r}
-male_sex_core_gene<- cbind(male_sex_core_gene, unlist(pvalue), unlist(p_adj ))
+male_sex_core_gene <- cbind(male_sex_core_gene, unlist(pvalue), unlist(p_adj))
 ```
 
 ```{r}
-male_sex_core_gene$fraction<- male_sex_core_gene$count_core_gene/84
+male_sex_core_gene$fraction <- male_sex_core_gene$count_core_gene/84
 ```
 
 ```{r}
-male_sex_core_gene_df_top<- male_sex_core_gene[order(male_sex_core_gene$count_core_gene),]
-male_sex_core_gene_df_top$tissue<- factor(male_sex_core_gene_df_top$tissue, levels= male_sex_core_gene_df_top$tissue)
+male_sex_core_gene_df_top <- male_sex_core_gene[order(male_sex_core_gene$count_core_gene),]
+male_sex_core_gene_df_top$tissue <- factor(male_sex_core_gene_df_top$tissue, levels = male_sex_core_gene_df_top$tissue)
 ```
 
 ```{r}
-male_sex_core_gene_df_top$sig <- ifelse(male_sex_core_gene_df_top$`unlist(p_adj)` < 0.05, "Sig.", "Not Sig.")
+male_sex_core_gene_df_top$sig <- ifelse(male_sex_core_gene_df_top$`unlist(p_adj)` < 0.05, "Yes", "No")
 ```
 
 ```{r}
@@ -199,14 +164,22 @@ male_sex_core_gene_df_top$tissue2 <- str_replace_all(male_sex_core_gene_df_top$t
 ```
 
 ```{r}
-
-male_sex_core_gene_df_top$tissue2<- factor(male_sex_core_gene_df_top$tissue2, levels= male_sex_core_gene_df_top$tissue2)
+male_sex_core_gene_df_top$tissue2 <- factor(male_sex_core_gene_df_top$tissue2, levels = male_sex_core_gene_df_top$tissue2)
 ```
 
 ```{r}
-ggplot(male_sex_core_gene_df_top, aes(y=tissue2, x= fraction , label= count_core_gene, fill=sig))+ geom_bar(stat="identity",color= "black") + 
-    geom_text(size = 5, position = position_stack(vjust = 0.8)) + ylab("Tissue") + xlab("The fraction of SBAE drug targets\nthat are core genes" ) +theme(text = element_text(size = 20,  face="bold")) + scale_fill_viridis_d(option = "E", alpha= 0.7) +labs(fill="Significant?")
-ggsave("~/output/alpaca/drug_target/230313_male_drug_target_core_gene_barplot.png", height=15, width = 10)
+saveRDS(male_sex_core_gene_df_top, "~/results/alpaca/drug_target/male_sex_core_gene_df_top.rds")
+```
+
+```{r}
+ggplot(male_sex_core_gene_df_top, aes(y=tissue2, x= fraction , label= count_core_gene, fill=sig))+ 
+  geom_bar(stat="identity",color= "black") + 
+  geom_text(size = 5, position = position_stack(vjust = 0.8)) +
+  ylab("Tissue") + xlab("The fraction of SBAE drug targets\nthat are core genes") +
+  theme(text = element_text(size = 20,  face="bold")) +
+  scale_fill_viridis_d(option = "E", alpha= 0.7) + labs(fill="Significant?")
+
+ggsave("~/results/alpaca/drug_target/230313_male_drug_target_core_gene_barplot.png", height=15, width = 10)
 ```
 
 ```{r}
@@ -216,19 +189,21 @@ male_drug_target_core_count <- as.data.frame(table(unlist(core_gene_list)))
 make this plot
 
 ```{r}
-male_drug_target_core_count<- male_drug_target_core_count[order(male_drug_target_core_count$Freq),]
-male_drug_target_core_count$Var1 <- factor(male_drug_target_core_count$Var1, levels= male_drug_target_core_count$Var1)
+male_drug_target_core_count <- male_drug_target_core_count[order(male_drug_target_core_count$Freq),]
+male_drug_target_core_count$Var1 <- factor(male_drug_target_core_count$Var1, levels = male_drug_target_core_count$Var1)
 ```
 
 ```{r}
-ggplot(male_drug_target_core_count, aes(y=Var1, x= Freq , label= Freq))+ geom_bar(stat="identity",color= "black", fill = "white") + 
-    geom_text(size = 5, position = position_stack(vjust = 0.8)) + ylab("SBAE Drug Target") + xlab("The number of tissues with drug target as core gene" ) +theme(text = element_text(size = 20,  face="bold")) 
-ggsave("~/output/alpaca/drug_target/230313_male_drug_target_core_gene_barplot_just_genes.png", height=15, width = 10)
+ggplot(male_drug_target_core_count, aes(y=Var1, x= Freq , label= Freq))+
+  geom_bar(stat="identity",color= "black", fill = "white") +
+  geom_text(size = 5, position = position_stack(vjust = 0.8)) +
+  ylab("SBAE Drug Target") + xlab("The number of tissues with drug target as core gene") +
+  theme(text = element_text(size = 20,  face="bold")) 
+ggsave("~/results/alpaca/drug_target/230313_male_drug_target_core_gene_barplot_just_genes.png", height=15, width = 10)
 ```
 
 
-female core genes
-
+Run permutation testing for female core genes
 ```{r}
 pvalue<- c()
 plots<- list()
@@ -236,32 +211,32 @@ core_gene_count <- c()
 core_gene_list <- list()
 for( i in 1:length(tissues)){
   print(tissues[i])
-  female_core_genes <- readRDS(paste("~/output/alpaca/alpaca_core_gene_lists/", tissues[i],"_female_core_genes.rds", sep=""))
+  female_core_genes <- readRDS(paste("~/results/alpaca/alpaca_core_gene_lists/", tissues[i], "_female_core_genes.rds", sep=""))
   
   sbae_res <- table(SBAE_drug_targets %in% unique(female_core_genes$symbol))
   
-  sbae_count<- sbae_res[names(sbae_res) == "TRUE"]
+  sbae_count <- sbae_res[names(sbae_res) == "TRUE"]
   
-  outcome<- drug_gene_core_test(sbae_count, all_drug_targets, core_list)
+  outcome <- drug_gene_core_test(sbae_count, all_drug_targets, female_core_genes$symbol)
   
-  pvalue[i]<- outcome[1]
-  plots[i]<- outcome[2]
-  core_gene_count[i]<- sbae_count
+  pvalue[i] <- outcome[1]
+  plots[i] <- outcome[2]
+  core_gene_count[i] <- sbae_count
   core_gene_list[[i]] <- SBAE_drug_targets[SBAE_drug_targets %in% unique(female_core_genes$symbol)]
 }
 ```
 
 
 ```{r}
-p_adj<-  p.adjust(pvalue, method= "BH")
+p_adj <- p.adjust(pvalue, method= "BH")
 ```
 
 ```{r}
-female_sex_core_gene <- data.frame(tissue= tissues, count_core_gene= core_gene_count) #, p_value= pvalue, BH_adj_p= p_adj)
+female_sex_core_gene <- data.frame(tissue = tissues, count_core_gene = core_gene_count) 
 ```
 
 ```{r}
-female_sex_core_gene<- cbind(female_sex_core_gene, unlist(pvalue), unlist(p_adj ))
+female_sex_core_gene <- cbind(female_sex_core_gene, unlist(pvalue), unlist(p_adj))
 ```
 
 ```{r}
@@ -269,12 +244,12 @@ female_sex_core_gene$fraction<- female_sex_core_gene$count_core_gene/84
 ```
 
 ```{r}
-female_sex_core_gene_df_top<- female_sex_core_gene[order(female_sex_core_gene$count_core_gene),]
-female_sex_core_gene_df_top$tissue<- factor(female_sex_core_gene_df_top$tissue, levels= female_sex_core_gene_df_top$tissue)
+female_sex_core_gene_df_top <- female_sex_core_gene[order(female_sex_core_gene$count_core_gene), ]
+female_sex_core_gene_df_top$tissue <- factor(female_sex_core_gene_df_top$tissue, levels = female_sex_core_gene_df_top$tissue)
 ```
 
 ```{r}
-female_sex_core_gene_df_top$sig <- ifelse(female_sex_core_gene_df_top$`unlist(p_adj)` < 0.05, "Sig.", "Not Sig.")
+female_sex_core_gene_df_top$sig <- ifelse(female_sex_core_gene_df_top$`unlist(p_adj)` < 0.05, "Yes", "No")
 ```
 
 ```{r}
@@ -283,13 +258,22 @@ female_sex_core_gene_df_top$tissue2 <- str_replace_all(female_sex_core_gene_df_t
 
 ```{r}
 
-female_sex_core_gene_df_top$tissue2<- factor(female_sex_core_gene_df_top$tissue2, levels= female_sex_core_gene_df_top$tissue2)
+female_sex_core_gene_df_top$tissue2 <- factor(female_sex_core_gene_df_top$tissue2, levels = female_sex_core_gene_df_top$tissue2)
 ```
 
 ```{r}
-ggplot(female_sex_core_gene_df_top, aes(y=tissue2, x= fraction , label= count_core_gene, fill=sig))+ geom_bar(stat="identity",color= "black") + 
-    geom_text(size = 5, position = position_stack(vjust = 0.8)) + ylab("Tissue") + xlab("The fraction of SBAE drug targets\nthat are core genes") +theme(text = element_text(size = 20,  face="bold")) + scale_fill_viridis_d(option = "E", alpha= 0.7)+labs(fill="Significant?")
-ggsave("~/output/alpaca/drug_target/230313_female_drug_target_core_gene_barplot.png", height=15, width = 10)
+saveRDS(female_sex_core_gene_df_top, "~/results/alpaca/drug_target/female_sex_core_gene_df_top.rds")
+```
+
+
+```{r}
+ggplot(female_sex_core_gene_df_top, aes(y = tissue2, x = fraction , label = count_core_gene, fill = sig))+
+  geom_bar(stat = "identity",color = "black") + 
+  geom_text(size = 5, position = position_stack(vjust = 0.8)) + ylab("Tissue") +
+  xlab("The fraction of SBAE drug targets\nthat are core genes") +
+  theme(text = element_text(size = 20,  face = "bold")) +
+  scale_fill_viridis_d(option = "E", alpha = 0.7) + labs(fill = "Significant?")
+ggsave("~/results/alpaca/drug_target/230313_female_drug_target_core_gene_barplot.png", height=15, width = 10)
 ```
 
 ```{r}
@@ -299,25 +283,26 @@ female_drug_target_core_count <- as.data.frame(table(unlist(core_gene_list)))
 make this plot
 
 ```{r}
-female_drug_target_core_count<- female_drug_target_core_count[order(female_drug_target_core_count$Freq),]
-female_drug_target_core_count$Var1 <- factor(female_drug_target_core_count$Var1, levels= female_drug_target_core_count$Var1)
+female_drug_target_core_count <- female_drug_target_core_count[order(female_drug_target_core_count$Freq), ]
+female_drug_target_core_count$Var1 <- factor(female_drug_target_core_count$Var1, levels = female_drug_target_core_count$Var1)
 ```
 
 ```{r}
-ggplot(female_drug_target_core_count, aes(y=Var1, x= Freq , label= Freq))+ geom_bar(stat="identity",color= "black", fill = "white") + 
-    geom_text(size = 5, position = position_stack(vjust = 0.8)) + ylab("SBAE Drug Target") + xlab("The number of tissues with drug target as core gene" ) +theme(text = element_text(size = 20,  face="bold")) 
-ggsave("~/output/alpaca/drug_target/230313_female_drug_target_core_gene_barplot_just_genes.png", height=15, width = 10)
+ggplot(female_drug_target_core_count, aes(y = Var1, x = Freq , label = Freq))+
+  geom_bar(stat = "identity",color = "black", fill = "white") + 
+  geom_text(size = 5, position = position_stack(vjust = 0.8)) +
+  ylab("SBAE Drug Target") + xlab("The number of tissues with drug target as core gene") +
+  theme(text = element_text(size = 20,  face="bold")) 
+ggsave("~/results/alpaca/drug_target/230313_female_drug_target_core_gene_barplot_just_genes.png", height=15, width = 10)
 ```
 
 
 
 Now look at sex-bias expression 
-
+gene list from the following GTEX study: https://www.science.org/doi/10.1126/science.aba3066#:~:text=The%20role%20of%20sex%20in%20the%20human%20transcriptome,-In%20humans%2C%20the&text=examined%20Genotype%2DTissue%20Expression%20(GTEx,in%20cellular%20composition%20across%20tissues.
 ```{r}
 sex_bias_genes_gtex_science_paper <- read.table("~/data/GTEx_Analysis_v8_sbgenes/signif.sbgenes.txt", header=TRUE)
 ```
-
-
 
 ```{r}
 table(sex_bias_genes_gtex_science_paper$tissue)
@@ -325,85 +310,51 @@ table(sex_bias_genes_gtex_science_paper$tissue)
 
 ```{r}
 #for each tissue find the male and female biased genes
-tissues<- unique(sex_bias_genes_gtex_science_paper$tissue)
+tissues <- unique(sex_bias_genes_gtex_science_paper$tissue)
 male_tissues_names <- paste("M", tissues, sep="_")
-female_tissues_names<- paste("F", tissues, sep="_")
+female_tissues_names <- paste("F", tissues, sep="_")
 for (i in 1:length(tissues)){
-  assign(male_tissues_names[i], sex_bias_genes_gtex_science_paper[sex_bias_genes_gtex_science_paper$tissue ==tissues[i] & sex_bias_genes_gtex_science_paper$effsize < 0,])
-  assign(female_tissues_names[i], sex_bias_genes_gtex_science_paper[sex_bias_genes_gtex_science_paper$tissue ==tissues[i] & sex_bias_genes_gtex_science_paper$effsize > 0,])
+  assign(male_tissues_names[i], sex_bias_genes_gtex_science_paper[sex_bias_genes_gtex_science_paper$tissue ==tissues[i] & sex_bias_genes_gtex_science_paper$effsize < 0, ])
+  assign(female_tissues_names[i], sex_bias_genes_gtex_science_paper[sex_bias_genes_gtex_science_paper$tissue ==tissues[i] & sex_bias_genes_gtex_science_paper$effsize > 0, ])
 }
 ```
 
 ```{r}
-both_sex_tissue_names<- c(male_tissues_names, female_tissues_names)
+both_sex_tissue_names <- c(male_tissues_names, female_tissues_names)
 
-geneset<- data.frame(id =both_sex_tissue_names, name= both_sex_tissue_names, genes= I(rep(list(c("a","b")), 88)))
+geneset <- data.frame(id = both_sex_tissue_names, name = both_sex_tissue_names, genes = I(rep(list(c("a","b")), 88)))
 sex_genes <- both_sex_tissue_names
 for (i in 1:length(both_sex_tissue_names)){
   data <- get(both_sex_tissue_names[i])
-  trim_names<- strtrim(data[,1],15)
-  assign( sex_genes[i], trim_names)
+  trim_names <- strtrim(data[,1],15)
+  assign(sex_genes[i], trim_names)
   
 }
-
-sex_gene_set <- list(M_Adipose_Subcutaneous= M_Adipose_Subcutaneous, M_Adipose_Visceral_Omentum= M_Adipose_Visceral_Omentum)
+sex_gene_set <- list(M_Adipose_Subcutaneous = M_Adipose_Subcutaneous, M_Adipose_Visceral_Omentum = M_Adipose_Visceral_Omentum)
 ```
 
 ```{r}
 for (j in 1:88){
-  sex_gene_set[[j]]<- get(sex_genes[j])
-  #names(sex_gene_set[j])<- sex_genes[j]
+  sex_gene_set[[j]] <- get(sex_genes[j])
 }
-names(sex_gene_set)<-sex_genes
+names(sex_gene_set) <-sex_genes
 ```
 
 
-need to convert symbols to ensmble ids 
+need to convert symbols to ensemble ids 
 
 ```{r}
-SBAE_drug_targets_v2 <- gprofiler2::gconvert(SBAE_drug_targets, mthreshold= 1)
-```
-
-
-```{r}
-all_drug_targets_v2<- gprofiler2::gconvert(all_drug_targets, mthreshold= 1)
-```
-
-
-
-
-```{r}
-drug_gene_expression_test<- function( count, all_drug_targets_list, expression_list, seed= 101){
-  res<- c()
-  set.seed(seed)
-  for (i in 1:1000){
-    #t<- table(grepl("",))
-    sub<- sample( all_drug_targets_list, 84, replace = FALSE)
-
-    res1 <- table(sub %in% expression_list)
-    res2<- res1[names(res1) == "TRUE"]
-    if (length(res2) ==1){
-      res[i]<-res2
-    }else{
-      res[i]<- 0
-    }
-    
-  }
-  #print(res)
-  test<- wilcox.test(res, mu= count, alternative = "less")
-  #print(count)
-  #print(hist(res))
-  plot_data<- as.data.frame(cbind(1:1000, res))
-  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() + geom_vline(xintercept = count)
-  
-  res_list<- list(test$p.value, plot1)
-  return(res_list)
-}
+SBAE_drug_targets_v2 <- gprofiler2::gconvert(SBAE_drug_targets, mthreshold = 1)
 ```
 
 ```{r}
-pvalue<- c()
-plots<- list()
+all_drug_targets_v2 <- gprofiler2::gconvert(all_drug_targets, mthreshold = 1)
+```
+
+Run permutation testing for sex-bias expression
+```{r}
+pvalue <- c()
+plots <- list()
 expression_count <- c()
 expression_gene_list <- list()
 
@@ -414,14 +365,14 @@ for( i in 1:length(sex_gene_set)){
 
   sbae_res <- table(SBAE_drug_targets_v2$target %in% expression_list)
   
-  sbae_count<- sbae_res[names(sbae_res) == "TRUE"]
+  sbae_count <- sbae_res[names(sbae_res) == "TRUE"]
   print(sbae_count)
-  sbae_count<- ifelse( length(sbae_count)== 0, 0, sbae_count)
-  outcome<- drug_gene_expression_test(sbae_count, all_drug_targets_v2$target, expression_list)
+  sbae_count <- ifelse(length(sbae_count)== 0, 0, sbae_count)
+  outcome <- drug_gene_expression_test(sbae_count, all_drug_targets_v2$target, expression_list)
   
-  pvalue[i]<- outcome[1]
-  plots[i]<- outcome[2]
-  expression_count[i]<- sbae_count
+  pvalue[i] <- outcome[1]
+  plots[i] <- outcome[2]
+  expression_count[i] <- sbae_count
   expression_gene_list[[i]] <- SBAE_drug_targets_v2$target[SBAE_drug_targets_v2$target %in% expression_list]
 }
 ```
@@ -431,25 +382,23 @@ p_adj<-  p.adjust(pvalue, method= "BH")
 ```
 
 ```{r}
-sex_expression_gene <- data.frame(tissue= names(sex_gene_set), expression_count= expression_count) #, p_value= pvalue, BH_adj_p= p_adj)
+sex_expression_gene <- data.frame(tissue = names(sex_gene_set), expression_count = expression_count) 
 ```
 
 ```{r}
-sex_expression_gene<- cbind(sex_expression_gene, unlist(pvalue), unlist(p_adj ))
+sex_expression_gene <- cbind(sex_expression_gene, unlist(pvalue), unlist(p_adj))
 ```
 
 ```{r}
-sex_expression_gene$fraction<- sex_expression_gene$expression_count/84
-```
-
-
-
-```{r}
-sex_expression_gene$sig <- ifelse(sex_expression_gene$`unlist(p_adj)` < 0.05, "Sig.", "Not Sig.")
+sex_expression_gene$fraction <- sex_expression_gene$expression_count/84
 ```
 
 ```{r}
-female_sex_expression_gene<- sex_expression_gene[grep("F_", sex_expression_gene$tissue),]
+sex_expression_gene$sig <- ifelse(sex_expression_gene$`unlist(p_adj)` < 0.05, "Yes", "No")
+```
+
+```{r}
+female_sex_expression_gene <- sex_expression_gene[grep("F_", sex_expression_gene$tissue), ]
 ```
 ```{r}
 female_sex_expression_gene$tissue2 <- str_split(female_sex_expression_gene$tissue, "F_", simplify = TRUE)[,2]
@@ -457,20 +406,27 @@ female_sex_expression_gene$tissue2 <- str_replace_all(female_sex_expression_gene
 ```
 
 ```{r}
-female_sex_expression_gene_df_top<- female_sex_expression_gene[order(female_sex_expression_gene$expression_count),]
-female_sex_expression_gene_df_top$tissue2<- factor(female_sex_expression_gene$tissue2, levels= female_sex_expression_gene$tissue2)
+female_sex_expression_gene_df_top <- female_sex_expression_gene[order(female_sex_expression_gene$expression_count), ]
+female_sex_expression_gene_df_top$tissue2 <- factor(female_sex_expression_gene$tissue2, levels = female_sex_expression_gene$tissue2)
+```
+
+```{r}
+saveRDS(female_sex_expression_gene_df_top, "~/results/alpaca/drug_target/female_sex_expression_gene_df_top.rds")
+```
+
+```{r}
+ggplot(female_sex_expression_gene_df_top, aes(y = tissue2, x = fraction , label = expression_count, fill = sig)) +
+  geom_bar(stat = "identity",color = "black") + 
+  geom_text(size = 5, position = position_stack(vjust = 0.8)) +
+  ylab("Tissue") + xlab("The fraction of SBAE drug targets that have\nfemale-bias expression") +
+  theme(text = element_text(size = 18,  face = "bold")) +
+  scale_fill_viridis_d(option = "E", alpha = 0.7) + labs(fill = "Significant?")
+ggsave("~/results/FARES_plots/230313_drug_target_female_bias_expression_barplot.png", height=15, width = 10)
 ```
 
 
 ```{r}
-ggplot(female_sex_expression_gene_df_top, aes(y=tissue2, x= fraction , label= expression_count, fill=sig))+ geom_bar(stat="identity",color= "black") + 
-    geom_text(size = 5, position = position_stack(vjust = 0.8)) + ylab("Tissue") + xlab("The fraction of SBAE drug targets that have\nfemale-bias expression" ) +theme(text = element_text(size = 18,  face="bold")) + scale_fill_viridis_d(option = "E", alpha= 0.7)+labs(fill="Significant?")
-ggsave("~/output/FARES_plots/230313_drug_target_female_bias_expression_barplot.png", height=15, width = 10)
-```
-
-
-```{r}
-male_sex_expression_gene<- sex_expression_gene[grep("M_", sex_expression_gene$tissue),]
+male_sex_expression_gene <- sex_expression_gene[grep("M_", sex_expression_gene$tissue), ]
 ```
 ```{r}
 male_sex_expression_gene$tissue2 <- str_split(male_sex_expression_gene$tissue, "M_", simplify = TRUE)[,2]
@@ -478,15 +434,22 @@ male_sex_expression_gene$tissue2 <- str_replace_all(male_sex_expression_gene$tis
 ```
 
 ```{r}
-male_sex_expression_gene_df_top<- male_sex_expression_gene[order(male_sex_expression_gene$expression_count),]
-male_sex_expression_gene_df_top$tissue2<- factor(male_sex_expression_gene$tissue2, levels= male_sex_expression_gene$tissue2)
+male_sex_expression_gene_df_top <- male_sex_expression_gene[order(male_sex_expression_gene$expression_count), ]
+male_sex_expression_gene_df_top$tissue2 <- factor(male_sex_expression_gene$tissue2, levels = male_sex_expression_gene$tissue2)
 ```
 
+```{r}
+saveRDS(male_sex_expression_gene_df_top, "~/results/alpaca/drug_target/male_sex_expression_gene_df_top.rds")
+```
 
 ```{r}
-ggplot(male_sex_expression_gene_df_top, aes(y=tissue2, x= fraction , label= expression_count, fill=sig))+ geom_bar(stat="identity",color= "black") + 
-    geom_text(size = 5, position = position_stack(vjust = 0.8)) + ylab("Tissue") + xlab("The fraction of SBAE drug targets that have\nmale-bias expression" ) +theme(text = element_text(size = 18,  face="bold")) + scale_fill_viridis_d(option = "E", alpha= 0.7) +labs(fill="Significant?")
-ggsave("~/output/FARES_plots/230313_drug_target_male_bias_expression_barplot.png", height=15, width = 10)
+ggplot(male_sex_expression_gene_df_top, aes(y=tissue2, x= fraction , label= expression_count, fill=sig)) +
+  geom_bar(stat="identity",color= "black") + 
+  geom_text(size = 5, position = position_stack(vjust = 0.8)) +
+  ylab("Tissue") + xlab("The fraction of SBAE drug targets that have\nmale-bias expression") +
+  theme(text = element_text(size = 18,  face="bold")) + scale_fill_viridis_d(option = "E", alpha= 0.7) +
+  labs(fill="Significant?")
+ggsave("~/results/FARES_plots/230313_drug_target_male_bias_expression_barplot.png", height=15, width = 10)
 ```
 
 
@@ -494,100 +457,21 @@ ggsave("~/output/FARES_plots/230313_drug_target_male_bias_expression_barplot.png
 expression_drug_targets <- SBAE_drug_targets_v2[ SBAE_drug_targets_v2$target %in% unique(unlist(expression_gene_list)),]
 ```
 
-
-
-
-
-
 ```{r}
-drug_genes <- c("ADH1A"	,"ADH1B", "ADH1C", "ADH4",	"ADH5",	"ADH6",	"ADH7",	
-                "ALDH1A3",	"ALDH3A1",	"ALDH3B1", "ALDH3B2", "AOX1", "CYP1A2",
-                "CYP2A13", "CYP2A6", "CYP2A7",	"CYP2B6",	"CYP2C18",	"CYP2C19",
-                "CYP2C8",	"CYP2C9",	"CYP2D6",	"CYP2E1",	"CYP3A4",	"CYP3A43",	"CYP3A5",
-                "CYP3A7",	"FMO1",	"FMO2",	"FMO3", "FMO4",	"FMO5",  "GSTA1", "GSTA2", 	"GSTA3",	"GSTA4",
-                "GSTA5",	"GSTK1",	"GSTM1",	"GSTM2",	"GSTM3",	"GSTM4",	"GSTM5",	"GSTO1",
-                "GSTO2",	"GSTP1",	"GSTT1",	"GSTT2",	"GSTZ1",	"MAOA",	"MAOB",	"MGST1",
-                "MGST2",	"MGST3",	"UGT1A1",	"UGT1A10",	"UGT1A3",	"UGT1A4",
-                "UGT1A5",	"UGT1A6",	"UGT1A7",	"UGT1A8", "UGT1A9",	"UGT2A1",	"UGT2A3", "UGT2B10",
-                "UGT2B11",	"UGT2B15",	"UGT2B17",	"UGT2B28",	"UGT2B4",	"UGT2B7")
+saveRDS(expression_drug_targets, "~/results/alpaca/drug_metabolism_genes/expression_drug_targets.rds")
 ```
 
 
-```{r}
-drug_genes_v2 <- gprofiler2::gconvert(drug_genes, mthreshold= 1)
-```
-
-```{r}
-table(drug_genes_v2$target %in% sex_gene_set$F_Liver)
-```
-
-```{r}
-table(drug_genes_v2$target %in% sex_gene_set$M_Liver)
-```
-
-```{r}
-drug_genes_v2$name[drug_genes_v2$target %in% sex_gene_set$F_Liver]
-```
-
-```{r}
-drug_genes_v2$name[drug_genes_v2$target %in% sex_gene_set$M_Liver]
-```
-
-
-
-
-
-```{r}
-drug_enzymes_gene_expression_test<- function( count, all_drug_targets_list, expression_list, seed= 101){
-  res<- c()
-  set.seed(seed)
-  for (i in 1:1000){
-    #t<- table(grepl("",))
-    sub<- sample( all_drug_targets_list, 64, replace = FALSE)
-
-    res1 <- table(sub %in% expression_list)
-    res2<- res1[names(res1) == "TRUE"]
-    if (length(res2) ==1){
-      res[i]<-res2
-    }else{
-      res[i]<- 0
-    }
+# END
+    Location of final scripts:
+    src
+    Location of data produced:
+    ~/results/FARES_plots and ~/results/alpaca/drug_metabolism_genes/
+    Dates when operations were done:
+    230313
     
-  }
-  #print(res)
-  test<- wilcox.test(res, mu= count, alternative = "less")
-  #print(count)
-  #print(hist(res))
-  plot_data<- as.data.frame(cbind(1:1000, res))
-  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() + geom_vline(xintercept = count)
-  
-  res_list<- list(test$p.value, plot1)
-  return(res_list)
-}
-```
-
-
+## Versions
 ```{r}
-pvalue<- c()
-plots<- list()
-expression_count <- c()
-expression_gene_list <- list()
-
-for( i in 1:length(sex_gene_set)){
-  print(names(sex_gene_set)[i])
-  
-  expression_list <- sex_gene_set[[i]]
-
-  sbae_res <- table(SBAE_drug_targets_v2$target %in% expression_list)
-  
-  sbae_count<- sbae_res[names(sbae_res) == "TRUE"]
-  print(sbae_count)
-  sbae_count<- ifelse( length(sbae_count)== 0, 0, sbae_count)
-  outcome<- drug_enzymes_gene_expression_test(sbae_count, all_drug_targets_v2$, expression_list)
-  
-  pvalue[i]<- outcome[1]
-  plots[i]<- outcome[2]
-  expression_count[i]<- sbae_count
-  expression_gene_list[[i]] <- SBAE_drug_targets_v2$target[SBAE_drug_targets_v2$target %in% expression_list]
-}
+sessionInfo()
 ```
+

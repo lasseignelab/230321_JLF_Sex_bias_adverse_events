@@ -1,0 +1,150 @@
+---
+title: "230426_more_drug_metabolism_testing"
+author: "Jennifer Fisher"
+date: "2023-03-13"
+output:
+  html_document:
+    toc: true
+    theme: united
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# START 
+    Goal/Purpose of operations: 
+    I am going to be looking at the enriched drug targets from the SBAE drugs and looking at gene expression and core genes of sex-specific communities. 
+    
+    Finished psedocode on:
+    230308
+    
+    System which operations were done on: 
+    my laptop
+    
+    GitHub Repo:
+    230321_JLF_Sex_bias_adverse_events
+    
+    Docker: 
+    jenfisher7/rstudio_sex_bias_drugs
+    
+    Directory of operations:
+    ~/Documents/230321_JLF_Sex_bias_adverse_events
+    
+    Scripts being edited for operations:
+    NA
+    
+    Data being used:
+    output/alpaca/alpaca_runs
+    
+    Papers and tools: 
+    "~/results/FARES_plots/drug_info_sbae_drugs.rds"
+    "~/results/FARES_plots/drug_info_all.rds"
+    "~/results/FARES_plots/sbae_targets_df_top.rds"
+
+# STEPS
+
+### Set working directory 
+```{r}
+library(ggplot2)
+library(circlize)
+library(ComplexHeatmap)
+library(drugbankR)
+library(DBI)
+library(hash)
+library(org.Hs.eg.db)
+library(EnsDb.Hsapiens.v75)
+```
+
+
+```{r}
+drug_info_sbae_drugs <- readRDS("~/results/FARES_plots/drug_info_sbae_drugs.rds")
+drug_info_all <- readRDS("~/results/FARES_plots/drug_info_all.rds")
+sbae_targets_df_top <- readRDS("~/results/FARES_plots/sbae_targets_df_top.rds")
+```
+
+
+
+## Analysis
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+check the drug genes
+```{r}
+drug_genes <- c("ADH1A"	,"ADH1B", "ADH1C", "ADH4",	"ADH5",	"ADH6",	"ADH7",	
+                "ALDH1A3",	"ALDH3A1",	"ALDH3B1", "ALDH3B2", "AOX1", "CYP1A2",
+                "CYP2A13", "CYP2A6", "CYP2A7",	"CYP2B6",	"CYP2C18",	"CYP2C19",
+                "CYP2C8",	"CYP2C9",	"CYP2D6",	"CYP2E1",	"CYP3A4",	"CYP3A43",	"CYP3A5",
+                "CYP3A7",	"FMO1",	"FMO2",	"FMO3", "FMO4",	"FMO5",  "GSTA1", "GSTA2", 	"GSTA3",	"GSTA4",
+                "GSTA5",	"GSTK1",	"GSTM1",	"GSTM2",	"GSTM3",	"GSTM4",	"GSTM5",	"GSTO1",
+                "GSTO2",	"GSTP1",	"GSTT1",	"GSTT2",	"GSTZ1",	"MAOA",	"MAOB",	"MGST1",
+                "MGST2",	"MGST3",	"UGT1A1",	"UGT1A10",	"UGT1A3",	"UGT1A4",
+                "UGT1A5",	"UGT1A6",	"UGT1A7",	"UGT1A8", "UGT1A9",	"UGT2A1",	"UGT2A3", "UGT2B10",
+                "UGT2B11",	"UGT2B15",	"UGT2B17",	"UGT2B28",	"UGT2B4",	"UGT2B7")
+```
+
+
+```{r}
+drug_genes_v2 <- gprofiler2::gconvert(drug_genes, mthreshold= 1)
+```
+
+```{r}
+table(drug_genes_v2$target %in% sex_gene_set$F_Liver)
+```
+
+```{r}
+table(drug_genes_v2$target %in% sex_gene_set$M_Liver)
+```
+
+```{r}
+drug_genes_v2$name[drug_genes_v2$target %in% sex_gene_set$F_Liver]
+```
+
+```{r}
+drug_genes_v2$name[drug_genes_v2$target %in% sex_gene_set$M_Liver]
+```
+
+```{r}
+pvalue<- c()
+plots<- list()
+expression_count <- c()
+expression_gene_list <- list()
+
+for( i in 1:length(sex_gene_set)){
+  print(names(sex_gene_set)[i])
+  
+  expression_list <- sex_gene_set[[i]]
+
+  sbae_res <- table(SBAE_drug_targets_v2$target %in% expression_list)
+  
+  sbae_count<- sbae_res[names(sbae_res) == "TRUE"]
+  print(sbae_count)
+  sbae_count<- ifelse( length(sbae_count)== 0, 0, sbae_count)
+  outcome<- drug_enzymes_gene_expression_test(sbae_count, all_drug_targets_v2$, expression_list)
+  
+  pvalue[i]<- outcome[1]
+  plots[i]<- outcome[2]
+  expression_count[i]<- sbae_count
+  expression_gene_list[[i]] <- SBAE_drug_targets_v2$target[SBAE_drug_targets_v2$target %in% expression_list]
+}
+```
+
+
+# END
+    Location of final scripts:
+    src
+    Location of data produced:
+    ~/results/FARES_plots
+    Dates when operations were done:
+    230418
+    
+## Versions
+```{r}
+sessionInfo()
+```
+
+
+

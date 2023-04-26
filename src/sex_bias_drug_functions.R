@@ -1017,6 +1017,115 @@ drug_gene_test<- function(gene_name, count, index_test, drug_info_others, seed= 
   return(res_list)
 }
 
+drug_gene_core_test<- function( count, all_drug_targets_list, core_list, seed= 101){
+  #inputs
+  #count- number of genes that are core genes
+  #all_drug_targets_list- all the drug targets in the fares database
+  #core_list - core gene llist
+  #seed - seed for analysis 
+  
+  #output
+  #test$p.value- pvlaue from wilcox.test
+  #plot1- the histogram of the analysis
+  
+  res<- c()
+  set.seed(seed)
+  for (i in 1:1000){
+    #t<- table(grepl("",))
+    sub<- sample( all_drug_targets_list, 84, replace = FALSE)
+    
+    res1 <- table(sub %in% core_list)
+    res2<- res1[names(res1) == "TRUE"]
+    if (length(res2) ==1){
+      res[i]<-res2
+    }else{
+      res[i]<- 0
+    }
+    
+  }
+  #print(res)
+  test<- wilcox.test(res, mu= count, alternative = "less")
+  #print(count)
+  #print(hist(res))
+  plot_data<- as.data.frame(cbind(1:1000, res))
+  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() + geom_vline(xintercept = count)
+  
+  res_list<- list(test$p.value, plot1)
+  return(res_list)
+}
+
+drug_gene_expression_test<- function( count, all_drug_targets_list, expression_list, seed= 101){
+  #input
+  #count- nuber of sex-bias genes in SBAE drug targets
+  #all_drug_targets_list- all the drug targets
+  #expression_list- sex-bias gene list 
+  #seed for analysis 
+  
+  #output
+  #test$p.value- pvlaue from wilcox.test
+  #plot1- the histogram of the analysis
+  res<- c()
+  set.seed(seed)
+  for (i in 1:1000){
+    #t<- table(grepl("",))
+    sub<- sample( all_drug_targets_list, 84, replace = FALSE)
+    
+    res1 <- table(sub %in% expression_list)
+    res2<- res1[names(res1) == "TRUE"]
+    if (length(res2) ==1){
+      res[i]<-res2
+    }else{
+      res[i]<- 0
+    }
+    
+  }
+  #print(res)
+  test<- wilcox.test(res, mu= count, alternative = "less")
+  #print(count)
+  #print(hist(res))
+  plot_data<- as.data.frame(cbind(1:1000, res))
+  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() + geom_vline(xintercept = count)
+  
+  res_list<- list(test$p.value, plot1)
+  return(res_list)
+}
+
+drug_enzymes_gene_expression_test<- function( count, all_drug_targets_list, expression_list, seed= 101){
+  #input
+  #count- nuber of sex-bias genes in SBAE drug enzymes
+  #all_drug_targets_list- all the drug enzymes
+  #expression_list- sex-bias gene list 
+  #seed for analysis 
+  
+  #output
+  #test$p.value- pvlaue from wilcox.test
+  #plot1- the histogram of the analysis
+  res<- c()
+  set.seed(seed)
+  for (i in 1:1000){
+    #t<- table(grepl("",))
+    sub<- sample( all_drug_targets_list, 64, replace = FALSE)
+    
+    res1 <- table(sub %in% expression_list)
+    res2<- res1[names(res1) == "TRUE"]
+    if (length(res2) ==1){
+      res[i]<-res2
+    }else{
+      res[i]<- 0
+    }
+    
+  }
+  #print(res)
+  test<- wilcox.test(res, mu= count, alternative = "less")
+  #print(count)
+  #print(hist(res))
+  plot_data<- as.data.frame(cbind(1:1000, res))
+  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() + geom_vline(xintercept = count)
+  
+  res_list<- list(test$p.value, plot1)
+  return(res_list)
+}
+
 #old functions no longer used in main project
 lioness_output_adjustment <- function(index){
   #need to determine the number the lioness subsets
