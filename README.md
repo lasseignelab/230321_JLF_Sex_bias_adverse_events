@@ -136,6 +136,7 @@ The following 230213_fares_fisher_test scripts use the conda enviroment. 1 day r
 - 230308_drugbank_info.Rmd
 - 230313_sbae_drug_target.Rmd
 - 230323_sbae_heatmaps.Rmd
+- 230426_more_drug_metabolism_testing.Rmd
 
 ## Function Scripts
 - sex_bias_drug_functions.R
