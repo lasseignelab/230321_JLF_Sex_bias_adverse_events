@@ -1126,6 +1126,117 @@ drug_enzymes_gene_expression_test<- function( count, all_drug_targets_list, expr
   return(res_list)
 }
 
+
+top_drug_target_investigation<- function(drug_target_name){
+  #drug_target_name- drug target of insterest 
+  #output plots of the adverse events of these drug targets for males and females
+  
+  #get the drugs
+  drug_target_drugs <- drug_info_sbae_drugs$drug_ids[grep(drug_target_name, drug_info_sbae_drugs$targets)]
+  
+  print("how many SBAE drugs with drug target?")
+  print(length(drug_target_drugs))
+  
+  res_drug_target_subset <- drug_ae_res_info[drug_ae_res_info$drug %in% drug_target_drugs,]
+  
+  #male- soc plot 
+  res_drug_target_subset<- res_drug_target_subset[res_drug_target_subset$BH < 0.05 & res_drug_target_subset$logROR < -1, ]
+  
+  adverse_event_counts <- as.data.frame(table(res_drug_target_subset$soc_term))
+  adverse_event_counts$Var1 <- factor(adverse_event_counts$Var1, levels= adverse_event_counts$Var1[order(-adverse_event_counts$Freq)])
+  
+  ggplot(adverse_event_counts, aes(x= Freq, y= Var1, label= Freq)) +
+    geom_bar(stat="identity", fill =  "#21908CFF", color= "black", alpha=0.7) + 
+    geom_text(size = 5, position = position_stack(vjust = 0.9)) +
+    xlab("Number of male-bias drug-adverse event pairs with drugs with drug target") +
+    ylab("Adverse event (SOC term)")+ theme(text = element_text(size = 12,  face="bold"))
+  
+  file_name <- paste0("~/results/FARES_plots/", drug_target_name, "_male_sbae_soc_barplot.png", collapse = "" )
+  ggsave(file_name, width = 15, height = 10)
+  
+  #male- PT term plot 
+  
+  adverse_event_counts <- as.data.frame(table(res_drug_target_subset$pt_term))
+  adverse_event_counts$Var1 <- factor(adverse_event_counts$Var1, levels= adverse_event_counts$Var1[order(-adverse_event_counts$Freq)])
+  
+  ggplot(adverse_event_counts, aes(x= Freq, y= Var1, label= Freq)) +
+    geom_bar(stat="identity", fill =  "#21908CFF", color= "black", alpha=0.7)+ 
+    geom_text(size = 5, position = position_stack(vjust = 0.9)) +
+    xlab("Number of male-bias drug-adverse event pairs with drugs with drug target") +
+    ylab("Adverse event (PT term)")+ theme(text = element_text(size = 12,  face="bold"))
+  
+  file_name <- paste0("~/results/FARES_plots/", drug_target_name, "_male_sbae_pt_barplot.png", collapse = "" )
+  ggsave(file_name, width = 15, height = 10)
+  
+  
+  #female- soc plot 
+  res_drug_target_subset <- drug_ae_res_info[drug_ae_res_info$drug %in% drug_target_drugs,]
+  res_drug_target_subset <- res_drug_target_subset[res_drug_target_subset$BH < 0.05 & res_drug_target_subset$logROR > 1, ]
+  
+  adverse_event_counts <- as.data.frame(table(res_drug_target_subset$soc_term))
+  adverse_event_counts$Var1 <- factor(adverse_event_counts$Var1, levels= adverse_event_counts$Var1[order(-adverse_event_counts$Freq)])
+  
+  ggplot(adverse_event_counts, aes(x= Freq, y= Var1, label= Freq)) +
+    geom_bar(stat="identity", fill = "#440154FF", color= "black", alpha=0.6)+ 
+    geom_text(size = 5, position = position_stack(vjust = 0.9)) +
+    xlab("Number of female-bias drug-adverse event pairs with drugs with drug target") +
+    ylab("Adverse event (SOC term)")+ theme(text = element_text(size = 12,  face="bold"))
+  
+  file_name <- paste0("~/results/FARES_plots/", drug_target_name, "_female_sbae_soc_barplot.png", collapse = "" )
+  ggsave(file_name, width = 15, height = 10)
+  
+  #female- PT term plot 
+  
+  adverse_event_counts <- as.data.frame(table(res_drug_target_subset$pt_term))
+  adverse_event_counts$Var1 <- factor(adverse_event_counts$Var1, levels= adverse_event_counts$Var1[order(-adverse_event_counts$Freq)])
+  
+  ggplot(adverse_event_counts, aes(x= Freq, y= Var1, label= Freq)) +
+    geom_bar(stat="identity", fill =  "#440154FF", color= "black", alpha=0.6)+ 
+    geom_text(size = 5, position = position_stack(vjust = 0.9)) +
+    xlab("Number of female-bias drug-adverse event pairs with drugs with drug target") +
+    ylab("Adverse event (PT term)")+ theme(text = element_text(size = 12,  face="bold"))
+  
+  file_name <- paste0("~/results/FARES_plots/", drug_target_name, "_female_sbae_pt_barplot.png", collapse = "" )
+  ggsave(file_name, width = 15, height = 10)
+  
+}
+
+SBAE_investigation <- function(PT_term){
+  #PT_term- name of the SBAE term
+  ae_test <- drug_ae_res_info[drug_ae_res_info$pt_term == PT_term & abs(drug_ae_res_info$logROR) > 1 & drug_ae_res_info$BH < 0.05, ]
+  print("how many sex-bias events")
+  print(dim(ae_test)[1])
+  
+  print("how many female events vs male (female= TRUE; male = FALSE)")
+  print(table(ae_test$logROR > 1))
+  
+  
+  female_test <- ae_test$a /(ae_test$a + ae_test$b + ae_test$c + ae_test$d)
+  
+  p1 <- ggplot() + geom_histogram(aes(x= female_test), fill = "#440154FF") +
+    xlab("Number of female cases / all cases for drug-adverse event pair") +
+    theme(text = element_text(size = 12,  face="bold"))
+  
+  male_test <- ae_test$c /(ae_test$a + ae_test$b + ae_test$c + ae_test$d)
+  
+  p2<- ggplot() + geom_histogram(aes(x= male_test), fill = "#21908CFF") +
+    xlab("Number of male cases / all cases for drug-adverse event pair") +
+    theme(text = element_text(size = 12,  face="bold"))
+  
+  diff_test <- (ae_test$a - ae_test$c) / (ae_test$a + ae_test$b + ae_test$c + ae_test$d)
+  
+  p3 <- ggplot() + geom_histogram(aes(x= diff_test)) +
+    xlab("Number of female cases - Number of male cases / all cases for drug-adverse event pair") +
+    theme(text = element_text(size = 12,  face="bold"))
+  
+  ggarrange(p1, p2, p3, ncol = 2, nrow = 2)
+  
+  file_name <- paste0("~/results/FARES_plots/", PT_term, "_FAERS_AE_case_plots.png", collapse = "" )
+  
+  ggsave(file_name, height=15, width=15)
+  
+}
+
 #old functions no longer used in main project
 lioness_output_adjustment <- function(index){
   #need to determine the number the lioness subsets

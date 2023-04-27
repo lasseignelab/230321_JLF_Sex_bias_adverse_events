@@ -47,6 +47,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Set working directory 
 ```{r}
+source("~/src/sex_bias_drug_functions.R")
 library(ggplot2)
 library(circlize)
 library(ComplexHeatmap)
@@ -132,6 +133,67 @@ for( i in 1:length(sex_gene_set)){
 }
 ```
 
+
+```{r}
+Liver_F_panda <- readRDS("~/results/alpaca/sex_specific_networks/Liver_F_panda.rds")
+```
+
+
+```{r}
+drug_gene_core_test<- function( count = 4, all_drug_targets_list= colnames(Liver_F_panda@regNet), core_list= c(core_gene_list$Liver, female_core_gene_list$Liver), seed= 101){
+  res<- c()
+  set.seed(seed)
+  for (i in 1:1000){
+    #t<- table(grepl("",))
+    sub<- sample( all_drug_targets_list, 64, replace = FALSE)
+
+    res1 <- table(sub %in% core_list)
+    res2<- res1[names(res1) == "TRUE"]
+    if (length(res2) ==1){
+      res[i]<-res2
+    }else{
+      res[i]<- 0
+    }
+    
+  }
+  #print(res)
+  test<- wilcox.test(res, mu= count, alternative = "less")
+  #print(count)
+  #print(hist(res))
+  plot_data<- as.data.frame(cbind(1:1000, res))
+  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() + geom_vline(xintercept = count) + xlab("Number of genes that are core genes")
+  
+  res_list<- list(test$p.value, plot1)
+  return(res_list)
+}
+```
+
+
+```{r}
+drug_genes <- c("ADH1A"	,"ADH1B", "ADH1C", "ADH4",	"ADH5",	"ADH6",	"ADH7",	
+                "ALDH1A3",	"ALDH3A1",	"ALDH3B1", "ALDH3B2", "AOX1", "CYP1A2",
+                "CYP2A13", "CYP2A6", "CYP2A7",	"CYP2B6",	"CYP2C18",	"CYP2C19",
+                "CYP2C8",	"CYP2C9",	"CYP2D6",	"CYP2E1",	"CYP3A4",	"CYP3A43",	"CYP3A5",
+                "CYP3A7",	"FMO1",	"FMO2",	"FMO3", "FMO4",	"FMO5",  "GSTA1", "GSTA2", 	"GSTA3",	"GSTA4",
+                "GSTA5",	"GSTK1",	"GSTM1",	"GSTM2",	"GSTM3",	"GSTM4",	"GSTM5",	"GSTO1",
+                "GSTO2",	"GSTP1",	"GSTT1",	"GSTT2",	"GSTZ1",	"MAOA",	"MAOB",	"MGST1",
+                "MGST2",	"MGST3",	"UGT1A1",	"UGT1A10",	"UGT1A3",	"UGT1A4",
+                "UGT1A5",	"UGT1A6",	"UGT1A7",	"UGT1A8", "UGT1A9",	"UGT2A1",	"UGT2A3", "UGT2B10",
+                "UGT2B11",	"UGT2B15",	"UGT2B17",	"UGT2B28",	"UGT2B4",	"UGT2B7")
+```
+
+
+```{r}
+drug_gene_core_test()
+```
+
+```{r}
+drug_gene_core_test( count = 4, all_drug_targets_list= colnames(Liver_F_panda@regNet), core_list= core_gene_list$Liver, seed= 101)
+```
+
+```{r}
+drug_gene_core_test( count = 0, all_drug_targets_list= colnames(Liver_F_panda@regNet), core_list= female_core_gene_list$Liver, seed= 101)
+```
 
 # END
     Location of final scripts:
