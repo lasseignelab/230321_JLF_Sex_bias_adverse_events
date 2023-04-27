@@ -1237,6 +1237,40 @@ SBAE_investigation <- function(PT_term){
   
 }
 
+
+drug_enz_gene_test<- function( count = 4, all_drug_targets_list= colnames(Liver_F_panda@regNet), core_list= c(core_gene_list$Liver, female_core_gene_list$Liver), seed= 101){
+  #input 
+  #count- the number of core genes (or other things) in sbae drug metabolism enzyme
+  #all_drug_targets_list-  all the genes in liver network 
+  #core_list- or gene expression list
+  # test$p.value, plot1- 
+  res<- c()
+  set.seed(seed)
+  for (i in 1:1000){
+    sub<- sample( all_drug_targets_list, 64, replace = FALSE)
+    
+    res1 <- table(sub %in% core_list)
+    res2<- res1[names(res1) == "TRUE"]
+    if (length(res2) ==1){
+      res[i]<-res2
+    }else{
+      res[i]<- 0
+    }
+    
+  }
+  #print(res)
+  test<- wilcox.test(res, mu= count, alternative = "less")
+  #print(count)
+  #print(hist(res))
+  plot_data<- as.data.frame(cbind(1:1000, res))
+  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() +
+    geom_vline(xintercept = count) +
+    xlab("Number of genes that are core genes")
+  
+  res_list<- list(test$p.value, plot1)
+  return(res_list)
+}
+
 #old functions no longer used in main project
 lioness_output_adjustment <- function(index){
   #need to determine the number the lioness subsets
