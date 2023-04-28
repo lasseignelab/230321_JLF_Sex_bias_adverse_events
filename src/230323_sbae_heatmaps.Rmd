@@ -353,7 +353,7 @@ top_drug_target_investigation("AR")
 top_drug_target_investigation("CACNA1S")
 ```
 
-We investigated the top male (i.e., PPARA and PPARG) and top female (i.e., PGR , AR, NR3C1) bias genes based on the number of tissues as it a core gene in a sex-specific community.
+We investigated the top  (i.e., PPARA, PPARG, PGR , AR, and NR3C1) sex-bias genes based on the number of tissues as it a core gene in a sex-specific community.
 
 ```{r}
 top_drug_target_investigation("PPARA")
@@ -370,7 +370,6 @@ top_drug_target_investigation("PGR")
 ```{r}
 top_drug_target_investigation("NR3C1")
 ```
-
 
 Now look at the top Adverse events for reporting bias
 
