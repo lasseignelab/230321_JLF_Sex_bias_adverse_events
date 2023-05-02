@@ -64,6 +64,7 @@ library(tidyverse)
 library(ggplot2)
 library(viridis)
 library(RColorBrewer)
+library(DESeq2)
 ```
 
 get Gtex data from recount3
@@ -738,7 +739,13 @@ unique(gtex_coldata_v2$gtex.smtsd)
 ids <- gtex_coldata_v2$external_id[gtex_coldata_v2$gtex.smtsd == "Liver"]
 col_data_sub <- gtex_coldata_v2[gtex_coldata_v2$gtex.smtsd == "Liver", ]
 counts_sub <- gtex_counts_v2[, colnames(gtex_counts_v2) %in% ids]
-pca_sub <- prcomp(t(counts_sub))
+```
+
+```{r}
+# One sample was removed because it has an odd number of gene counts for one gene. We did not remove this sample in the overall study but removed it for the vst calculation 
+counts_sub  <- counts_sub [,!colnames(counts_sub ) == "GTEX-WK11-1326-SM-4OOSI.1"]
+vst_sub <- vst(as.matrix(counts_sub))
+pca_sub <- prcomp(t(vst_sub))
 ```
 
 
@@ -785,7 +792,7 @@ par(cex = 1.0, cex.axis = 0.8, cex.main = 0.8)
 pairs(pca_sub$x[, 1:5], col = age,
       main = "Principal components analysis bi-plot\nPCs 1-5", pch = 16)
 ```
-some grouping by age but it is mostly RIN and Ischemic time; using all the investigated covariates for downstream models
+some grouping by age but it is mostly RIN and Ischemic time; using all the investigated covariates for downstream models if possible
 
 #plots for age and batches
 
