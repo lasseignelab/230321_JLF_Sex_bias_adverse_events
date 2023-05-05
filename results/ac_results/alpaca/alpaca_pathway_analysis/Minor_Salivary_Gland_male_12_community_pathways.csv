@@ -1,0 +1,5 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0337959393384261;5;79;2;0,0253164556962025;0,4;"GO:0005964";"GO:CC";"phosphorylase kinase complex";22122;482;"Minor_Salivary_Gland_male_12_community"
+"2";"query_1";TRUE;0,0202867735768627;28;26;4;0,153846153846154;0,142857142857143;"HP:0002913";"HP";"Myoglobinuria";4851;2112;"Minor_Salivary_Gland_male_12_community"
+"3";"query_1";TRUE;0,0379740842083356;294;70;8;0,114285714285714;0,0272108843537415;"MIRNA:hsa-miR-1273f";"MIRNA";"hsa-miR-1273f";14850;162;"Minor_Salivary_Gland_male_12_community"
+"4";"query_1";TRUE;0,0258087689260039;68;35;4;0,114285714285714;0,0588235294117647;"WP:WP3998";"WP";"Prader-Willi and Angelman syndrome";8133;338;"Minor_Salivary_Gland_male_12_community"

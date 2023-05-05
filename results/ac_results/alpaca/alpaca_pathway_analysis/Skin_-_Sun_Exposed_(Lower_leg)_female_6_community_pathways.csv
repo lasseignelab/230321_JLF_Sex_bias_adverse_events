@@ -1,0 +1,7 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0344741634470985;40;81;4;0,0493827160493827;0,1;"GO:0045737";"GO:BP";"positive regulation of cyclin-dependent protein serine/threonine kinase activity";21110;12277;"Skin_-_Sun_Exposed_(Lower_leg)_female_6_community"
+"2";"query_1";TRUE;0,0461476029543847;43;81;4;0,0493827160493827;0,0930232558139535;"GO:1904031";"GO:BP";"positive regulation of cyclin-dependent protein kinase activity";21110;24611;"Skin_-_Sun_Exposed_(Lower_leg)_female_6_community"
+"3";"query_1";TRUE;0,0238622877791616;4;83;2;0,0240963855421687;0,5;"GO:0061689";"GO:CC";"tricellular tight junction";22122;2324;"Skin_-_Sun_Exposed_(Lower_leg)_female_6_community"
+"4";"query_1";TRUE;0,0293551699065687;49;87;4;0,0459770114942529;0,0816326530612245;"GO:0070888";"GO:MF";"E-box binding";20195;8827;"Skin_-_Sun_Exposed_(Lower_leg)_female_6_community"
+"5";"query_1";TRUE;0,011341118314428;100;42;5;0,119047619047619;0,05;"KEGG:04914";"KEGG";"Progesterone-mediated oocyte maturation";8161;364;"Skin_-_Sun_Exposed_(Lower_leg)_female_6_community"
+"6";"query_1";TRUE;0,0122131183141382;2177;88;25;0,284090909090909;0,0114836931557189;"TF:M04831_1";"TF";"Factor: ZEB1; motif: CAGGTGN; match class: 1";20011;9207;"Skin_-_Sun_Exposed_(Lower_leg)_female_6_community"

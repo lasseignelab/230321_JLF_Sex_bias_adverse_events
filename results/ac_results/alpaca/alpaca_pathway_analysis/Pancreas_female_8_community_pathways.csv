@@ -1,0 +1,6 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,00230179003742319;44;87;5;0,0574712643678161;0,113636363636364;"GO:0032781";"GO:BP";"positive regulation of ATP-dependent activity";21110;8244;"Pancreas_female_8_community"
+"2";"query_1";TRUE;0,00510085988611938;23;87;4;0,0459770114942529;0,173913043478261;"GO:0006883";"GO:BP";"intracellular sodium ion homeostasis";21110;2595;"Pancreas_female_8_community"
+"3";"query_1";TRUE;0,0270878663226777;72;87;5;0,0574712643678161;0,0694444444444444;"GO:0043462";"GO:BP";"regulation of ATP-dependent activity";21110;11300;"Pancreas_female_8_community"
+"4";"query_1";TRUE;0,00893695234111021;203;63;8;0,126984126984127;0,0394088669950739;"REAC:R-HSA-397014";"REAC";"Muscle contraction";10790;1415;"Pancreas_female_8_community"
+"5";"query_1";TRUE;0,00540065141715709;16438;94;92;0,978723404255319;0,00559678793040516;"TF:M00716";"TF";"Factor: ZF5; motif: GSGCGCGR";20011;9222;"Pancreas_female_8_community"

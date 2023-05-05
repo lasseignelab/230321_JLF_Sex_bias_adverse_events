@@ -1,0 +1,6 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0208673364772229;33;86;4;0,0465116279069767;0,121212121212121;"GO:0035459";"GO:BP";"vesicle cargo loading";21110;9532;"Kidney_-_Cortex_female_12_community"
+"2";"query_1";TRUE;0,00231817814397896;31;91;4;0,043956043956044;0,129032258064516;"GO:0070971";"GO:CC";"endoplasmic reticulum exit site";22122;2597;"Kidney_-_Cortex_female_12_community"
+"3";"query_1";TRUE;0,0327441040048161;4057;93;37;0,397849462365591;0,00912003943800838;"TF:M10086_1";"TF";"Factor: TAFII250; motif: RARRWGGCGGMGGNGR; match class: 1";20011;8173;"Kidney_-_Cortex_female_12_community"
+"4";"query_1";TRUE;0,042455040264858;33;93;4;0,043010752688172;0,121212121212121;"TF:M09917_1";"TF";"Factor: EVX2; motif: NNTTTATKRCYNN; match class: 1";20011;2357;"Kidney_-_Cortex_female_12_community"
+"5";"query_1";TRUE;0,0245973759860775;57;41;4;0,0975609756097561;0,0701754385964912;"WP:WP4917";"WP";"Proximal tubule transport";8133;446;"Kidney_-_Cortex_female_12_community"

@@ -1,0 +1,5 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0001867925968136;12365;89;72;0,808988764044944;0,00582288718156086;"GO:0005737";"GO:CC";"cytoplasm";22122;309;"Kidney_-_Cortex_male_4_community"
+"2";"query_1";TRUE;0,0110464937528328;92;89;5;0,0561797752808989;0,0543478260869565;"GO:0045171";"GO:CC";"intercellular bridge";22122;2141;"Kidney_-_Cortex_male_4_community"
+"3";"query_1";TRUE;0,0337474508583839;3;91;2;0,021978021978022;0,666666666666667;"GO:0003958";"GO:MF";"NADPH-hemoprotein reductase activity";20195;473;"Kidney_-_Cortex_male_4_community"
+"4";"query_1";TRUE;3,8815651712074e-05;11216;92;77;0,83695652173913;0,00686519258202568;"TF:M01770";"TF";"Factor: XBP-1; motif: WNNGMCACGTC";20011;8990;"Kidney_-_Cortex_male_4_community"

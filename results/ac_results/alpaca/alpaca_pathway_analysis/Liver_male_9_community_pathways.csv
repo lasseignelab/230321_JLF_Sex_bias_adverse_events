@@ -1,0 +1,2 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0496352551369712;23;47;3;0,0638297872340425;0,130434782608696;"REAC:R-HSA-73980";"REAC";"RNA Polymerase III Transcription Termination";10790;1811;"Liver_male_9_community"

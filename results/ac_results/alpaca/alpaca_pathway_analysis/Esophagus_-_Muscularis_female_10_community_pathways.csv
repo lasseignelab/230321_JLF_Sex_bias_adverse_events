@@ -1,0 +1,6 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,00127573678873128;12365;90;71;0,788888888888889;0,00574201374848362;"GO:0005737";"GO:CC";"cytoplasm";22122;309;"Esophagus_-_Muscularis_female_10_community"
+"2";"query_1";TRUE;0,013741340143164;513;90;10;0,111111111111111;0,0194931773879142;"GO:0005743";"GO:CC";"mitochondrial inner membrane";22122;314;"Esophagus_-_Muscularis_female_10_community"
+"3";"query_1";TRUE;0,0167207612132237;163;90;6;0,0666666666666667;0,0368098159509202;"GO:0098800";"GO:CC";"inner mitochondrial membrane protein complex";22122;3271;"Esophagus_-_Muscularis_female_10_community"
+"4";"query_1";TRUE;0,0363808355547357;577;90;10;0,111111111111111;0,0173310225303293;"GO:0019866";"GO:CC";"organelle inner membrane";22122;826;"Esophagus_-_Muscularis_female_10_community"
+"5";"query_1";TRUE;0,0206612859240008;1532;42;18;0,428571428571429;0,0117493472584856;"KEGG:01100";"KEGG";"Metabolic pathways";8161;181;"Esophagus_-_Muscularis_female_10_community"

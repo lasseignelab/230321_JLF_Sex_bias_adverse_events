@@ -1,0 +1,6 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0220869920512273;49;79;4;0,0506329113924051;0,0816326530612245;"GO:0070888";"GO:MF";"E-box binding";20195;8827;"Esophagus_-_Muscularis_female_8_community"
+"2";"query_1";TRUE;0,00193475774619386;132;37;6;0,162162162162162;0,0454545454545455;"KEGG:04142";"KEGG";"Lysosome";8161;274;"Esophagus_-_Muscularis_female_8_community"
+"3";"query_1";TRUE;4,04836297266371e-07;5423;80;49;0,6125;0,00903558915729301;"TF:M04191";"TF";"Factor: ITF-2; motif: NNCACCTGNN";20011;4422;"Esophagus_-_Muscularis_female_8_community"
+"4";"query_1";TRUE;9,39874812166794e-05;1871;80;25;0,3125;0,0133618385889898;"TF:M11157";"TF";"Factor: HTF4; motif: NCACCTGN";20011;8334;"Esophagus_-_Muscularis_female_8_community"
+"5";"query_1";TRUE;0,00113239529424206;2444;80;27;0,3375;0,0110474631751228;"TF:M00002";"TF";"Factor: E47; motif: VSNGCAGGTGKNCNN";20011;1566;"Esophagus_-_Muscularis_female_8_community"

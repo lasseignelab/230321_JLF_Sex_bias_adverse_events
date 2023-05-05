@@ -1,0 +1,7 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;1,80983432814372e-05;2148;90;30;0,333333333333333;0,0139664804469274;"TF:M02028";"TF";"Factor: Pbx1; motif: ATCAATCAN";20011;6472;"Brain_-_Nucleus_accumbens_(basal_ganglia)_male_6_community"
+"2";"query_1";TRUE;6,0369280901981e-05;2126;90;29;0,322222222222222;0,0136406396989652;"TF:M00124";"TF";"Factor: Pbx-1b; motif: NNCATCAATCAANNW";20011;6456;"Brain_-_Nucleus_accumbens_(basal_ganglia)_male_6_community"
+"3";"query_1";TRUE;0,000158813944577863;1563;90;24;0,266666666666667;0,0153550863723608;"TF:M07304";"TF";"Factor: Pbx; motif: NTGATTGANN";20011;6490;"Brain_-_Nucleus_accumbens_(basal_ganglia)_male_6_community"
+"4";"query_1";TRUE;0,000620033649552406;2083;90;27;0,3;0,0129620739318291;"TF:M11041";"TF";"Factor: Pbx1; motif: KTGATKGAYN";20011;6470;"Brain_-_Nucleus_accumbens_(basal_ganglia)_male_6_community"
+"5";"query_1";TRUE;0,00235868287991285;2823;90;31;0,344444444444444;0,0109812256464754;"TF:M11039";"TF";"Factor: Pbx1; motif: NTGATTGAYR";20011;6466;"Brain_-_Nucleus_accumbens_(basal_ganglia)_male_6_community"
+"6";"query_1";TRUE;0,0117190853596922;14625;90;83;0,922222222222222;0,00567521367521368;"TF:M02086";"TF";"Factor: Cdx-1; motif: TTTATK";20011;672;"Brain_-_Nucleus_accumbens_(basal_ganglia)_male_6_community"

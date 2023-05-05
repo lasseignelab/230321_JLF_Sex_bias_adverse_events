@@ -1,0 +1,8 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0310528696789997;2;82;2;0,024390243902439;1;"GO:0034729";"GO:BP";"histone H3-K79 methylation";21110;9190;"Brain_-_Hypothalamus_female_7_community"
+"2";"query_1";TRUE;0,0312543633500253;4203;88;32;0,363636363636364;0,00761360932667143;"GO:0005654";"GO:CC";"nucleoplasm";22122;252;"Brain_-_Hypothalamus_female_7_community"
+"3";"query_1";TRUE;0,00390209081290936;9359;91;65;0,714285714285714;0,00694518645154397;"TF:M01783";"TF";"Factor: SP2; motif: GGGCGGGAC";20011;7858;"Brain_-_Hypothalamus_female_7_community"
+"4";"query_1";TRUE;0,0144710636626915;8744;91;61;0,67032967032967;0,00697621225983532;"TF:M04863_1";"TF";"Factor: TF3C-beta; motif: CCNGGAGGGCTTCCTGGAGGAG; match class: 1";20011;3303;"Brain_-_Hypothalamus_female_7_community"
+"5";"query_1";TRUE;0,0273348760991098;10509;91;68;0,747252747252747;0,006470644209725;"TF:M00196";"TF";"Factor: Sp1; motif: NGGGGGCGGGGYN";20011;7854;"Brain_-_Hypothalamus_female_7_community"
+"6";"query_1";TRUE;0,0274029851216196;8890;91;61;0,67032967032967;0,00686164229471316;"TF:M12666";"TF";"Factor: SP1; motif: GGCCCCGCCCCCN";20011;7844;"Brain_-_Hypothalamus_female_7_community"
+"7";"query_1";TRUE;0,0433397004279442;7908;91;56;0,615384615384615;0,00708143651997977;"TF:M00665";"TF";"Factor: Sp3; motif: ASMCTTGGGSRGGG";20011;7888;"Brain_-_Hypothalamus_female_7_community"

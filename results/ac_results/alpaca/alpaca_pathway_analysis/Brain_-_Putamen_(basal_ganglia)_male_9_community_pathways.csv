@@ -1,0 +1,3 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0426554300647031;13;87;3;0,0344827586206897;0,230769230769231;"GO:0070424";"GO:BP";"regulation of nucleotide-binding oligomerization domain containing signaling pathway";21110;17039;"Brain_-_Putamen_(basal_ganglia)_male_9_community"
+"2";"query_1";TRUE;0,0440517857220786;4776;90;35;0,388888888888889;0,00732830820770519;"GO:0012505";"GO:CC";"endomembrane system";22122;689;"Brain_-_Putamen_(basal_ganglia)_male_9_community"

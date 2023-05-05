@@ -1,0 +1,2 @@
+"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
+"1";"query_1";TRUE;0,0476710509526744;1359;87;18;0,206896551724138;0,0132450331125828;"TF:M07597_1";"TF";"Factor: Egr-1; motif: GCGTGGGCGT; match class: 1";20011;1617;"Brain_-_Hypothalamus_male_11_community"
