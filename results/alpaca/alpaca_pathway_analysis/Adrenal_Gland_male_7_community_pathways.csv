@@ -1,4 +1,4 @@
 "";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
-"1";"query_1";TRUE;0,00326678902314127;2678;91;30;0,32967032967033;0,0112023898431665;"TF:M00096";"TF";"Factor: Pbx-1; motif: ATCAATCAW";20012;6454;"Adrenal_Gland_male_7_community"
-"2";"query_1";TRUE;0,0176728911119224;4769;91;41;0,450549450549451;0,00859719018662193;"TF:M07450";"TF";"Factor: HOXA9; motif: DTGATTTATKGY";20012;3776;"Adrenal_Gland_male_7_community"
-"3";"query_1";TRUE;0,0218144055634721;1482;91;20;0,21978021978022;0,0134952766531714;"TF:M08394";"TF";"Factor: PBX4:HOXA1; motif: NYNATMAATCA";20012;6486;"Adrenal_Gland_male_7_community"
+"1";"query_1";TRUE;0,00821954883716189;2678;90;29;0,322222222222222;0,0108289768483943;"TF:M00096";"TF";"Factor: Pbx-1; motif: ATCAATCAW";20011;6454;"Adrenal_Gland_male_7_community"
+"2";"query_1";TRUE;0,0182915350401088;1482;90;20;0,222222222222222;0,0134952766531714;"TF:M08394";"TF";"Factor: PBX4:HOXA1; motif: NYNATMAATCA";20011;6486;"Adrenal_Gland_male_7_community"
+"3";"query_1";TRUE;0,0338595120397103;4768;90;40;0,444444444444444;0,00838926174496644;"TF:M07450";"TF";"Factor: HOXA9; motif: DTGATTTATKGY";20011;3776;"Adrenal_Gland_male_7_community"

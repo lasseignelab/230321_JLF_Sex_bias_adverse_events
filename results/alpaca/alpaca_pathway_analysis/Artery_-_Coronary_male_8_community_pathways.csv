@@ -1,2 +1,3 @@
 "";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
-"1";"query_1";TRUE;0,0389074596610444;6446;81;43;0,530864197530864;0,00667080359913124;"GO:0032502";"GO:BP";"developmental process";21128;8073;"Artery_-_Coronary_male_8_community"
+"1";"query_1";TRUE;0,0317838713261256;6489;80;43;0,5375;0,00662659885960857;"GO:0032502";"GO:BP";"developmental process";21110;8032;"Artery_-_Coronary_male_8_community"
+"2";"query_1";TRUE;0,0403336887957298;2586;80;24;0,3;0,00928074245939675;"GO:0065009";"GO:BP";"regulation of molecular function";21110;16813;"Artery_-_Coronary_male_8_community"

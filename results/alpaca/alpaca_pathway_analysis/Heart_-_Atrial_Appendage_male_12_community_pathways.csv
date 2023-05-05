@@ -1,5 +1,5 @@
 "";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
 "1";"query_1";TRUE;0,0166064957968959;2;19;2;0,105263157894737;1;"CORUM:5407";"CORUM";"NGF-TrkA complex";3383;1670;"Heart_-_Atrial_Appendage_male_12_community"
-"2";"query_1";TRUE;0,0134569101255122;2;64;2;0,03125;1;"REAC:R-HSA-187042";"REAC";"TRKA activation by NGF";10777;2338;"Heart_-_Atrial_Appendage_male_12_community"
-"3";"query_1";TRUE;0,0402158666312406;3;64;2;0,03125;0,666666666666667;"REAC:R-HSA-167021";"REAC";"PLC-gamma1 signalling";10777;1605;"Heart_-_Atrial_Appendage_male_12_community"
-"4";"query_1";TRUE;0,0402158666312406;3;64;2;0,03125;0,666666666666667;"REAC:R-HSA-198745";"REAC";"Signalling to STAT3";10777;2207;"Heart_-_Atrial_Appendage_male_12_community"
+"2";"query_1";TRUE;0,013529380789877;2;64;2;0,03125;1;"REAC:R-HSA-187042";"REAC";"TRKA activation by NGF";10790;2338;"Heart_-_Atrial_Appendage_male_12_community"
+"3";"query_1";TRUE;0,0404326322456095;3;64;2;0,03125;0,666666666666667;"REAC:R-HSA-167021";"REAC";"PLC-gamma1 signalling";10790;1605;"Heart_-_Atrial_Appendage_male_12_community"
+"4";"query_1";TRUE;0,0404326322456095;3;64;2;0,03125;0,666666666666667;"REAC:R-HSA-198745";"REAC";"Signalling to STAT3";10790;2207;"Heart_-_Atrial_Appendage_male_12_community"
