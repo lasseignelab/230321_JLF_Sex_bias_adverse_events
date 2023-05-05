@@ -68,7 +68,7 @@ note processed data had the white sapce removed
 tissues_wo_ws <- gsub(" ", "_", tissues, fixed = TRUE)
 ```
 
-```{r eval= FALSE}
+```{r}
 for (j in 1:length(tissues_wo_ws)){
   alpaca_pathway_wrapper(tissues_wo_ws[j], "female")
   alpaca_pathway_wrapper(tissues_wo_ws[j], "male")
