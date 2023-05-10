@@ -1104,7 +1104,7 @@ drug_enzymes_gene_expression_test<- function( count, all_drug_targets_list, expr
   set.seed(seed)
   for (i in 1:1000){
     #t<- table(grepl("",))
-    sub<- sample( all_drug_targets_list, 64, replace = FALSE)
+    sub<- sample( all_drug_targets_list, 71, replace = FALSE)
     
     res1 <- table(sub %in% expression_list)
     res2<- res1[names(res1) == "TRUE"]
@@ -1149,7 +1149,7 @@ top_drug_target_investigation<- function(drug_target_name){
     geom_bar(stat="identity", fill =  "#21908CFF", color= "black", alpha=0.7) + 
     geom_text(size = 5, position = position_stack(vjust = 0.9)) +
     xlab("Number of male-bias drug-adverse event pairs with drugs with drug target") +
-    ylab("Adverse event (SOC term)")+ theme(text = element_text(size = 12,  face="bold"))
+    ylab("Adverse event (SOC term)")+ theme(text = element_text(size = 16,  face="bold"))
   
   file_name <- paste0("~/results/FARES_plots/", drug_target_name, "_male_sbae_soc_barplot.png", collapse = "" )
   ggsave(file_name, width = 15, height = 10)
@@ -1163,7 +1163,7 @@ top_drug_target_investigation<- function(drug_target_name){
     geom_bar(stat="identity", fill =  "#21908CFF", color= "black", alpha=0.7)+ 
     geom_text(size = 5, position = position_stack(vjust = 0.9)) +
     xlab("Number of male-bias drug-adverse event pairs with drugs with drug target") +
-    ylab("Adverse event (PT term)")+ theme(text = element_text(size = 12,  face="bold"))
+    ylab("Adverse event (PT term)")+ theme(text = element_text(size = 16,  face="bold"))
   
   file_name <- paste0("~/results/FARES_plots/", drug_target_name, "_male_sbae_pt_barplot.png", collapse = "" )
   ggsave(file_name, width = 15, height = 10)
@@ -1180,7 +1180,7 @@ top_drug_target_investigation<- function(drug_target_name){
     geom_bar(stat="identity", fill = "#440154FF", color= "black", alpha=0.6)+ 
     geom_text(size = 5, position = position_stack(vjust = 0.9)) +
     xlab("Number of female-bias drug-adverse event pairs with drugs with drug target") +
-    ylab("Adverse event (SOC term)")+ theme(text = element_text(size = 12,  face="bold"))
+    ylab("Adverse event (SOC term)")+ theme(text = element_text(size = 16,  face="bold"))
   
   file_name <- paste0("~/results/FARES_plots/", drug_target_name, "_female_sbae_soc_barplot.png", collapse = "" )
   ggsave(file_name, width = 15, height = 10)
@@ -1194,7 +1194,7 @@ top_drug_target_investigation<- function(drug_target_name){
     geom_bar(stat="identity", fill =  "#440154FF", color= "black", alpha=0.6)+ 
     geom_text(size = 5, position = position_stack(vjust = 0.9)) +
     xlab("Number of female-bias drug-adverse event pairs with drugs with drug target") +
-    ylab("Adverse event (PT term)")+ theme(text = element_text(size = 12,  face="bold"))
+    ylab("Adverse event (PT term)")+ theme(text = element_text(size = 16,  face="bold"))
   
   file_name <- paste0("~/results/FARES_plots/", drug_target_name, "_female_sbae_pt_barplot.png", collapse = "" )
   ggsave(file_name, width = 15, height = 10)
@@ -1238,16 +1238,17 @@ SBAE_investigation <- function(PT_term){
 }
 
 
-drug_enz_gene_test<- function( count = 4, all_drug_targets_list= colnames(Liver_F_panda@regNet), core_list= c(core_gene_list$Liver, female_core_gene_list$Liver), seed= 101){
-  #input 
+drug_enz_gene_test<- function( count = 4, select ,  all_drug_targets_list= colnames(Liver_F_panda@regNet), core_list= c(core_gene_list$Liver, female_core_gene_list$Liver), seed= 101){
+  #input
   #count- the number of core genes (or other things) in sbae drug metabolism enzyme
+  #select-  the number of random genes to select
   #all_drug_targets_list-  all the genes in liver network 
   #core_list- or gene expression list
   # test$p.value, plot1- 
   res<- c()
   set.seed(seed)
   for (i in 1:1000){
-    sub<- sample( all_drug_targets_list, 64, replace = FALSE)
+    sub<- sample( all_drug_targets_list, select, replace = FALSE)
     
     res1 <- table(sub %in% core_list)
     res2<- res1[names(res1) == "TRUE"]

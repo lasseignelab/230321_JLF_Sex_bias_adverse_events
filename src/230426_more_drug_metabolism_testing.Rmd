@@ -165,6 +165,7 @@ drug_genes <- c("ADH1A"	,"ADH1B", "ADH1C", "ADH4",	"ADH5",	"ADH6",	"ADH7",
 ```
 
 
+
 ```{r}
 drug_genes_v2 <- gprofiler2::gconvert(drug_genes, mthreshold= 1)
 ```
@@ -187,25 +188,28 @@ drug_genes_v2$name[drug_genes_v2$target %in% sex_gene_set$M_Liver]
 
 Permutation testing
 of sex bias genes of drug metabolism genes
+
 ```{r}
-network_genes <- gprofiler2::gconvert(colnames(Liver_F_panda@regNet), mthreshold= 1)
+Liver_gtex_qsmooth_expression <- readRDS("~/data/gtex_qsmooth/Liver_gtex_qsmooth_expression.rds")
+liver_qsmooth_genes <- rownames(Liver_gtex_qsmooth_expression)
+liver_qsmooth_genes <- strtrim( liver_qsmooth_genes, 15)
 ```
 
 
 ```{r}
-drug_enz_gene_test1 <- drug_enz_gene_test(count = 8, all_drug_targets_list = network_genes$target,
+drug_enz_gene_test1 <- drug_enz_gene_test(count = 8, select = 71, all_drug_targets_list = liver_qsmooth_genes,
                         core_list = c(sex_gene_set$F_Liver, sex_gene_set$M_Liver), seed = 101)
 drug_enz_gene_test1 
 ```
 
 ```{r}
-drug_enz_gene_test2 <- drug_enz_gene_test(count = 3, all_drug_targets_list = network_genes$target,
+drug_enz_gene_test2 <- drug_enz_gene_test(count = 3, select = 71, all_drug_targets_list = liver_qsmooth_genes,
                         core_list = sex_gene_set$F_Liver, seed = 101)
 drug_enz_gene_test2 
 ```
 
 ```{r}
-drug_enz_gene_test3 <- drug_enz_gene_test(count = 5, all_drug_targets_list = network_genes$target,
+drug_enz_gene_test3 <- drug_enz_gene_test(count = 5, select = 71, all_drug_targets_list = liver_qsmooth_genes,
                         core_list = sex_gene_set$M_Liver, seed = 101)
 drug_enz_gene_test3
 ```
@@ -220,6 +224,11 @@ ggsave("~/results/FARES_plots_drug_enzymes_expression_histograms.png", height=15
 Permutation testing
 Both male and female -core genes 
 ```{r}
+network_genes <- gprofiler2::gconvert(colnames(Liver_F_panda@regNet), mthreshold= 1)
+```
+
+
+```{r}
 drug_genes_v2$name[drug_genes_v2$name %in% core_gene_list$Liver]
 ```
 
@@ -229,18 +238,18 @@ drug_genes_v2$name[drug_genes_v2$name %in% female_core_gene_list$Liver]
 
 ```{r}
 #function defaults for this test 
-drug_enz_gene_test4 <- drug_enz_gene_test()
+drug_enz_gene_test4 <- drug_enz_gene_test(select= 64)
 drug_enz_gene_test4
 ```
 male core genes 
 ```{r}
-drug_enz_gene_test5 <- drug_enz_gene_test(count = 4, all_drug_targets_list = colnames(Liver_F_panda@regNet),
+drug_enz_gene_test5 <- drug_enz_gene_test(count = 4, select = 64, all_drug_targets_list = colnames(Liver_F_panda@regNet),
                         core_list = core_gene_list$Liver, seed = 101)
 drug_enz_gene_test5
 ```
 female core genes
 ```{r}
-drug_enz_gene_test6 <- drug_enz_gene_test(count = 0, all_drug_targets_list = colnames(Liver_F_panda@regNet), 
+drug_enz_gene_test6 <- drug_enz_gene_test(count = 0, select = 64, all_drug_targets_list = colnames(Liver_F_panda@regNet), 
                         core_list = female_core_gene_list$Liver, seed = 101)
 drug_enz_gene_test6
 ```
