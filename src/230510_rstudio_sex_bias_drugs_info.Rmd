@@ -1,0 +1,40 @@
+---
+title: "230510_rstudio_sex_bias_drugs_info"
+author: "Jennifer Fisher"
+date: '2022-12-21'
+output:
+  html_document: default
+---
+    
+    System which operations were done on: 
+    my laptop
+    
+    GitHub Repo:
+    230321_JLF_Sex_bias_adverse_events
+    
+    Docker: 
+    jenfisher7/rstudio_sex_bias_drugs
+    
+    Directory of operations:
+    ~/Documents/230321_JLF_Sex_bias_adverse_events
+    
+    Scripts being edited for operations:
+    NA
+    
+    Data being used:
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+sessionInfo()
+```
+
+```{r}
+# Listing packages
+installed.packages()[,c(1,3)]
+```
+
+
+
