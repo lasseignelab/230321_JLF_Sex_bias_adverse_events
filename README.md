@@ -4,7 +4,6 @@ Future Abstract
 
 ## Authors
 
-*** note to authors: This is prelim list of author. nothing is final or decided **
 - [Jennifer L. Fisher](https://www.github.com/JenFisher7), [Amanda D. Clark](https://github.com/adc0032), [Emma Jones](https://github.com/emmafjones) , & [Brittany N. Lasseigne](https://github.com/blasseigne)
 
 Department of Cell, Developmental and Integrative Biology, Heersink School of Medicine, University of Alabama at Birmingham, Birmingham, AL, 35294, USA.
