@@ -363,7 +363,7 @@ alpaca_pathway_wrapper<- function(tissue_name, sex){
   file_comms<- read.delim(comms_file, header=FALSE)
   
   # top 100 genes in the community
-  alpaca_core_genes <- alpaca_results_dw_tf_genes(file_scores, file_comms)
+  alpaca_core_genes <- alpaca_output_dw_tf_genes(file_scores, file_comms)
   #save the tf and gene files for each community
   core_name<- paste(tissue_name, sex, "core_genes.rds", sep= "_")
   file_core_name<- paste0("~/results/alpaca/alpaca_core_gene_lists/",core_name)
@@ -557,7 +557,7 @@ alpaca_gene_set_analysis <- function(tissue_nam, genes="drugs", gene_set_name= "
   title_tissue<- paste("Differential modularity score of ", y_name2, "\nin", tissue_nam, "sex-specific gene regulatory networks", sep = " ")
   label_tissue <- paste("Paired Wilcoxon signed rank test\np-value =", p_value, sep = " ")
   
-  ggplot(liver_drug_subset, aes(y=score, x= sex, fill = sex)) + geom_violin() +geom_point() + geom_text(x="female", y=0.002, label= label_tissue, size= 10) +ylab("Differential modularity score") + xlab("Sex") + ggtitle(title_tissue) + scale_fill_manual(values= c( "#440154FF","#21908CFF")) +theme(text = element_text(size = 30,  face="bold"))
+  ggplot(liver_drug_subset, aes(y=score, x= sex, fill = sex)) + geom_violin() +geom_point() + geom_text(x="female", y=0.008, label= label_tissue, size= 15) +ylab("Differential modularity score") + xlab("Sex") + ggtitle(title_tissue) + scale_fill_manual(values= c( "#440154FF","#21908CFF")) +theme(text = element_text(size = 30,  face="bold"))
   #save the plot - sex_differential_modularity_plots
   file_name<- paste(path, "sex_differential_modularity_plots/", tissue_nam, "_sex_differential_modularity_plot.png", sep = "")
   ggsave(file_name, width = 20, height=10, units= "in")
@@ -655,9 +655,622 @@ go_term_heatmap<- function(female_pathways, male_pathways, threshold = 0.95, fil
   # 
 }
 
+drug_target_diff_analysis<- function(tissue, path){
+  #input 
+  #tissue- name of the tissues (match file names)
+  #path- directory path to sex specific networks
+  
+  #outputs 
+  # plot of the degree of drug metabolism genes vs other genes
+  # p_value- wilcox of degree difference between drug metabolism genes and other genes
+  # diff- median of the degree difference of drug metabolism genes (female-male)
+  male_file<- paste0("~/results/alpaca/sex_specific_networks/", tissue, "_M_panda.rds")
+  M_panda <- readRDS(male_file)
+  female_file<- paste0("~/results/alpaca/sex_specific_networks/", tissue, "_F_panda.rds")
+  F_panda <- readRDS(female_file)
+  
+  diff_genes <- calcDegreeDifference( F_panda , M_panda, type="gene", filter = TRUE)
+  
+  
+  
+  diff_drug_genes <- diff_genes[names(diff_genes) %in% drug_genes]
+  diff_other_genes <- diff_genes[!names(diff_genes) %in% drug_genes]
+  
+  diff_all_genes<- rbind(data.frame(gene_list =rep( "Drug\nMetabolism", length(diff_drug_genes)), Gene_Degree_Diff= as.numeric(diff_drug_genes)), data.frame(gene_list =rep( "Other", length(diff_other_genes)), Gene_Degree_Diff= as.numeric(diff_other_genes)))
+  
+  res <- wilcox.test(diff_drug_genes , diff_other_genes  )
+  label_tissue <- paste("Wilcoxon signed\nrank test\np-value =\n",  res$p.value, sep = " ")
+  title_tissue<- paste("Degree difference of drug metabolismgenes\nbetween", tissue, "sex-specific gene regulatory networks", sep = " ")
+  diff_all_genes$gene_list<- factor(diff_all_genes$gene_list, levels= c("Other","Drug\nMetabolism" ))
+  
+  
+  ggplot(diff_all_genes, aes(x=Gene_Degree_Diff, y= gene_list, fill = gene_list)) + geom_violin() +geom_point() +geom_text(y="Drug\nMetabolism", x=-250, label= label_tissue, size= 10) +ggtitle(title_tissue) +xlab("Degree Difference (FEMALE-MALE)") + ylab("Genes")  + scale_fill_viridis( alpha=0.7, option= "H" ,discrete = TRUE)+theme(text = element_text(size = 30,  face="bold"))+ theme(legend.position = "none")
+  
+  file_name<- paste(path, "sex_degree_difference_plots/", tissue, "_sex_degree_difference_plot.png", sep = "")
+  ggsave(file_name, width = 20, height=10, units= "in")
+  
+  p_value<- res$p.value
+  diff<- median(diff_drug_genes)
+  #return p_value 
+  obj<- list(p_value, diff)
+  return(obj)
+}
+
+calc_targeting<- function(tissue, path){
+  #input 
+  #tissue- name of the tissues (match file names)
+  #path- directory path to sex specific networks
+  male_file<- paste0("~/results/alpaca/sex_specific_networks/", tissue, "_M_panda.rds")
+  M_panda <- readRDS(male_file)
+  female_file<- paste0("~/results/alpaca/sex_specific_networks/", tissue, "_F_panda.rds")
+  F_panda <- readRDS(female_file)
+  
+  f_degree_genes <- calcDegree( F_panda , type="gene", filter = TRUE, trim=TRUE)
+  m_degree_genes <- calcDegree( M_panda, type="gene", filter = TRUE, trim=TRUE)
+  
+  #save degree in here
+  
+  #panda_in_degree
+  file<- paste(path, "panda_in_degree/", tissue, "_female_sex_degree_gene.rds", sep = "")
+  saveRDS(f_degree_genes, file)
+  file<- paste(path, "panda_in_degree/", tissue, "_male_sex_degree_gene.rds", sep = "")
+  saveRDS(m_degree_genes, file)
+  all_degree <-  f_degree_genes  + m_degree_genes
+  
+  f_prop_degree <- f_degree_genes / all_degree
+  file<- paste(path, "panda_in_degree/", tissue, "_female_sex_degree_gene_prop.rds", sep = "")
+  saveRDS(f_prop_degree, file)
+  
+  m_prop_degree <- m_degree_genes / all_degree
+  file<- paste(path, "panda_in_degree/", tissue, "_male_sex_degree_gene_prop.rds", sep = "")
+  saveRDS(m_prop_degree, file)
+  
+  #find sex divergent here
+  #the proportion of sex-biased edges in the male- and female-biased directions is between 0.4 and 0.6
+  sex_div <- names(f_prop_degree)[ f_prop_degree > 0.4 &  f_prop_degree< 0.6]
+  
+  #find female-bias here 
+  f_bias<- names(f_prop_degree)[ f_prop_degree >0.6]
+  #the proportion of sex-biased edges in the female direction is greater than 0.6
+  
+  #find male-bias here
+  #male-biased genes (the proportion of sex-biased edges in the male direction is greater than 0.6),
+  m_bias<- names(m_prop_degree)[ m_prop_degree >0.6]
+  #create list 
+  list_bias<- list(sex_div, f_bias, m_bias)
+  
+  #save 
+  file<- paste(path, "panda_in_degree/", tissue, "_sex_bias_gene_list.rds", sep = "")
+  saveRDS(list_bias, file)
+  
+  
+  #out- degree
+  f_degree_tf <- calcDegree( F_panda , type="tf", filter = TRUE, trim=TRUE)
+  m_degree_tf <- calcDegree( M_panda, type="tf", filter = TRUE, trim=TRUE)
+  
+  #save degree in here
+  file<- paste(path, "panda_out_degree/", tissue, "_female_sex_degree_tf.rds", sep = "")
+  saveRDS(f_degree_tf, file)
+  file<- paste(path, "panda_out_degree/", tissue, "_male_sex_degree_tf.rds", sep = "")
+  saveRDS(m_degree_tf, file)
+  all_degree <-  f_degree_tf  + m_degree_tf
+  
+  f_prop_degree <- f_degree_tf / all_degree
+  file<- paste(path, "panda_out_degree/", tissue, "_female_sex_degree_tf_prop.rds", sep = "")
+  saveRDS(f_prop_degree, file)
+  
+  m_prop_degree <- m_degree_tf / all_degree
+  file<- paste(path, "panda_out_degree/", tissue, "_male_sex_degree_tf_prop.rds", sep = "")
+  saveRDS(m_prop_degree, file)
+  
+  #find sex divergent here
+  #the proportion of sex-biased edges in the male- and female-biased directions is between 0.4 and 0.6
+  sex_div <- names(f_prop_degree)[ f_prop_degree > 0.4 &  f_prop_degree< 0.6]
+  
+  #find female-bias here 
+  f_bias<- names(f_prop_degree)[ f_prop_degree >0.6]
+  #the proportion of sex-biased edges in the female direction is greater than 0.6
+  
+  #find male-bias here
+  #male-biased tf (the proportion of sex-biased edges in the male direction is greater than 0.6),
+  m_bias<- names(m_prop_degree)[ m_prop_degree >0.6]
+  #create list 
+  list_bias<- list(sex_div, f_bias, m_bias)
+  
+  #save 
+  file<- paste(path, "panda_out_degree/", tissue, "_sex_bias_tf_list.rds", sep = "")
+  saveRDS(list_bias, file)
+  
+}  
+
+go_term_heatmap_v2<- function(female_act_pathways, female_repress_pathways, male_act_pathways, male_repress_pathways, threshold = 0.95, file_name){
+  #input
+  #limma_pathways, deseqq2_pathways, TFL_pathways- the gprofiler result data frame for each method with the last column (named set)
+  #indicating if the pathway was from the up or down group
+  #list_type- up or down regulated 
+  #threshold- is the threshold of how far up or down the go ontology tree to go. default to 0.95
+  #file name for the parent go term results
+  
+  #output 
+  #heatmap
+  
+  #get terms
+  female_act_bp<- female_act_pathways$term_id[ female_act_pathways$source == "GO:BP" ]
+  female_repress_bp <- female_repress_pathways$term_id[ female_repress_pathways$source == "GO:BP"]
+  male_act_bp<- male_act_pathways$term_id[ male_act_pathways$source == "GO:BP" ]
+  male_repress_bp <- male_repress_pathways$term_id[ male_repress_pathways$source == "GO:BP"]
+  
+  #run the go term semantic similarity 
+  go1 <-  unique(c(female_act_bp, female_repress_bp, male_act_bp, male_repress_bp ))
+  go_sim <- mgoSim(go1, go1, semData=hsGO, measure="Wang", combine=NULL)
+  
+  #get the parent terms from rrvgo for the pathways
+  res <- reduceSimMatrix(go_sim, threshold = threshold)
+  res_v2<- res[match(colnames(go_sim), res$go),]
+  
+  
+  
+  #determine which pathway is enriched in the different methods for the heatmap annotation
+  female_act_list <- grepl(paste(female_act_bp,collapse="|"), colnames(go_sim)) 
+  female_repress_list <- grepl(paste(female_repress_bp,collapse="|"), colnames(go_sim)) 
+  male_act_list <- grepl(paste(male_act_bp,collapse="|"), colnames(go_sim)) 
+  male_repress_list <- grepl(paste(male_repress_bp,collapse="|"), colnames(go_sim)) 
+  
+  
+  #handing the case where there are no pathways enriched
+  if(length(female_act_list) ==0){ female_act_list <- rep(FALSE,ncol(go_sim) )} 
+  if(length(female_repress_list) ==0){ female_repress_list <- rep(FALSE,ncol(go_sim) )} 
+  if(length( male_act_list) ==0){  male_act_list <- rep(FALSE,ncol(go_sim) )} 
+  if(length(male_repress_list) ==0){ male_repress_list <- rep(FALSE,ncol(go_sim) )} 
+  
+  
+  #pick the number of colors note limit is about 9 
+  bp_color<- brewer.pal(n = length(unique(res_v2$parentTerm)), name = "Paired")
+  names(bp_color)<- unique(res_v2$parentTerm)
+  
+  #create heatmap
+  #"Female Repressor Edges"=f_repress_edge, "Male Activator Edges"=m_act_edge, "Male Repressor Edges"=m_repress_edge)
+  row_ha = HeatmapAnnotation("Female Activator Edges"=female_act_list, "Female Repressor Edges"= female_repress_list, "Male Activator Edges"=  male_act_list, "Male Repressor Edges" = male_repress_list, "Common Parent GO Term"= res_v2$parentTerm , col = list("Female Activator Edges"= c("TRUE" = "black", "FALSE" = "white"),"Female Repressor Edges" = c("TRUE" = "black", "FALSE" = "white"),"Male Activator Edges" = c("TRUE" = "black", "FALSE" = "white"),"Male Repressor Edges" = c("TRUE" = "black", "FALSE" = "white"),
+                                                                                                                                                                                                                                                                  "Common Parent GO Term"= bp_color ), annotation_name_gp= gpar(fontsize = 16,  fontface = "bold"), 
+                             annotation_legend_param = list("Female Repressor Edges"= list(title_gp = gpar(fontsize = 15, fontface = "bold"), labels_gp = gpar(fontsize = 13, fontface = "bold")), 
+                                                            "Female Activator Edges" = list(title_gp = gpar(fontsize = 15, fontface = "bold"), labels_gp = gpar(fontsize = 13, fontface = "bold")), 
+                                                            "Male Activator Edges"= list(title_gp = gpar(fontsize = 15, fontface = "bold"), labels_gp = gpar(fontsize = 13, fontface = "bold")),"Male Repressor Edges"= list(title_gp = gpar(fontsize = 15, fontface = "bold"), labels_gp = gpar(fontsize = 13, fontface = "bold")),
+                                                            "Common Parent GO Term" = list(title_gp = gpar(fontsize = 15, fontface = "bold"), labels_gp = gpar(fontsize = 13, fontface = "bold"))))
+  col_fun = colorRamp2(c(0,  1), c( "black", "yellow"))
+  
+  #SAVE THE PARENT MATCHES
+  res_v3<- cbind(res_v2,female_act_list, female_repress_list, male_act_list, male_repress_list )
+  write.csv(res_v3, file_name)
+  heatmap_v1 <- Heatmap(go_sim, nam= "GO Term Similarity (Wang)", col = col_fun, show_column_names = FALSE,  show_row_names = FALSE, top_annotation = row_ha,  
+                        clustering_distance_rows= "euclidean",
+                        clustering_distance_columns=  "euclidean",
+                        clustering_method_rows = "ward.D2" ,
+                        clustering_method_columns="ward.D2", heatmap_legend_param = list( title_gp = gpar(fontsize = 15 , fontface = "bold"), labels_gp = gpar(fontsize = 12, fontface = "bold")))
+  #draw(heatmap_v1, annotation_legend_side = "bottom")
+  #heatmap
+  Heatmap(go_sim, nam= "GO Term Similarity (Wang)", col = col_fun, show_column_names = FALSE,  show_row_names = FALSE, top_annotation = row_ha,  
+          clustering_distance_rows= "euclidean",
+          clustering_distance_columns=  "euclidean",
+          clustering_method_rows = "ward.D2" ,
+          clustering_method_columns="ward.D2", heatmap_legend_param = list( title_gp = gpar(fontsize = 15 , fontface = "bold"), labels_gp = gpar(fontsize = 12, fontface = "bold")))
+  
+  column_dend = hclust(dist(t(go_sim)), method = "ward.D2")
+  
+  heatmap_v2 <- Heatmap(matrix(nrow = 0, ncol = ncol(go_sim)),
+                        cluster_columns = column_dend, 
+                        show_column_names = FALSE,  
+                        show_row_names = FALSE, 
+                        top_annotation = row_ha) 
+  draw(heatmap_v2, annotation_legend_side = "bottom")
+  
+}
 
 
+getAll2 <- function(db_path){
+  conn <- dbConnect(RSQLite::SQLite(), db_path)
+  dbdf <- dbGetQuery(conn,'SELECT * FROM dbdf')
+  dbDisconnect(conn)
+  return(dbdf)
+}
+getEnzymes <- function(ids, db_path){
+  len <- length(ids)
+  dbdf <- getAll2(db_path)
+  #print(res)
+  list<- rep(NA, length(ids))
+  for ( i in 1:length(ids)){
+    tartxt <- dbdf[dbdf$"drugbank-id" %in% ids[i],"enzymes"]
+    res <- str_match_all(tartxt, "UniProtKB\\s*(.*?)\\s*UniProt")
+    #print(res)
+    res<- res[[1]]
+    uni_gnsym <- tryCatch(suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys=res[,2], columns=c("UNIPROT", "SYMBOL"), keytype="UNIPROT")), error=function(e){})
+    if (is.null(uni_gnsym)){
+      #do it for each symbol incase of missing
+      uni_gnsym2<- c()
+      for (j in 1:length(res[,2])){
+        uni_gnsym3 <- tryCatch(suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys=res[j,2], columns=c("UNIPROT", "SYMBOL"), keytype="UNIPROT")), error=function(e){NA})
+        if(! is.na(uni_gnsym3)){
+          uni_gnsym2<- c(uni_gnsym2, uni_gnsym3[,2])
+        }
+      }
+      list[i] <-paste(uni_gnsym2, collapse =";")
+    }else{
+      list[i] <-paste(uni_gnsym[,2], collapse =";")
+    }
+    uni_gnsym <- NULL
+  }
+  names(list)<- ids
+  return(list)
+}
 
+getTransporter <- function(ids, db_path){
+  len <- length(ids)
+  dbdf <- getAll2(db_path)
+  #print(res)
+  list<- rep(NA, length(ids))
+  for ( i in 1:length(ids)){
+    tartxt <- dbdf[dbdf$"drugbank-id" %in% ids[i],"transporters"]
+    res <- str_match_all(tartxt, "UniProtKB\\s*(.*?)\\s*UniProt")
+    #print(res)
+    res<- res[[1]]
+    uni_gnsym <- tryCatch(suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys=res[,2], columns=c("UNIPROT", "SYMBOL"), keytype="UNIPROT")), error=function(e){NULL})
+    if (is.null(uni_gnsym)){
+      #do it for each symbol incase of missing
+      uni_gnsym2<- c()
+      for (j in 1:length(res[,2])){
+        print(i)
+        uni_gnsym3 <- tryCatch(suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys=res[j,2], columns=c("UNIPROT", "SYMBOL"), keytype="UNIPROT")), error=function(e){NA})
+        if(! is.na(uni_gnsym3)){
+          uni_gnsym2<- c(uni_gnsym2, uni_gnsym3[,2])
+        }
+      }
+      list[i] <-paste(uni_gnsym2, collapse =";")
+    }else{
+      list[i] <-paste(uni_gnsym[,2], collapse =";")
+    }
+  }
+  names(list)<- ids
+  return(list)
+}
+
+getCarriers <- function(ids, db_path){
+  len <- length(ids)
+  dbdf <- getAll2(db_path)
+  #print(res)
+  list<- rep(NA, length(ids))
+  for ( i in 1:length(ids)){
+    tartxt <- dbdf[dbdf$"drugbank-id" %in% ids[i],"carriers"]
+    res <- str_match_all(tartxt, "UniProtKB\\s*(.*?)\\s*UniProt")
+    #print(res)
+    res<- res[[1]]
+    uni_gnsym <- tryCatch(suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys=res[,2], columns=c("UNIPROT", "SYMBOL"), keytype="UNIPROT")), error=function(e){NULL})
+    if (is.null(uni_gnsym)){
+      #do it for each symbol incase of missing
+      uni_gnsym2<- c()
+      for (j in 1:length(res[,2])){
+        uni_gnsym3 <- tryCatch(suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys=res[j,2], columns=c("UNIPROT", "SYMBOL"), keytype="UNIPROT")), error=function(e){NA})
+        if(! is.na(uni_gnsym3)){
+          uni_gnsym2<- c(uni_gnsym2, uni_gnsym3[,2])
+        }
+      }
+      list[i] <-paste(uni_gnsym2, collapse =";")
+    }else{
+      list[i] <-paste(uni_gnsym[,2], collapse =";")
+    }
+    
+  }
+  names(list)<- ids
+  return(list)
+}
+
+getDrugAll<- function(ids, db_path){
+  print("done target")
+  targets <- queryDB(ids ,type = "getTargets", db_path) [,5]
+  print("done enzymes")
+  enzyme <- getEnzymes(ids, db_path)
+  print("done carrier")
+  carrier<- getCarriers(ids, db_path)
+  print("done transporter")
+  transporter<- getTransporter(ids, db_path)
+  
+  drug_info<- cbind(ids, targets, enzyme, transporter, carrier )
+}
+
+drug_gene_test<- function(gene_name, count, index_test, drug_info_others, seed= 101){
+  #inputs- 
+  #gene_name- name of the gene 
+  #count- how many in sbae drug list
+  #index_test- which colmun is the drug target or other item in 
+  #drug_info_others- the drug info for the other drugs in FARES
+  #seed is seed for analysis
+  
+  #output 
+  #res_list
+  #test$p.value- the p-value from wilcox.test
+  #plot1- histogram of test
+  #res- the 1000 random section results
+  res<- c()
+  set.seed(seed)
+  for (i in 1:1000){
+    #t<- table(grepl("",))
+    sub<- sample( drug_info_others[,index_test], 416, replace = FALSE)
+    genes <- unlist(str_split(sub, ";"))
+    genes <- genes[!is.na(genes )]
+    genes <- genes[!genes == "NA"]
+    genes <- genes[!genes == ""]
+    genes_df<- as.data.frame(table(genes))
+    t2<-genes_df$Freq[genes_df$genes == gene_name]
+    if (length(t2) ==1){
+      res[i]<-genes_df$Freq[genes_df$genes == gene_name]
+    }else{
+      res[i]<- 0
+    }
+    
+  }
+  #print(res)
+  test<- wilcox.test(res, mu= count, alternative = "less")
+  #print(count)
+  #print(hist(res))
+  plot_data<- as.data.frame(cbind(1:1000, res))
+  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() + geom_vline(xintercept = count)
+  
+  res_list<- list(test$p.value, plot1, res)
+  return(res_list)
+}
+
+drug_gene_core_test<- function( count, all_drug_targets_list, core_list, seed= 101){
+  #inputs
+  #count- number of genes that are core genes
+  #all_drug_targets_list- all the drug targets in the fares database
+  #core_list - core gene llist
+  #seed - seed for analysis 
+  
+  #output
+  #test$p.value- pvlaue from wilcox.test
+  #plot1- the histogram of the analysis
+  
+  res<- c()
+  set.seed(seed)
+  for (i in 1:1000){
+    #t<- table(grepl("",))
+    sub<- sample( all_drug_targets_list, 84, replace = FALSE)
+    
+    res1 <- table(sub %in% core_list)
+    res2<- res1[names(res1) == "TRUE"]
+    if (length(res2) ==1){
+      res[i]<-res2
+    }else{
+      res[i]<- 0
+    }
+    
+  }
+  #print(res)
+  test<- wilcox.test(res, mu= count, alternative = "less")
+  #print(count)
+  #print(hist(res))
+  plot_data<- as.data.frame(cbind(1:1000, res))
+  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() + geom_vline(xintercept = count)
+  
+  res_list<- list(test$p.value, plot1)
+  return(res_list)
+}
+
+drug_gene_expression_test<- function( count, all_drug_targets_list, expression_list, seed= 101){
+  #input
+  #count- nuber of sex-bias genes in SBAE drug targets
+  #all_drug_targets_list- all the drug targets
+  #expression_list- sex-bias gene list 
+  #seed for analysis 
+  
+  #output
+  #test$p.value- pvlaue from wilcox.test
+  #plot1- the histogram of the analysis
+  res<- c()
+  set.seed(seed)
+  for (i in 1:1000){
+    #t<- table(grepl("",))
+    sub<- sample( all_drug_targets_list, 84, replace = FALSE)
+    
+    res1 <- table(sub %in% expression_list)
+    res2<- res1[names(res1) == "TRUE"]
+    if (length(res2) ==1){
+      res[i]<-res2
+    }else{
+      res[i]<- 0
+    }
+    
+  }
+  #print(res)
+  test<- wilcox.test(res, mu= count, alternative = "less")
+  #print(count)
+  #print(hist(res))
+  plot_data<- as.data.frame(cbind(1:1000, res))
+  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() + geom_vline(xintercept = count)
+  
+  res_list<- list(test$p.value, plot1)
+  return(res_list)
+}
+
+drug_enzymes_gene_expression_test<- function( count, all_drug_targets_list, expression_list, seed= 101){
+  #input
+  #count- nuber of sex-bias genes in SBAE drug enzymes
+  #all_drug_targets_list- all the drug enzymes
+  #expression_list- sex-bias gene list 
+  #seed for analysis 
+  
+  #output
+  #test$p.value- pvlaue from wilcox.test
+  #plot1- the histogram of the analysis
+  res<- c()
+  set.seed(seed)
+  for (i in 1:1000){
+    #t<- table(grepl("",))
+    sub<- sample( all_drug_targets_list, 71, replace = FALSE)
+    
+    res1 <- table(sub %in% expression_list)
+    res2<- res1[names(res1) == "TRUE"]
+    if (length(res2) ==1){
+      res[i]<-res2
+    }else{
+      res[i]<- 0
+    }
+    
+  }
+  #print(res)
+  test<- wilcox.test(res, mu= count, alternative = "less")
+  #print(count)
+  #print(hist(res))
+  plot_data<- as.data.frame(cbind(1:1000, res))
+  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() + geom_vline(xintercept = count)
+  
+  res_list<- list(test$p.value, plot1)
+  return(res_list)
+}
+
+
+top_drug_target_investigation<- function(drug_target_name){
+  #drug_target_name- drug target of insterest 
+  #output plots of the adverse events of these drug targets for males and females
+  
+  #get the drugs
+  drug_target_drugs <- drug_info_sbae_drugs$drug_ids[grep(drug_target_name, drug_info_sbae_drugs$targets)]
+  
+  print("how many SBAE drugs with drug target?")
+  print(length(drug_target_drugs))
+  
+  res_drug_target_subset <- drug_ae_res_info[drug_ae_res_info$drug %in% drug_target_drugs,]
+  
+  #male- soc plot 
+  res_drug_target_subset<- res_drug_target_subset[res_drug_target_subset$BH < 0.05 & res_drug_target_subset$logROR < -1, ]
+  
+  adverse_event_counts <- as.data.frame(table(res_drug_target_subset$soc_term))
+  adverse_event_counts$Var1 <- factor(adverse_event_counts$Var1, levels= adverse_event_counts$Var1[order(-adverse_event_counts$Freq)])
+  
+  ggplot(adverse_event_counts, aes(x= Freq, y= Var1, label= Freq)) +
+    geom_bar(stat="identity", fill =  "#21908CFF", color= "black", alpha=0.7) + 
+    geom_text(size = 5, position = position_stack(vjust = 0.9)) +
+    xlab("Number of male-bias drug-adverse event pairs with drugs with drug target") +
+    ylab("Adverse event (SOC term)")+ theme(text = element_text(size = 16,  face="bold"))
+  
+  file_name <- paste0("~/results/FARES_plots/", drug_target_name, "_male_sbae_soc_barplot.png", collapse = "" )
+  ggsave(file_name, width = 15, height = 10)
+  
+  #male- PT term plot 
+  
+  adverse_event_counts <- as.data.frame(table(res_drug_target_subset$pt_term))
+  adverse_event_counts$Var1 <- factor(adverse_event_counts$Var1, levels= adverse_event_counts$Var1[order(-adverse_event_counts$Freq)])
+  
+  ggplot(adverse_event_counts, aes(x= Freq, y= Var1, label= Freq)) +
+    geom_bar(stat="identity", fill =  "#21908CFF", color= "black", alpha=0.7)+ 
+    geom_text(size = 5, position = position_stack(vjust = 0.9)) +
+    xlab("Number of male-bias drug-adverse event pairs with drugs with drug target") +
+    ylab("Adverse event (PT term)")+ theme(text = element_text(size = 16,  face="bold"))
+  
+  file_name <- paste0("~/results/FARES_plots/", drug_target_name, "_male_sbae_pt_barplot.png", collapse = "" )
+  ggsave(file_name, width = 15, height = 10)
+  
+  
+  #female- soc plot 
+  res_drug_target_subset <- drug_ae_res_info[drug_ae_res_info$drug %in% drug_target_drugs,]
+  res_drug_target_subset <- res_drug_target_subset[res_drug_target_subset$BH < 0.05 & res_drug_target_subset$logROR > 1, ]
+  
+  adverse_event_counts <- as.data.frame(table(res_drug_target_subset$soc_term))
+  adverse_event_counts$Var1 <- factor(adverse_event_counts$Var1, levels= adverse_event_counts$Var1[order(-adverse_event_counts$Freq)])
+  
+  ggplot(adverse_event_counts, aes(x= Freq, y= Var1, label= Freq)) +
+    geom_bar(stat="identity", fill = "#440154FF", color= "black", alpha=0.6)+ 
+    geom_text(size = 5, position = position_stack(vjust = 0.9)) +
+    xlab("Number of female-bias drug-adverse event pairs with drugs with drug target") +
+    ylab("Adverse event (SOC term)")+ theme(text = element_text(size = 16,  face="bold"))
+  
+  file_name <- paste0("~/results/FARES_plots/", drug_target_name, "_female_sbae_soc_barplot.png", collapse = "" )
+  ggsave(file_name, width = 15, height = 10)
+  
+  #female- PT term plot 
+  
+  adverse_event_counts <- as.data.frame(table(res_drug_target_subset$pt_term))
+  adverse_event_counts$Var1 <- factor(adverse_event_counts$Var1, levels= adverse_event_counts$Var1[order(-adverse_event_counts$Freq)])
+  
+  ggplot(adverse_event_counts, aes(x= Freq, y= Var1, label= Freq)) +
+    geom_bar(stat="identity", fill =  "#440154FF", color= "black", alpha=0.6)+ 
+    geom_text(size = 5, position = position_stack(vjust = 0.9)) +
+    xlab("Number of female-bias drug-adverse event pairs with drugs with drug target") +
+    ylab("Adverse event (PT term)")+ theme(text = element_text(size = 16,  face="bold"))
+  
+  file_name <- paste0("~/results/FARES_plots/", drug_target_name, "_female_sbae_pt_barplot.png", collapse = "" )
+  ggsave(file_name, width = 15, height = 10)
+  
+}
+
+SBAE_investigation <- function(PT_term){
+  #PT_term- name of the SBAE term
+  ae_test <- drug_ae_res_info[drug_ae_res_info$pt_term == PT_term & abs(drug_ae_res_info$logROR) > 1 & drug_ae_res_info$BH < 0.05, ]
+  print("how many sex-bias events")
+  print(dim(ae_test)[1])
+  
+  print("how many female events vs male (female= TRUE; male = FALSE)")
+  print(table(ae_test$logROR > 1))
+  
+  
+  female_test <- ae_test$a /(ae_test$a + ae_test$b + ae_test$c + ae_test$d)
+  
+  p1 <- ggplot() + geom_histogram(aes(x= female_test), fill = "#440154FF") +
+    xlab("Number of female cases / all cases for drug-adverse event pair") +
+    theme(text = element_text(size = 12,  face="bold"))
+  
+  male_test <- ae_test$c /(ae_test$a + ae_test$b + ae_test$c + ae_test$d)
+  
+  p2<- ggplot() + geom_histogram(aes(x= male_test), fill = "#21908CFF") +
+    xlab("Number of male cases / all cases for drug-adverse event pair") +
+    theme(text = element_text(size = 12,  face="bold"))
+  
+  diff_test <- (ae_test$a - ae_test$c) / (ae_test$a + ae_test$b + ae_test$c + ae_test$d)
+  
+  p3 <- ggplot() + geom_histogram(aes(x= diff_test)) +
+    xlab("Number of female cases - Number of male cases / all cases for drug-adverse event pair") +
+    theme(text = element_text(size = 12,  face="bold"))
+  
+  ggarrange(p1, p2, p3, ncol = 2, nrow = 2)
+  
+  file_name <- paste0("~/results/FARES_plots/", PT_term, "_FAERS_AE_case_plots.png", collapse = "" )
+  
+  ggsave(file_name, height=15, width=15)
+  
+}
+
+
+drug_enz_gene_test<- function( count = 4, select ,  all_drug_targets_list= colnames(Liver_F_panda@regNet), core_list= c(core_gene_list$Liver, female_core_gene_list$Liver), seed= 101){
+  #input
+  #count- the number of core genes (or other things) in sbae drug metabolism enzyme
+  #select-  the number of random genes to select
+  #all_drug_targets_list-  all the genes in liver network 
+  #core_list- or gene expression list
+  # test$p.value, plot1- 
+  res<- c()
+  set.seed(seed)
+  for (i in 1:1000){
+    sub<- sample( all_drug_targets_list, select, replace = FALSE)
+    
+    res1 <- table(sub %in% core_list)
+    res2<- res1[names(res1) == "TRUE"]
+    if (length(res2) ==1){
+      res[i]<-res2
+    }else{
+      res[i]<- 0
+    }
+    
+  }
+  #print(res)
+  test<- wilcox.test(res, mu= count, alternative = "less")
+  #print(count)
+  #print(hist(res))
+  plot_data<- as.data.frame(cbind(1:1000, res))
+  plot1 <- ggplot(plot_data, aes(x=res)) + geom_histogram() +
+    geom_vline(xintercept = count) +
+    xlab("Number of genes that are core genes")
+  
+  res_list<- list(test$p.value, plot1)
+  return(res_list)
+}
 
 #old functions no longer used in main project
 lioness_output_adjustment <- function(index){

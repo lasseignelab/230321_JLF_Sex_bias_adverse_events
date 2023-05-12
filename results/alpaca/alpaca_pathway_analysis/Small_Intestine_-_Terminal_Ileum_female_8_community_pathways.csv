@@ -1,2 +1,0 @@
-"";"query";"significant";"p_value";"term_size";"query_size";"intersection_size";"precision";"recall";"term_id";"source";"term_name";"effective_domain_size";"source_order";"set"
-"1";"query_1";TRUE;0,021789012777068;6446;82;44;0,536585365853659;0,0068259385665529;"GO:0032502";"GO:BP";"developmental process";21128;8073;"Small_Intestine_-_Terminal_Ileum_female_8_community"

@@ -24,16 +24,16 @@ knitr::opts_chunk$set(echo = TRUE)
     my laptop
     
     GitHub Repo:
-    Sex_Bias_Adverse_Events
+    230321_JLF_Sex_bias_adverse_events
     
     Directory of operations:
-    ~/Documents/Sex_Bias_Adverse_Events
+    ~/Documents/230321_JLF_Sex_bias_adverse_events
     
     Scripts being edited for operations:
     NA
     
     Data being used:
-    output/alpaca/alpaca_runs
+    results/alpaca/alpaca_runs
     
     Papers and tools: 
     NA
@@ -44,6 +44,21 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(ggplot2)
 library(VennDiagram)
+library(readr)
+library(ComplexHeatmap)
+library(circlize)
+library(RColorBrewer)
+library(tidyverse)
+```
+
+```{r}
+drug_mapping <- read_delim("~/data/drug_mapping.csv", 
+    delim = "\t", escape_double = FALSE, 
+    trim_ws = TRUE)
+```
+
+```{r}
+MedDRA_mapping <- readRDS("~/data/MedDRA_mapping_llt_pt_soc.rds")
 ```
 
 
@@ -55,29 +70,29 @@ drug_ae_df <- readRDS("~/data/drug_ae_df.rds")
 ```{r}
 fishers_res <- readRDS("~/data/fisher_array_results/fishers_res_group_1.rds")
 for (i in 2:543){ # the number of fisher_res files 
-  try(sub  <- readRDS(paste0("~/data/fisher_array_results/fishers_res_group_" ,i, ".rds")))
-  fishers_res<- rbind(fishers_res, sub)
+  sub  <- readRDS(paste0("~/data/fisher_array_results/fishers_res_group_" ,i, ".rds"))
+  fishers_res <- rbind(fishers_res, sub)
 }
 
 ```
 
 ```{r}
-drug_ae_res<- cbind(drug_ae_df, fishers_res)
+drug_ae_res <- cbind(drug_ae_df, fishers_res)
 ```
 
 ```{r}
-colnames(drug_ae_res)<- c("drug", "adverse_event", "a", "b", "c", "d", "p-value", "ROR", "conf_1", "conf_2")
+colnames(drug_ae_res) <- c("drug", "adverse_event", "a", "b", "c", "d", "p-value", "ROR", "conf_1", "conf_2")
 ```
 
 NA adverse event need to be removed
 
 ```{r}
-drug_ae_res<- drug_ae_res[!is.na(drug_ae_res$adverse_event),]
+drug_ae_res <- drug_ae_res[!is.na(drug_ae_res$adverse_event),]
 ```
 
 
 ```{r}
-saveRDS(drug_ae_res, "~/output/drug_ae_res.rds" )
+saveRDS(drug_ae_res, "~/results/drug_ae_res.rds" )
 ```
 
 
@@ -99,31 +114,30 @@ table(is.na(drug_ae_res[,8]))
 table(is.na(drug_ae_res[,9]))
 table(is.na(drug_ae_res[,10]))
 ```
-check the output of the other script
-
+checked the output of the other script
 
 
 30 cases of the drug/event in either sex
 a >=30 | c >=30 
 ```{r}
-drug_ae_res_filter<- drug_ae_res[drug_ae_res$a >= 30 | drug_ae_res$c >= 30, ]
+drug_ae_res_filter <- drug_ae_res[drug_ae_res$a >= 30 | drug_ae_res$c >= 30, ]
 ```
 
 
 50 people have the adverse event with the drug
 a+c > 50
 ```{r}
-drug_ae_res_filter<- drug_ae_res_filter[(drug_ae_res_filter$a + drug_ae_res_filter$c) >= 50, ]
+drug_ae_res_filter <- drug_ae_res_filter[(drug_ae_res_filter$a + drug_ae_res_filter$c) >= 50, ]
 ```
 1000 people are taking the drug
 a+b+c+d > 1000
 ```{r}
-drug_ae_res_filter<- drug_ae_res_filter[(drug_ae_res_filter$a + drug_ae_res_filter$b + drug_ae_res_filter$c + drug_ae_res_filter$d) >= 1000, ]
+drug_ae_res_filter <- drug_ae_res_filter[(drug_ae_res_filter$a + drug_ae_res_filter$b + drug_ae_res_filter$c + drug_ae_res_filter$d) >= 1000, ]
 ```
 
 at least five adverse event in both sexes
 ```{r}
-drug_ae_res_filter<- drug_ae_res_filter[drug_ae_res_filter$a > 5  & drug_ae_res_filter$c > 5, ]
+drug_ae_res_filter <- drug_ae_res_filter[drug_ae_res_filter$a > 5  & drug_ae_res_filter$c > 5, ]
 ```
 
 adjust the p-value via muliple hypothesis testing
@@ -138,6 +152,10 @@ drug_ae_res_filter$comb <- paste0(drug_ae_res_filter$drug, drug_ae_res_filter$ad
 ```{r}
 table(drug_ae_res_filter$BH < 0.05)
 ```
+
+FALSE  TRUE 
+36518 16052 
+
 plot the volcano plot
 ```{r}
 drug_ae_res_filter$neg_log_p <- -log(as.numeric(drug_ae_res_filter$BH))
@@ -145,39 +163,34 @@ drug_ae_res_filter$logROR<- log(as.numeric(drug_ae_res_filter$ROR))
 
 p_value_cut<- -log(0.05)
 drug_ae_res_filter$color <- ifelse(drug_ae_res_filter$logROR >1 & drug_ae_res_filter$BH < 0.05, "female", ifelse(drug_ae_res_filter$logROR < -1 & drug_ae_res_filter$BH < 0.05, "male", "NA"))
-ggplot(drug_ae_res_filter, aes(x=logROR, y= neg_log_p, fill= color ))+ geom_point(colour="black",pch=21, size=4)+ xlab("log(ROR)") + ylab("-log(adj. p-value)") + geom_hline(yintercept=p_value_cut, linetype="dashed", color = "black") + scale_fill_manual(values = c("#440154FF", "#21908CFF" ,"darkgray"))+theme(text = element_text(size = 25,  face="bold")) + guides(fill=guide_legend(title="Sex-bias\nDrug/Adverse Event"))
-ggsave("~/output/FARES_plots/230220_fares_volcano_plot.png", width = 16, height= 10)
+ggplot(drug_ae_res_filter, aes(x=logROR, y= neg_log_p, fill= color )) + geom_point(colour="black",pch=21, size=4) +
+  xlab("log(ROR)") + ylab("-log(adj. p-value)") + geom_hline(yintercept=p_value_cut, linetype="dashed", color = "black") +
+  scale_fill_manual(values = c("#440154FF", "#21908CFF" ,"darkgray")) +
+  theme(text = element_text(size = 25,  face="bold")) +
+  guides(fill=guide_legend(title="Sex-bias\nDrug-Adverse Event"))
+
+ggsave("~/results/FARES_plots/230220_fares_volcano_plot.png", width = 16, height= 10)
 ```
+how many male and female sex-bias drug-adverse event pairs?
 ```{r}
-table(drug_ae_res_filter$color )
+table(drug_ae_res_filter$color)
 ```
-
-
-
-```{r}
-drug_mapping <- read_delim("~/data/drug_mapping.csv", 
-    delim = "\t", escape_double = FALSE, 
-    trim_ws = TRUE)
-```
-
-```{r}
-MedDRA_mapping <- readRDS("~/data/MedDRA_mapping_llt_pt_soc.rds")
-```
+female   male     NA 
+  2132    748  49690 
 
 adjust the MedDRA mappings to just the Pt
 ```{r}
-adj_MedDRA_mapping<- MedDRA_mapping[,c(3,5,6,7,8)]
+adj_MedDRA_mapping<- MedDRA_mapping[, c(3,5,6,7,8)]
 adj_MedDRA_mapping<- adj_MedDRA_mapping[!duplicated(adj_MedDRA_mapping), ]
 ```
 
-
+add adverse event info to each drug-adverse event pair
 ```{r}
-
-ae_info<- as.data.frame(matrix(nrow= length(drug_ae_res_filter$adverse_event), ncol= 5))
+ae_info <- as.data.frame(matrix(nrow= length(drug_ae_res_filter$adverse_event), ncol= 5))
 for (i in 1:length(drug_ae_res_filter$adverse_event)){
   
-  res <- adj_MedDRA_mapping[grep(drug_ae_res_filter$adverse_event[i], adj_MedDRA_mapping$pt_id ,fixed=TRUE),]
-  if (nrow(res) <2){
+  res <- adj_MedDRA_mapping[grep(drug_ae_res_filter$adverse_event[i], adj_MedDRA_mapping$pt_id ,fixed=TRUE), ]
+  if (nrow(res) < 2){
     ae_info[i,] <- res
   }else{
     break
@@ -191,9 +204,8 @@ for (i in 1:length(drug_ae_res_filter$adverse_event)){
 identical(as.character(ae_info$V1), as.character(drug_ae_res_filter$adverse_event))
 ```
 
-
+add drug name to each drug-adverse event pair
 ```{r}
-
 drug_info<- as.data.frame(matrix(nrow= length(drug_ae_res_filter$drug), ncol= 2))
 for (i in 1:length(drug_ae_res_filter$drug)){
   
@@ -207,38 +219,32 @@ for (i in 1:length(drug_ae_res_filter$drug)){
 }
 
 ```
-
+adjust colnames
 ```{r}
 drug_ae_res_info <- cbind(drug_ae_res_filter, ae_info, drug_info)
 
-colnames(drug_ae_res_info )<- c("drug", "adverse_event", "a","b","c","d","p-value", "ROR","conf_1", "conf_2",        "BH", "comb", "neg_log_p", "logROR", "color", "pt_id", "pt_term", "soc_id", "soc_term", "soc_short", "drug_name", "drug_id"   )
+colnames(drug_ae_res_info )<- c("drug", "adverse_event", 
+                                "a","b","c","d","p-value", "ROR","conf_1", 
+                                "conf_2", "BH", "comb", "neg_log_p", "logROR", 
+                                "color", "pt_id", "pt_term", "soc_id", "soc_term",
+                                "soc_short", "drug_name", "drug_id"   )
 ```
 
 ```{r}
-saveRDS(drug_ae_res_info , "~/output/FARES_plots/drug_ae_res_info.rds" )
+saveRDS(drug_ae_res_info , "~/results/FARES_plots/drug_ae_res_info.rds" )
 ```
 
 
+make a data frame with just the significant results
 ```{r}
-drug_ae_res_info_sig<- drug_ae_res_info[drug_ae_res_info$BH <0.05 & abs(drug_ae_res_info$logROR) >1 ,]
+drug_ae_res_info_sig <- drug_ae_res_info[drug_ae_res_info$BH < 0.05 & abs(drug_ae_res_info$logROR) > 1, ]
 ```
 
-
+look at the top 50 drugs and 50 adverse events based on occurrences 
 ```{r}
-colnames(drug_ae_res_info_sig)<- c("drug", "adverse_event", "a","b","c","d","p-value", "ROR","conf_1", "conf_2",        "BH", "comb", "neg_log_p", "logROR", "color", "pt_id", "pt_term", "soc_id", "soc_term", "soc_short", "drug_name", "drug_id"   )
+test<- as_tibble(drug_ae_res_info_sig[, c(21, 17, 14)]) %>% pivot_wider( names_from= drug_name, values_from=logROR, values_fill = 0)
 ```
 
-
-
-```{r}
-test<- as_tibble(drug_ae_res_info_sig[,c(21, 17, 14)]) %>% pivot_wider( names_from= drug_name, values_from=logROR, values_fill = 0)
-```
-
-```{r}
-library(ComplexHeatmap)
-library(circlize)
-library(RColorBrewer)
-```
 ```{r}
 top_ae <- unique(drug_ae_res_info_sig$pt_term[order(drug_ae_res_info_sig$BH)])[1:50]
 ```
@@ -246,34 +252,37 @@ top_ae <- unique(drug_ae_res_info_sig$pt_term[order(drug_ae_res_info_sig$BH)])[1
 ```{r}
 top_drugs <- unique(drug_ae_res_info_sig[order(drug_ae_res_info_sig$BH),21])[1:50]
 ```
-
-
-
+make a heatmap
 ```{r}
 col_fun <-  colorRamp2(c(-5, 0,  5), c( "#21908CFF", "white", "#440154FF"))
-#test<- ifelse(is.na(test), 0, test)
-test<- as.data.frame(test)
-rownames(test)<- test[,1]
-test<- test[,-1]
+test <- as.data.frame(test)
+rownames(test) <- test[,1]
+test <- test[,-1]
 ```
 
 ```{r}
-test1<- test[rownames(test) %in% top_ae,]
+test1 <- test[rownames(test) %in% top_ae, ]
 ```
 
 ```{r}
-test1<- test1[,colnames(test1) %in% top_drugs]
+test1 <- test1[, colnames(test1) %in% top_drugs]
 ```
 
-add drug info and soc class
-
 ```{r}
-heatmap <- Heatmap(as.matrix(test1), nam= "logROR", col = col_fun, clustering_distance_rows= "euclidean", clustering_distance_columns=  "euclidean", clustering_method_rows = "ward.D2" ,       clustering_method_columns="ward.D2", na_col = "white", rect_gp = gpar(col = "black", lwd = 2), heatmap_legend_param = list(legend_direction = "horizontal", title_gp = gpar(fontsize = 15 , fontface = "bold"),  column_names_gp =gpar(fontsize = 15 , fontface = "bold"),  column_names_gp =gpar(fontsize = 15 , fontface = "bold"), labels_gp = gpar(fontsize = 12, fontface = "bold")))
-
+png("~/results/FARES_plots/log_ROR_top50_drug_ae_heatmap.png",width=15,height=10,units="in",res=1400)
+heatmap <- Heatmap(as.matrix(test1), nam= "logROR", col = col_fun, clustering_distance_rows= "euclidean",
+                   clustering_distance_columns=  "euclidean", clustering_method_rows = "ward.D2",
+                   clustering_method_columns="ward.D2", na_col = "white", rect_gp = gpar(col = "black", lwd = 2),
+                   heatmap_legend_param = list(legend_direction = "horizontal",
+                                               title_gp = gpar(fontsize = 15 , fontface = "bold"),
+                                               column_names_gp =gpar(fontsize = 15 , fontface = "bold"),
+                                               column_names_gp =gpar(fontsize = 15 , fontface = "bold"),
+                                               labels_gp = gpar(fontsize = 12, fontface = "bold")))
 
 draw(heatmap, heatmap_legend_side = "bottom")
+dev.off()
 ```
-
+add  soc class
 ```{r}
 drug_counts <- as.data.frame(table(drug_ae_res_info_sig[,21]))
 ```
@@ -299,8 +308,6 @@ test2<- test[rownames(test) %in% top_ae2,]
 test2<- test2[,colnames(test2) %in% top_drugs2]
 ```
 
-add drug info and soc class
-
 ```{r}
 top_adj_mapping <- adj_MedDRA_mapping[adj_MedDRA_mapping$pt_name %in% top_ae2,]
 top_adj_mapping<- top_adj_mapping[order(factor(top_adj_mapping$pt_name, levels=rownames(test2))),]
@@ -315,10 +322,18 @@ row_ha <-  rowAnnotation("System Organ Class" = top_adj_mapping$soc_name, col= l
 
 
 ```{r}
-Heatmap(as.matrix(test2), nam= "logROR", col = col_fun, right_annotation = row_ha, clustering_distance_rows= "euclidean", clustering_distance_columns=  "euclidean", clustering_method_rows = "ward.D2" ,
-          clustering_method_columns="ward.D2", na_col = "white", rect_gp = gpar(col = "black", lwd = 2), heatmap_legend_param = list( title_gp = gpar(fontsize = 15 , fontface = "bold"),  column_names_gp =gpar(fontsize = 18 , fontface = "bold"),  column_names_gp =gpar(fontsize = 18 , fontface = "bold"), labels_gp = gpar(fontsize = 12, fontface = "bold")))
+png("~/results/FARES_plots/log_ROR_top50_drug_ae_soc_heatmap.png",width=15,height=10,units="in",res=1400)
+Heatmap(as.matrix(test2), nam= "logROR", col = col_fun, right_annotation = row_ha, clustering_distance_rows= "euclidean", 
+        clustering_distance_columns=  "euclidean", clustering_method_rows = "ward.D2",
+        clustering_method_columns="ward.D2", na_col = "white", rect_gp = gpar(col = "black", lwd = 2),
+        heatmap_legend_param = list( title_gp = gpar(fontsize = 15 , fontface = "bold"),
+                                     column_names_gp =gpar(fontsize = 18 , fontface = "bold"),
+                                     column_names_gp =gpar(fontsize = 18 , fontface = "bold"),
+                                     labels_gp = gpar(fontsize = 12, fontface = "bold")))
+dev.off()
 ```
 
+Look at all the sex-bias drug-adverse events to determine common drugs and adverse events in pairs for each sex
 ```{r}
 drug_ae_res_info_sig_f<- drug_ae_res_info_sig[drug_ae_res_info_sig$color == "female",]
 drug_ae_res_info_sig_m<- drug_ae_res_info_sig[drug_ae_res_info_sig$color == "male",]
@@ -336,16 +351,24 @@ female_event_counts <- as.data.frame(table(drug_ae_res_info_sig_f$pt_term))
 ```{r}
 female_drug_counts_top <- female_drug_counts[order(-female_drug_counts$Freq )[1:30],]
 female_drug_counts_top$Var1 <- factor(female_drug_counts_top$Var1, levels= female_drug_counts_top$Var1)
-ggplot(female_drug_counts_top, aes(y= Var1, x= Freq, label=Freq)) + geom_bar(stat="identity", fill = "#440154FF", color= "black", alpha=0.7)+ 
-    geom_text(size = 10, position = position_stack(vjust = 0.9)) + xlab("Number of female-bias adverse event occuring with drug") + ylab("Drug")+theme(text = element_text(size = 30,  face="bold"))
+ggplot(female_drug_counts_top, aes(y= Var1, x= Freq, label=Freq)) +
+  geom_bar(stat="identity", fill = "#440154FF", color= "black", alpha=0.7)+ 
+  geom_text(size = 10, position = position_stack(vjust = 0.9)) +
+  xlab("Number of female-bias adverse event occuring with drug") +
+  ylab("Drug") + theme(text = element_text(size = 30,  face="bold"))
+ggsave("~/results/FARES_plots/top_30_female_drug.png", height= 10, width=20)
 ```
 
 
 ```{r}
 female_event_counts_top <- female_event_counts[order(-female_event_counts$Freq )[1:30],]
 female_event_counts_top$Var1 <- factor(female_event_counts_top$Var1, levels= female_event_counts_top$Var1)
-ggplot(female_event_counts_top, aes(y= Var1, x= Freq, label=Freq)) + geom_bar(stat="identity", fill = "#440154FF", color= "black", alpha=0.7)+ 
-    geom_text(size = 10, position = position_stack(vjust = 0.9)) + xlab("Number of drug with adverse event") + ylab("Adverse event")+theme(text = element_text(size = 30,  face="bold"))
+ggplot(female_event_counts_top, aes(y= Var1, x= Freq, label=Freq)) +
+  geom_bar(stat="identity", fill = "#440154FF", color= "black", alpha=0.7)+ 
+  geom_text(size = 10, position = position_stack(vjust = 0.9)) +
+  xlab("Number of drug with adverse event") +
+  ylab("Adverse event") + theme(text = element_text(size = 30,  face="bold"))
+ggsave("~/results/FARES_plots/top_30_female_aes.png", height= 10, width=20)
 ```
 
 ```{r}
@@ -359,16 +382,24 @@ male_event_counts <- as.data.frame(table(drug_ae_res_info_sig_m$pt_term))
 ```{r}
 male_drug_counts_top <- male_drug_counts[order(-male_drug_counts$Freq )[1:30],]
 male_drug_counts_top$Var1 <- factor(male_drug_counts_top$Var1, levels= male_drug_counts_top$Var1)
-ggplot(male_drug_counts_top, aes(y= Var1, x= Freq, label=Freq)) + geom_bar(stat="identity", fill =  "#21908CFF", color= "black", alpha=0.7)+ 
-    geom_text(size = 10, position = position_stack(vjust = 0.9)) + xlab("Number of male-bias adverse event occuring with drug") + ylab("Drug")+theme(text = element_text(size = 30,  face="bold"))
+ggplot(male_drug_counts_top, aes(y= Var1, x= Freq, label=Freq)) +
+  geom_bar(stat="identity", fill =  "#21908CFF", color= "black", alpha=0.7) + 
+  geom_text(size = 10, position = position_stack(vjust = 0.9)) +
+  xlab("Number of male-bias adverse event occuring with drug") +
+  ylab("Drug") + theme(text = element_text(size = 30,  face="bold"))
+ggsave("~/results/FARES_plots/top_30_male_drug.png", height= 10, width=20)
 ```
 
 
 ```{r}
 male_event_counts_top <- male_event_counts[order(-male_event_counts$Freq )[1:30],]
 male_event_counts_top$Var1 <- factor(male_event_counts_top$Var1, levels= male_event_counts_top$Var1)
-ggplot(male_event_counts_top, aes(y= Var1, x= Freq, label=Freq)) + geom_bar(stat="identity", fill =  "#21908CFF", color= "black", alpha=0.7)+ 
-    geom_text(size = 10, position = position_stack(vjust = 0.9)) + xlab("Number of drug with adverse event") + ylab("Adverse event")+theme(text = element_text(size = 30,  face="bold"))
+ggplot(male_event_counts_top, aes(y= Var1, x= Freq, label=Freq)) +
+  geom_bar(stat="identity", fill =  "#21908CFF", color= "black", alpha=0.7) +
+  geom_text(size = 10, position = position_stack(vjust = 0.9)) +
+  xlab("Number of drug with adverse event") +
+  ylab("Adverse event") + theme(text = element_text(size = 30,  face="bold"))
+ggsave("~/results/FARES_plots/top_30_male_aes.png", height= 10, width=20)
 ```
 
 
@@ -380,7 +411,7 @@ Venn diagram of the overlap of drug and adverse events betweeen the sexes
   venn.diagram(
     x = list(unique(as.character(male_drug_counts$Var1)), unique(as.character(female_drug_counts$Var1))),
     category.names = c("Male\nSex-bias Drugs" , "Female\nSex-bias Drugs"),
-    filename = '~/output/FARES_plots/Sex_bias_drugs_venn_diagram.png',
+    filename = '~/results/FARES_plots/Sex_bias_drugs_venn_diagram.png',
     output=TRUE,
     
     # Output features
@@ -415,7 +446,7 @@ myCol <- c("#21908CFF" ,"#440154FF" )
   venn.diagram(
     x = list(unique(as.character(male_event_counts$Var1)), unique(as.character(female_event_counts$Var1))),
     category.names = c("Male Sex-bias\nAdverse Event" , "Female Sex-bias\nAdverse Event"),
-    filename = '~/output/FARES_plots/Sex_bias_ae_venn_diagram.png',
+    filename = '~/results/FARES_plots/Sex_bias_ae_venn_diagram.png',
     output=TRUE,
     
     # Output features
@@ -444,5 +475,40 @@ myCol <- c("#21908CFF" ,"#440154FF" )
 	cat.dist = c(0.1, 0.1)
   )
 ```
+
+testing the overlap for drugs via hypergeometric test
+```{r}
+#Some example values
+n_A <- length(unique(as.character(male_drug_counts$Var1)))
+n_B <- length(unique(as.character(female_event_counts$Var1)))
+n_C <- length(unique(drug_ae_res_info$drug))
+n_A_B <- 208
+1-phyper(n_A_B, n_B, n_C-n_B, n_A)
+```
+
+
+testing the overlap for adverse events via hypergeometric test
+```{r}
+#Some example values
+n_A <- length(unique(as.character(male_event_counts$Var1)))
+n_B <- length(unique(as.character(female_event_counts$Var1)))
+n_C <- length(unique(drug_ae_res_info$adverse_event))
+n_A_B <- 77
+1-phyper(n_A_B, n_B, n_C-n_B, n_A)
+```
+
+# END
+    Location of final scripts:
+    src
+    Location of data produced:
+    ~/results/FARES_plots
+    Dates when operations were done:
+    230206
+    
+## Versions
+```{r}
+sessionInfo()
+```
+
 
 

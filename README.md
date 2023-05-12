@@ -71,7 +71,7 @@ This conda enviorment only applies the following scripts: 230213_fares_fisher_te
 Before running this script you need to create conda enviroment.
 ````
 module load Anaconda3/5.3.1
-conda create -n SR_TAU_CELL -f <path/to/SR_TAU_CELL_environment.yml>
+conda env create -n SR_TAU_CELL -f <path/to/SR_TAU_CELL_environment.yml>
 ````
 
 Correct the path your conda environment R libraries in the 230213_fares_fisher_test.R script.
@@ -117,7 +117,8 @@ Note for all .Rmd files there is a knitted .html file with outputs of code. Some
 - 230130_alpaca_sex_tissues.Rmd
    - 12 hour-short job on cheaha. important script. Update Jen on any issues with script. 
 - 230206_alpaca_results_exploration.Rmd
-- 230221_liver_sex_specific_com.Rmd
+- 230221_liver_sex_specific_targeting.Rmd
+- 230417_liver_drug_edges.Rmd
 
 **FARES scripts**
 - 220722_Meddra_mapping.Rmd
@@ -135,6 +136,7 @@ The following 230213_fares_fisher_test scripts use the conda enviroment. 1 day r
 - 230308_drugbank_info.Rmd
 - 230313_sbae_drug_target.Rmd
 - 230323_sbae_heatmaps.Rmd
+- 230426_more_drug_metabolism_testing.Rmd
 
 ## Function Scripts
 - sex_bias_drug_functions.R

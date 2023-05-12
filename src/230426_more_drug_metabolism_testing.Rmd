@@ -1,0 +1,277 @@
+---
+title: "230426_more_drug_metabolism_testing"
+author: "Jennifer Fisher"
+date: "2023-03-13"
+output:
+  html_document:
+    toc: true
+    theme: united
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# START 
+    Goal/Purpose of operations: 
+    I am going to be looking at the enriched drug targets from the SBAE drugs and looking at gene expression and core genes of sex-specific communities. 
+    
+    Finished psedocode on:
+    230308
+    
+    System which operations were done on: 
+    my laptop
+    
+    GitHub Repo:
+    230321_JLF_Sex_bias_adverse_events
+    
+    Docker: 
+    jenfisher7/rstudio_sex_bias_drugs
+    
+    Directory of operations:
+    ~/Documents/230321_JLF_Sex_bias_adverse_events
+    
+    Scripts being edited for operations:
+    NA
+    
+    Data being used:
+    output/alpaca/alpaca_runs
+    
+    Papers and tools: 
+    "~/results/FARES_plots/drug_info_sbae_drugs.rds"
+    "~/results/FARES_plots/drug_info_all.rds"
+    "~/results/FARES_plots/sbae_targets_df_top.rds"
+
+# STEPS
+
+### Set working directory 
+```{r}
+source("~/src/sex_bias_drug_functions.R")
+library(ggplot2)
+library(circlize)
+library(ComplexHeatmap)
+library(drugbankR)
+library(DBI)
+library(hash)
+library(org.Hs.eg.db)
+library(EnsDb.Hsapiens.v75)
+library(ggpubr)
+library(stringr)
+```
+
+
+```{r}
+drug_info_sbae_drugs <- readRDS("~/results/FARES_plots/drug_info_sbae_drugs.rds")
+drug_info_all <- readRDS("~/results/FARES_plots/drug_info_all.rds")
+sbae_targets_df_top <- readRDS("~/results/FARES_plots/sbae_targets_df_top.rds")
+```
+
+```{r}
+sex_bias_genes_gtex_science_paper <- read.table("~/data/GTEx_Analysis_v8_sbgenes/signif.sbgenes.txt", header=TRUE)
+```
+
+```{r}
+Liver_F_panda <- readRDS("~/results/alpaca/sex_specific_networks/Liver_F_panda.rds")
+```
+
+## Analysis
+
+```{r}
+#for each tissue find the male and female biased genes
+tissues<- unique(sex_bias_genes_gtex_science_paper$tissue)
+male_tissues_names <- paste("M", tissues, sep="_")
+female_tissues_names<- paste("F", tissues, sep="_")
+for (i in 1:length(tissues)){
+  assign(male_tissues_names[i], sex_bias_genes_gtex_science_paper[sex_bias_genes_gtex_science_paper$tissue ==tissues[i] & sex_bias_genes_gtex_science_paper$effsize < 0,])
+  assign(female_tissues_names[i], sex_bias_genes_gtex_science_paper[sex_bias_genes_gtex_science_paper$tissue ==tissues[i] & sex_bias_genes_gtex_science_paper$effsize > 0,])
+}
+```
+
+```{r}
+both_sex_tissue_names<- c(male_tissues_names, female_tissues_names)
+
+geneset<- data.frame(id =both_sex_tissue_names, name= both_sex_tissue_names, genes= I(rep(list(c("a","b")), 88)))
+sex_genes <- both_sex_tissue_names
+for (i in 1:length(both_sex_tissue_names)){
+  data <- get(both_sex_tissue_names[i])
+  trim_names<- strtrim(data[,1],15)
+  assign( sex_genes[i], trim_names)
+  
+}
+
+sex_gene_set <- list(M_Adipose_Subcutaneous= M_Adipose_Subcutaneous, M_Adipose_Visceral_Omentum= M_Adipose_Visceral_Omentum)
+```
+
+```{r}
+for (j in 1:88){
+  sex_gene_set[[j]]<- get(sex_genes[j])
+}
+names(sex_gene_set) <- sex_genes
+```
+
+
+look at core genes 
+
+```{r}
+files <- list.files(path = "~/results/alpaca/alpaca_core_gene_lists")
+```
+
+remove the underscores
+```{r}
+tissues <- str_split(files, "_female", simplify = TRUE)[, 1]
+tissues <- str_split(tissues, "_male", simplify = TRUE)[, 1]
+tissues <- unique(tissues)
+```
+
+male core genes
+```{r}
+core_gene_list <- list()
+for( i in 1:length(tissues)){
+  print(tissues[i])
+  male_core_genes <- readRDS(paste("~/results/alpaca/alpaca_core_gene_lists/", tissues[i],"_male_core_genes.rds", sep=""))
+  core_gene_list[[i]] <- unique(male_core_genes$symbol)
+}
+```
+
+```{r}
+female_core_gene_list <- list()
+for( i in 1:length(tissues)){
+  print(tissues[i])
+  female_core_genes <- readRDS(paste("~/results/alpaca/alpaca_core_gene_lists/", tissues[i],"_female_core_genes.rds", sep=""))
+  female_core_gene_list[[i]] <- unique(female_core_genes$symbol)
+}
+```
+
+```{r}
+names(female_core_gene_list)<- tissues
+names(core_gene_list)<- tissues
+```
+
+
+
+check the drug genes
+```{r}
+drug_genes <- c("ADH1A"	,"ADH1B", "ADH1C", "ADH4",	"ADH5",	"ADH6",	"ADH7",	
+                "ALDH1A3",	"ALDH3A1",	"ALDH3B1", "ALDH3B2", "AOX1", "CYP1A2",
+                "CYP2A13", "CYP2A6", "CYP2A7",	"CYP2B6",	"CYP2C18",	"CYP2C19",
+                "CYP2C8",	"CYP2C9",	"CYP2D6",	"CYP2E1",	"CYP3A4",	"CYP3A43",	"CYP3A5",
+                "CYP3A7",	"FMO1",	"FMO2",	"FMO3", "FMO4",	"FMO5",  "GSTA1", "GSTA2", 	"GSTA3",	"GSTA4",
+                "GSTA5",	"GSTK1",	"GSTM1",	"GSTM2",	"GSTM3",	"GSTM4",	"GSTM5",	"GSTO1",
+                "GSTO2",	"GSTP1",	"GSTT1",	"GSTT2",	"GSTZ1",	"MAOA",	"MAOB",	"MGST1",
+                "MGST2",	"MGST3",	"UGT1A1",	"UGT1A10",	"UGT1A3",	"UGT1A4",
+                "UGT1A5",	"UGT1A6",	"UGT1A7",	"UGT1A8", "UGT1A9",	"UGT2A1",	"UGT2A3", "UGT2B10",
+                "UGT2B11",	"UGT2B15",	"UGT2B17",	"UGT2B28",	"UGT2B4",	"UGT2B7")
+```
+
+
+
+```{r}
+drug_genes_v2 <- gprofiler2::gconvert(drug_genes, mthreshold= 1)
+```
+
+```{r}
+table(drug_genes_v2$target %in% sex_gene_set$F_Liver)
+```
+
+```{r}
+table(drug_genes_v2$target %in% sex_gene_set$M_Liver)
+```
+
+```{r}
+drug_genes_v2$name[drug_genes_v2$target %in% sex_gene_set$F_Liver]
+```
+
+```{r}
+drug_genes_v2$name[drug_genes_v2$target %in% sex_gene_set$M_Liver]
+```
+
+Permutation testing
+of sex bias genes of drug metabolism genes
+
+```{r}
+Liver_gtex_qsmooth_expression <- readRDS("~/data/gtex_qsmooth/Liver_gtex_qsmooth_expression.rds")
+liver_qsmooth_genes <- rownames(Liver_gtex_qsmooth_expression)
+liver_qsmooth_genes <- strtrim( liver_qsmooth_genes, 15)
+```
+
+
+```{r}
+drug_enz_gene_test1 <- drug_enz_gene_test(count = 8, select = 71, all_drug_targets_list = liver_qsmooth_genes,
+                        core_list = c(sex_gene_set$F_Liver, sex_gene_set$M_Liver), seed = 101)
+drug_enz_gene_test1 
+```
+
+```{r}
+drug_enz_gene_test2 <- drug_enz_gene_test(count = 3, select = 71, all_drug_targets_list = liver_qsmooth_genes,
+                        core_list = sex_gene_set$F_Liver, seed = 101)
+drug_enz_gene_test2 
+```
+
+```{r}
+drug_enz_gene_test3 <- drug_enz_gene_test(count = 5, select = 71, all_drug_targets_list = liver_qsmooth_genes,
+                        core_list = sex_gene_set$M_Liver, seed = 101)
+drug_enz_gene_test3
+```
+```{r}
+ggarrange(drug_enz_gene_test1[[2]], drug_enz_gene_test2[[2]], drug_enz_gene_test3[[2]], nrow=2, ncol= 2)
+ggsave("~/results/FARES_plots_drug_enzymes_expression_histograms.png", height=15, width = 10)
+```
+
+
+
+
+Permutation testing
+Both male and female -core genes 
+```{r}
+network_genes <- gprofiler2::gconvert(colnames(Liver_F_panda@regNet), mthreshold= 1)
+```
+
+
+```{r}
+drug_genes_v2$name[drug_genes_v2$name %in% core_gene_list$Liver]
+```
+
+```{r}
+drug_genes_v2$name[drug_genes_v2$name %in% female_core_gene_list$Liver]
+```
+
+```{r}
+#function defaults for this test 
+drug_enz_gene_test4 <- drug_enz_gene_test(select= 64)
+drug_enz_gene_test4
+```
+male core genes 
+```{r}
+drug_enz_gene_test5 <- drug_enz_gene_test(count = 4, select = 64, all_drug_targets_list = colnames(Liver_F_panda@regNet),
+                        core_list = core_gene_list$Liver, seed = 101)
+drug_enz_gene_test5
+```
+female core genes
+```{r}
+drug_enz_gene_test6 <- drug_enz_gene_test(count = 0, select = 64, all_drug_targets_list = colnames(Liver_F_panda@regNet), 
+                        core_list = female_core_gene_list$Liver, seed = 101)
+drug_enz_gene_test6
+```
+
+```{r}
+ggarrange(drug_enz_gene_test4[[2]], drug_enz_gene_test5[[2]], drug_enz_gene_test6[[2]], nrow =2, ncol = 2)
+ggsave("~/results/FARES_plots_drug_enzymes_core_histograms.png", height=15, width = 10)
+```
+
+
+# END
+    Location of final scripts:
+    src
+    Location of data produced:
+    ~/results/FARES_plots
+    Dates when operations were done:
+    230418
+    
+## Versions
+```{r}
+sessionInfo()
+```
+
+
+

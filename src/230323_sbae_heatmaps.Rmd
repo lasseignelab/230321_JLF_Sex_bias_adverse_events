@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # START 
     Goal/Purpose of operations: 
-    I am going to be looking at the enriched drug targets from the SBAE drugs and looking at gene expression and core genes of sex-specific communitites. 
+    I am going to be looking at the enriched drug targets from the SBAE drugs and looking at gene expression and core genes of sex-specific communities. 
     
     Finished psedocode on:
     230308
@@ -24,16 +24,23 @@ knitr::opts_chunk$set(echo = TRUE)
     my laptop
     
     GitHub Repo:
-    Sex_Bias_Adverse_Events
+    230321_JLF_Sex_bias_adverse_events
+    
+    Docker: 
+    jenfisher7/rstudio_sex_bias_drugs
     
     Directory of operations:
-    ~/Documents/Sex_Bias_Adverse_Events
+    ~/Documents/230321_JLF_Sex_bias_adverse_events
     
     Scripts being edited for operations:
     NA
     
     Data being used:
-    output/alpaca/alpaca_runs
+    ~/results/FARES_plots/sbae_targets_df_top.rds- the 84 SBAE drug targets
+    ~/data/GTEx_Analysis_v8_sbgenes/signif.sbgenes.txt- sex-bias gene expression list from the following GTEx study: https://www.science.org/doi/10.1126/science.aba3066#:~:text=The%20role%20of%20sex%20in%20the%20human%20transcriptome,-In%20humans%2C%20the&text=examined%20Genotype%2DTissue%20Expression%20(GTEx,in%20cellular%20composition%20across%20tissues.
+    ~/results/FARES_plots/drug_ae_res_info.rds- FAERS fishers results with MEDDRA mapping
+    ~/results/FARES_plots/drug_info_sbae_drugs.rds- drug information for SBAE drugs 
+    ~/results/alpaca/alpaca_core_gene_lists - alpaca core gene list for every sex-sepecific tissue communitiy
     
     Papers and tools: 
     NA
@@ -42,6 +49,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Set working directory 
 ```{r}
+source("~/src/sex_bias_drug_functions.R")
 library(ggplot2)
 library(circlize)
 library(ComplexHeatmap)
@@ -51,6 +59,7 @@ library(hash)
 library(org.Hs.eg.db)
 library(EnsDb.Hsapiens.v75)
 library(stringr)
+library(ggpubr)
 ```
 
 ```{r}
@@ -63,7 +72,6 @@ sex_bias_genes_gtex_science_paper <- read.table("~/data/GTEx_Analysis_v8_sbgenes
 
 
 ## Analysis
-
 
 ```{r}
 #for each tissue find the male and female biased genes
@@ -94,9 +102,8 @@ sex_gene_set <- list(M_Adipose_Subcutaneous= M_Adipose_Subcutaneous, M_Adipose_V
 ```{r}
 for (j in 1:88){
   sex_gene_set[[j]]<- get(sex_genes[j])
-  #names(sex_gene_set[j])<- sex_genes[j]
 }
-names(sex_gene_set)<-sex_genes
+names(sex_gene_set) <- sex_genes
 ```
 
 ```{r}
@@ -104,7 +111,7 @@ SBAE_drug_targets_v2 <- gprofiler2::gconvert(sbae_targets_df_top$sbae_targets)
 ```
 
 ```{r}
-SBAE_drug_targets_v2 <- SBAE_drug_targets_v2[SBAE_drug_targets_v2$input == SBAE_drug_targets_v2$name,]
+SBAE_drug_targets_v2 <- SBAE_drug_targets_v2[SBAE_drug_targets_v2$input == SBAE_drug_targets_v2$name, ]
 ```
 
 ```{r}
@@ -112,34 +119,32 @@ male_gene_set <- sex_gene_set[1:44]
 female_gene_set <- sex_gene_set[45:88]
 ```
 
-
+Plot a heatmap of the sex-bias expression of the SBAE targets
 ```{r}
 sbae_target_exp <- matrix(nrow=84, ncol=44)
 for ( i in 1:84){
   m_exp <- as.numeric(grepl(SBAE_drug_targets_v2$target[i], male_gene_set))
   f_exp <- as.numeric(grepl(SBAE_drug_targets_v2$target[i], female_gene_set))
-  sbae_target_exp[i,] <- f_exp- m_exp
+  sbae_target_exp[i,] <- f_exp - m_exp
 }
 ```
 
 ```{r}
-sbae_target_exp<- as.data.frame(sbae_target_exp)
+sbae_target_exp <- as.data.frame(sbae_target_exp)
 ```
 
 ```{r}
 rownames(sbae_target_exp) <- SBAE_drug_targets_v2$name
-colnames(sbae_target_exp)<- tissues
+colnames(sbae_target_exp) <- tissues
 ```
 
-
+remove SBAEs with no sex-bias expression
 ```{r}
-sbae_target_exp_top <- sbae_target_exp[rowSums(sbae_target_exp==0, na.rm=TRUE)<ncol(sbae_target_exp), ]
+sbae_target_exp_top <- sbae_target_exp[rowSums(sbae_target_exp==0, na.rm=TRUE) < ncol(sbae_target_exp), ]
 ```
 
-
+plot the heatmap
 ```{r}
-
-#colors2 <- structure(1:4, names = c("-1", "0", "1", "2")) # black, red, green, blue
 colors<- 1:4
 names(colors)<- c("-1", "0", "1")
 colors[1]<- "#21908CFF"
@@ -147,7 +152,13 @@ colors[2]<- "white"
 colors[3]<- "#440154FF"
 
 png("~/results/FARES_plots/drug_target_sex_bias_expression_heatmap.png",width=15,height=10,units="in",res=1400)
-Heatmap(t(sbae_target_exp_top), name = "Sex-bias Gene Expression", col = colors, heatmap_legend_param = list(at = c("-1", "0", "1"),labels= c("male", "not sex-bias", "female"), column_names_gp =gpar(fontsize = 18 , fontface = "bold"), labels_gp = gpar(fontsize = 12, fontface = "bold") ))
+Heatmap(t(sbae_target_exp_top), name = "Sex-bias Gene Expression", 
+        col = colors, 
+        column_names_gp =gpar(fontsize = 11 , fontface = "bold"),
+        row_names_gp =gpar(fontsize = 11 , fontface = "bold"),
+        heatmap_legend_param = list(at = c("-1", "0", "1"),
+                                                  labels = c("male", "not sex-bias", "female"), 
+                                                  labels_gp = gpar(fontsize = 12, fontface = "bold")))
 dev.off()
 ```
 
@@ -158,14 +169,14 @@ look at core genes
 files <- list.files(path = "~/results/alpaca/alpaca_core_gene_lists")
 ```
 
-
+remove the underscores
 ```{r}
-tissues<- str_split(files, "_female", simplify = TRUE)[,1]
-tissues<- str_split(tissues, "_male", simplify = TRUE)[,1]
-tissues<- unique(tissues)
+tissues <- str_split(files, "_female", simplify = TRUE)[, 1]
+tissues <- str_split(tissues, "_male", simplify = TRUE)[, 1]
+tissues <- unique(tissues)
 ```
 
-
+Plot the drug targets with sex-bias core genes
 ```{r}
 SBAE_drug_targets<- SBAE_drug_targets_v2$name
 ```
@@ -194,8 +205,6 @@ names(female_core_gene_list)<- tissues
 names(core_gene_list)<- tissues
 ```
 
-
-
 ```{r}
 sbae_target_core <- matrix(nrow=84, ncol=43)
 for ( i in 1:84){
@@ -217,18 +226,16 @@ for ( i in 1:84){
 
 ```{r}
 rownames(sbae_target_core) <- SBAE_drug_targets_v2$name
-colnames(sbae_target_core)<- tissues
+colnames(sbae_target_core) <- tissues
 ```
 
 
 ```{r}
-sbae_target_core_top <- sbae_target_core[rowSums(sbae_target_core == 0, na.rm=TRUE)<ncol(sbae_target_core), ]
+sbae_target_core_top <- sbae_target_core[rowSums(sbae_target_core == 0, na.rm=TRUE) < ncol(sbae_target_core), ]
 ```
 
 
 ```{r}
-
-#colors2 <- structure(1:4, names = c("-1", "0", "1", "2")) # black, red, green, blue
 colors<- 1:4
 names(colors)<- c("-1", "0","1e-15", "1")
 colors[1] <- "#21908CFF"
@@ -237,12 +244,30 @@ colors[3] <- "gray"
 colors[4] <- "#440154FF"
 
 png("~/results/FARES_plots/drug_target_sex_bias_core_genes_heatmap.png",width=15,height=10,units="in",res=1400)
-Heatmap(t(sbae_target_core_top), name = "Sex-bias Core Gene", col = colors, heatmap_legend_param = list(at = c("-1", "0","1e-15", "1"),labels= c("male", "not sex-bias","both", "female"), column_names_gp =gpar(fontsize = 18 , fontface = "bold"), labels_gp = gpar(fontsize = 12, fontface = "bold") ))
+
+core_heatmap <- Heatmap(t(sbae_target_core_top), name = "Sex-bias Core Gene", col = colors,
+                        column_names_gp =gpar(fontsize = 11 , fontface = "bold"),
+                        row_names_gp =gpar(fontsize = 10.9 , fontface = "bold"),
+                        heatmap_legend_param = list(at = c("-1", "0","1e-15", "1"),
+                                                    labels= c("male", "not sex-bias","both", "female"),
+                                                    labels_gp = gpar(fontsize = 12, fontface = "bold")))
+draw(core_heatmap)
+
 dev.off()
 ```
 
 
 
+Look at how many drug targets are core genes
+```{r}
+length(unique(rownames(sbae_target_core_top)))
+```
+
+```{r}
+58/84
+```
+
+which drug targets and expression genes are not shared or shared 
 ```{r}
 setdiff(rownames(sbae_target_core_top), rownames(sbae_target_exp_top))
 ```
@@ -251,17 +276,142 @@ setdiff(rownames(sbae_target_core_top), rownames(sbae_target_exp_top))
 setdiff(rownames(sbae_target_exp_top), rownames(sbae_target_core_top))
 ```
 
-
 ```{r}
 intersect(rownames(sbae_target_exp_top), rownames(sbae_target_core_top))
 ```
 
+how many are shared
 ```{r}
 unique(c(rownames(sbae_target_exp_top), rownames(sbae_target_core_top)))
 ```
 
 ```{r}
-68/84
+71/84
+```
+
+
+```{r}
+sex_bias_genes<- unique(c(rownames(sbae_target_exp_top), rownames(sbae_target_core_top)))
+```
+
+
+look at the drugs and adverse events
+```{r}
+drug_ae_res_info <- readRDS("~/results/FARES_plots/drug_ae_res_info.rds")
+```
+
+```{r}
+drug_info_sbae_drugs <- readRDS("~/results/FARES_plots/drug_info_sbae_drugs.rds")
+```
+
+```{r}
+dim(drug_info_sbae_drugs)
+```
+
+```{r}
+drug_info_sbae_drugs_targets <- drug_info_sbae_drugs[! is.na(drug_info_sbae_drugs$targets),]
+```
+
+how many SBAE with annotated drug targets have a sex-bias drug target
+```{r}
+length(grep(paste0(sex_bias_genes,collapse="|")  , drug_info_sbae_drugs_targets$targets ))
+```
+
+```{r}
+194/389
+```
+
+
+look at top targets
+```{r}
+drug_ae_res_info <- readRDS("~/results/FARES_plots/drug_ae_res_info.rds")
+```
+
+We investigated the top 3 male (i.e., ADRA1A, DRD1, ADRA2C) and top female (i.e., FCGR2B, AR, CACNA1S) bias genes based on the number of tissues with sex-bias expression
+```{r}
+top_drug_target_investigation("ADRA1A")
+```
+
+```{r}
+top_drug_target_investigation("DRD1")
+```
+
+```{r}
+top_drug_target_investigation("ADRA2C")
+```
+
+
+```{r}
+top_drug_target_investigation("FCGR2B")
+```
+
+```{r}
+top_drug_target_investigation("AR")
+```
+
+```{r}
+top_drug_target_investigation("CACNA1S")
+```
+
+We investigated the top  (i.e., PPARA, PPARG, PGR , AR, and NR3C1) sex-bias genes based on the number of tissues as it a core gene in a sex-specific community.
+
+```{r}
+top_drug_target_investigation("PPARA")
+```
+
+```{r}
+top_drug_target_investigation("PPARG")
+```
+
+```{r}
+top_drug_target_investigation("PGR")
+```
+
+```{r}
+top_drug_target_investigation("NR3C1")
+```
+
+Now look at the top Adverse events for reporting bias
+
+ When we investigated the most common sex-bias adverse events based on the number of significant drug-adverse event pairs, malignant neoplasm progression, acute kidney injury, and death were the top three male-bias adverse events, and alopecia, urinary tract infection, and drug hypersensitivity were the top female-bias adverse events
+ 
+```{r}
+SBAE_investigation("Malignant neoplasm progression")
+```
+ 
+```{r}
+SBAE_investigation("Acute kidney injury")
+```
+
+```{r}
+SBAE_investigation("Death")
+```
+
+ 
+```{r}
+SBAE_investigation("Alopecia")
+```
+
+```{r}
+SBAE_investigation("Urinary tract infection")
+```
+
+```{r}
+SBAE_investigation("Drug hypersensitivity")
+```
+
+
+# END
+    Location of final scripts:
+    src
+    Location of data produced:
+    ~/results/FARES_plots/
+    Dates when operations were done:
+    230418
+    
+## Versions
+```{r}
+sessionInfo()
 ```
 
 
