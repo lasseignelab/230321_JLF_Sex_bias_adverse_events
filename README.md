@@ -89,7 +89,7 @@ The following 230213_fares_fisher_test scripts use the conda enviroment with a 1
 This repository is licensed under the MIT License, see LICENSE
 documentation within this repository for more details.
 
-
+## Additional Information for Dockers and Conda Environments 
 **How to use the Docker on local mac:**
 
 Download the Docker image from Docker Hub (only done once)
