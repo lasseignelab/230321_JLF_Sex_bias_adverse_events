@@ -10,7 +10,7 @@ Department of Cell, Developmental and Integrative Biology, Heersink School of Me
 
 ## Dockers and Conda Environments
 
-In addition to the scripts here, the Docker images used for this analysis is publicly available on Docker Hub ([jenfisher7/rstudio_sex_bias_drugs)](https://hub.docker.com/r/jenfisher7/rstudio_sex_bias_drugs). For the network calculations, a conda environment was used (SR_TAU_CELL_environment.yml). At the bottom of this ReadMe are detailed insturctions on how to set up the dockers on local machines and conda enviroments on Cheaha, UAB's High Performance Computing system. This workflow assumes that you cloned the github for this project. 
+In addition to the scripts here, the Docker images used for this analysis is publicly available on Docker Hub ([jenfisher7/rstudio_sex_bias_drugs)](https://hub.docker.com/r/jenfisher7/rstudio_sex_bias_drugs). For the Fisher's extact calculations, a conda environment was used (SR_TAU_CELL_environment.yml). At the bottom of this ReadMe are detailed insturctions on how to set up the dockers on local machines and conda enviroments on Cheaha, UAB's High Performance Computing system. This workflow assumes that you cloned the github for this project. 
 
 ## Package versions and computing system information
 [Comprehensive computer and package version information for docker and conda](https://github.com/lasseignelab/230321_JLF_Sex_bias_adverse_events/blob/main/src/230512_computer_R_info.pdf)
