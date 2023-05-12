@@ -1,4 +1,4 @@
-# Sex Bias Adverse Events Project
+# Sex-biased gene expression and gene regulatory networks of sex-bias adverse event drug targets and drug metabolism genes
 
 Future Abstract
 
@@ -11,7 +11,84 @@ Department of Cell, Developmental and Integrative Biology, Heersink School of Me
 
 ## Dockers and Conda Environments
 
-In addition to the scripts here, the Docker images used for this analysis is publicly available on Docker Hub ([jenfisher7/rstudio_sex_bias_drugs](https://hub.docker.com/r/jenfisher7/rstudio_sex_bias_drugs). For the network calculations, a conda environment was used (SR_TAU_CELL_environment.yml). Below are insturctions on how to set up the dockers on local machines and Cheaha and conda enviroments on Cheaha. This workflow assumes that you cloned the github for this project. 
+In addition to the scripts here, the Docker images used for this analysis is publicly available on Docker Hub ([jenfisher7/rstudio_sex_bias_drugs)](https://hub.docker.com/r/jenfisher7/rstudio_sex_bias_drugs). For the network calculations, a conda environment was used (SR_TAU_CELL_environment.yml). At the bottom of this ReadMe are detailed insturctions on how to set up the dockers on local machines and conda enviroments on Cheaha, UAB's High Performance Computing system. This workflow assumes that you cloned the github for this project. 
+
+## Package versions and computing system information
+[Comprehensive computer and package version information for docker and conda](https://github.com/lasseignelab/230321_JLF_Sex_bias_adverse_events/blob/main/src/230512_computer_R_info.pdf)
+
+## Scripts
+
+Note for all .Rmd files there is a knitted .html file with outputs of code. Some of the code takes awhile to run (i.e., more than ~1 hour) so the ouput is not in the knit file. 
+
+**GTEx data download and exploration**
+- 210806_GTEx_Age_Sex.Rmd
+
+
+**Network analysis scripts**
+- 230103_network_qsmooth.Rmd
+  
+  - 12 hour-short job on Cheaha
+  
+- 230104_panda_network_inputs.Rmd
+
+  - 2 hour-express job on Cheaha
+  
+- 230105_panda_set_up.Rmd
+
+   - 12 hour-short job on Cheaha
+
+- 230109_sex_specific_tissue_networks.Rmd
+
+   - 48 hour-medium job on Cheaha (more time than you need)
+   
+- 230130_alpaca_sex_tissues.Rmd
+   - 12 hour-short job on Cheaha
+- 230206_alpaca_results_exploration.Rmd
+- 230221_liver_sex_specific_targeting.Rmd
+- 230417_liver_drug_edges.Rmd
+
+**FARES scripts**
+- 220722_Meddra_mapping.Rmd
+- 230124_fares_sbae_drugs.Rmd
+  - 2 hour express ; 3 cpu and 80GB per CPU on Cheaha.
+<br>
+The following 230213_fares_fisher_test scripts use the conda enviroment with a 1 day run on Cheaha. 
+
+- 230213_fares_fisher_test.txt
+- 230213_fares_fisher_test.sh
+- 230213_fares_fisher_test.R
+<br>
+
+- 230216_fisher_res_exploration.Rmd
+- 230308_drugbank_info.Rmd
+- 230313_sbae_drug_target.Rmd
+- 230323_sbae_heatmaps.Rmd
+- 230426_more_drug_metabolism_testing.Rmd
+
+## Function Scripts
+- sex_bias_drug_functions.R
+ - This a script with functions for the analysis scripts above. Most of the functions were written by Jennifer Fisher. However, some of the functions were developed by others. These functions have a comment with them about who wrote the function and if there were any changes to them for our specific study.
+
+
+## Lasseigne Lab
+
+[What is Happening in the Lasseigne Lab?](https://www.lasseigne.org/)
+
+<img src="https://www.lasseigne.org/img/main/lablogo.png" width="150" height="150">
+
+## Funding
+
+- JLF and BNL were supported by R03OD030604; JLF, EFJ, and BNL were supported by R00HG009678; ADC and BNL are supported by U54OD030167; JLF, EJF, and BNL are supported by UAB funds to the Lasseigne Lab. 
+
+
+## Acknowledgements
+
+ - We would like to thank the all the Lasseigne Lab for providing feedback during this project.
+
+## License
+
+This repository is licensed under the MIT License, see LICENSE
+documentation within this repository for more details.
 
 
 **How to use the Docker on local mac:**
@@ -80,107 +157,6 @@ Correct the path your conda environment R libraries in the 230213_fares_fisher_t
 .libPaths("/data/user/<YOU>/.conda/envs/SR_TAU_CELL/lib/R/library")
 ````
 To run the scripts, you use the commands in 230213_fares_fisher_test.txt in the src directory. This will run the .sh file which will use the R script. With the .sh script, please adjust lines 3, 14 to be your email and directories. In .R file, please adjust lines 2 and 8 to point to the right directores.
-These scripts run as an array job so you can run several jobs in parrallel. I suggest running this on the weekend when you don't need cheaha. It is about one day run time. 
+These scripts run as an array job so you can run several jobs in parrallel. It is about one day run time. 
 
-## Some saved output might be in the older verison of this project on Cheaha
-````
-/data/project/lasseigne_lab/JLF_scratch/Sex_Bias_Adverse_Events/
-````
-
-
-## Scripts
-
-Note for all .Rmd files there is a knitted .html file with outputs of code. Some of the code takes awhile to run (i.e., more than ~1 hour) so the ouput is not in the knit file. 
-
-**GTEx data download and exploration**
-- 210806_GTEx_Age_Sex.Rmd
-
- - This is important script. Update Jen on any issues with script. 
-
-**Network analysis scripts**
-- 230103_network_qsmooth.Rmd
-  
-  - 12 hour-short job on cheaha. important script. Update Jen on any issues with script. 
-  
-- 230104_panda_network_inputs.Rmd
-
-  - 2 hour-express job on cheaha. important script. Update Jen on any issues with script. 
-  
-- 230105_panda_set_up.Rmd
-
-   - 12 hour-short job on cheaha. important script. Update Jen on any issues with script. 
-
-- 230109_sex_specific_tissue_networks.Rmd
-
-   - 48 hour-medium job on cheaha (more time than you need). important script. Update Jen on any issues with script. 
- 
-- 230130_alpaca_sex_tissues.Rmd
-   - 12 hour-short job on cheaha. important script. Update Jen on any issues with script. 
-- 230206_alpaca_results_exploration.Rmd
-- 230221_liver_sex_specific_targeting.Rmd
-- 230417_liver_drug_edges.Rmd
-
-**FARES scripts**
-- 220722_Meddra_mapping.Rmd
-- 230124_fares_sbae_drugs.Rmd
-  - 2 hour express ; 3 cpu and 80GB per cpu in cheaha.
-<br>
-The following 230213_fares_fisher_test scripts use the conda enviroment. 1 day run on cheaha. Suggest running over the weekend. 
-
-- 230213_fares_fisher_test.txt
-- 230213_fares_fisher_test.sh
-- 230213_fares_fisher_test.R
-<br>
-
-- 230216_fisher_res_exploration.Rmd
-- 230308_drugbank_info.Rmd
-- 230313_sbae_drug_target.Rmd
-- 230323_sbae_heatmaps.Rmd
-- 230426_more_drug_metabolism_testing.Rmd
-
-## Function Scripts
-- sex_bias_drug_functions.R
-
-
-## Lasseigne Lab
-
-[What is Happening in the Lasseigne Lab?](https://www.lasseigne.org/)
-
-<img src="https://www.lasseigne.org/img/main/lablogo.png" width="150" height="150">
-
-## Funding
-
-List project funding sources.
-
-## Acknowledgements
-
- - We would like to thank the all the Lasseigne Lab for providing feedback during this project.
-
-## License
-
-This repository is licensed under the MIT License, see LICENSE
-documentation within this repository for more details.
-
-
-## Package versions and computing system information
-
-add in the future 
-
-**Old scripts**
-remove in the future but noting here for now
-- src/vignettes
-- src/210603_open_fda_download.sh
-- src/220519_FDA_open_drug.sh
-- src/220725_FDA_open_drug_long.sh
-- src/221031_transfer_sex_diff_test.Rmd
-- src/230105_lioness_function_script.R
-- src/230105_lioness_function_script.sh
-- src/230106_lioness_tissue_runs.txt
-- src/230112_lioness_function_script_smaller.R
-- src/230112_lioness_function_script_smaller.sh
-- src/230126_lioness_outputs_adjustment.Rmd
-- src/230126_lioness_outputs_adjustment.html
-- src/230130_differential_edges_testing.Rmd
-- src/sex_bias_functions.R
-- src/test_LV_differences.R
 
