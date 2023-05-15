@@ -1,21 +1,22 @@
 # Sex-biased gene expression and gene regulatory networks of sex-bias adverse event drug targets and drug metabolism genes
 
 ## Abstract
+
 Background:
 
-Previous pharmacovigilance studies and a retroactive review of cancer clinical trial studies have identified that women were more likely to experience drug adverse events (i.e., any unintended effects of medication), and men were more likely to experience adverse events that resulted in hospitalization or death. These sex-bias adverse events (i.e., SBAEs) are due to many factors not entirely understood, including hormones, tissue differences, pharmacokinetics/pharmacodynamics, and sex chromosome dosage effects.
+Previous pharmacovigilance studies and a retroactive review of cancer clinical trial studies have identified that women were more likely to experience drug adverse events (i.e., any unintended effects of medication), and men were more likely to experience adverse events that resulted in hospitalization or death. These sex-biased adverse events (i.e., SBAEs) are due to many factors not entirely understood, including hormones, tissue differences, pharmacokinetics/pharmacodynamics, and sex chromosome dosage effects.
 
 Methods:
- 
- Based on previous studies of sex-bias gene expression and gene-regulatory networks, we evaluated the role of sex- and tissue-specific gene expression and regulation in SBAEs. Therefore, we utilized sex- and tissue-specific gene expression, and constructed sex-specific tissue gene-regulatory networks with the Genotype-Tissue Expression Project  (GTEx) gene expression profiles. Then, we identified drugs associated with SBAEs and their targets and metabolism enzymes to determine if SBAE are associated with sex-bias gene expression or sex-specific gene-regulatory network properties and predicted regulatory relationships. 
+
+ Based on previous studies of sex-biased gene expression and gene-regulatory networks, we evaluated the role of sex- and tissue-specific gene expression and regulation in SBAEs. Therefore, we utilized sex- and tissue-specific gene expression, and constructed sex-specific tissue gene-regulatory networks with the Genotype-Tissue Expression Project (GTEx) gene expression profiles. Then, we identified drugs associated with SBAEs and their targets and metabolism enzymes to determine if SBAE are associated with sex-biased gene expression or sex-specific gene-regulatory network properties and predicted regulatory relationships. 
  
 Results: 
 
-We identified liver-specific gene-regulatory differences for drug metabolism genes between males and females, which could explain observed sex differences in pharmacokinetics and pharmacodynamics. In addition, we found that ~85% of SBAE drug targets had sex-bias gene expression or were core genes of sex- and tissue-specific network communities. This number of SBAE drug targets with sex-bias gene expression was significantly higher compared to randomly selected drug targets. Additionally, the number of SBAE drug targets  that were core genes of sex- and tissue-specific network communities was also significantly higher compared to randomly selected drug targets. Lastly, we provide our results of sex-bias drug-adverse event pairs, drug targets, and drug metabolism enzymes as a resource for the research community.  
+We identified liver-specific gene-regulatory differences for drug metabolism genes between males and females, which could explain observed sex differences in pharmacokinetics and pharmacodynamics. In addition, we found that ~85% of SBAE drug targets had sex-biased gene expression or were core genes of sex- and tissue-specific network communities. This number of SBAE drug targets with sex-biased gene expression was significantly higher compared to randomly selected drug targets. Additionally, the number of SBAE drug targets  that were core genes of sex- and tissue-specific network communities was also significantly higher compared to randomly selected drug targets. Lastly, we provide our results of sex-biased drug-adverse event pairs, drug targets, and drug metabolism enzymes as a resource for the research community.  
 
 Conclusions:
 
-Overall, we provide evidence that many  SBAEs are associated with drug targets and drug metabolism genes that are differentially expressed and regulated between males and females. These SBAE drug metabolism enzymes and drug targets could be used to help explain and potentially identify SBAEs. 
+Overall, we provide evidence that many SBAEs are associated with drug targets and drug metabolism genes that are differentially expressed and regulated between males and females. These SBAE drug metabolism enzymes and drug targets could be used to help explain and potentially identify SBAEs. 
 
 
 ## Authors
