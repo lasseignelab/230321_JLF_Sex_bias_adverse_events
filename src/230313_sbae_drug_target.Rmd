@@ -418,7 +418,7 @@ saveRDS(female_sex_expression_gene_df_top, "~/results/alpaca/drug_target/female_
 ggplot(female_sex_expression_gene_df_top, aes(y = tissue2, x = fraction , label = expression_count, fill = sig)) +
   geom_bar(stat = "identity",color = "black") + 
   geom_text(size = 5, position = position_stack(vjust = 0.8)) +
-  ylab("Tissue") + xlab("The fraction of SBAE drug targets that have\nfemale-bias expression") +
+  ylab("Tissue") + xlab("The fraction of SBAE drug targets that have\nfemale-biased expression") +
   theme(text = element_text(size = 18,  face = "bold")) +
   scale_fill_viridis_d(option = "E", alpha = 0.7) + labs(fill = "Significant?")
 ggsave("~/results/FARES_plots/230313_drug_target_female_bias_expression_barplot.png", height=15, width = 10)
@@ -446,7 +446,7 @@ saveRDS(male_sex_expression_gene_df_top, "~/results/alpaca/drug_target/male_sex_
 ggplot(male_sex_expression_gene_df_top, aes(y=tissue2, x= fraction , label= expression_count, fill=sig)) +
   geom_bar(stat="identity",color= "black") + 
   geom_text(size = 5, position = position_stack(vjust = 0.8)) +
-  ylab("Tissue") + xlab("The fraction of SBAE drug targets that have\nmale-bias expression") +
+  ylab("Tissue") + xlab("The fraction of SBAE drug targets that have\nmale-biased expression") +
   theme(text = element_text(size = 18,  face="bold")) + scale_fill_viridis_d(option = "E", alpha= 0.7) +
   labs(fill="Significant?")
 ggsave("~/results/FARES_plots/230313_drug_target_male_bias_expression_barplot.png", height=15, width = 10)

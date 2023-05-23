@@ -552,6 +552,7 @@ for ( i in 1:84){
 colnames(sbae_target_exp) &lt;- tissues</code></pre>
 <p>remove SBAEs with no sex-bias expression</p>
 <pre class="r"><code>sbae_target_exp_top &lt;- sbae_target_exp[rowSums(sbae_target_exp==0, na.rm=TRUE) &lt; ncol(sbae_target_exp), ]</code></pre>
+<pre class="r"><code>colnames(sbae_target_exp_top)&lt;- gsub(&quot;_&quot;, &quot; &quot;, colnames(sbae_target_exp_top), fixed = TRUE)</code></pre>
 <p>plot the heatmap</p>
 <pre class="r"><code>colors&lt;- 1:4
 names(colors)&lt;- c(&quot;-1&quot;, &quot;0&quot;, &quot;1&quot;)
@@ -560,7 +561,7 @@ colors[2]&lt;- &quot;white&quot;
 colors[3]&lt;- &quot;#440154FF&quot;
 
 png(&quot;~/results/FARES_plots/drug_target_sex_bias_expression_heatmap.png&quot;,width=15,height=10,units=&quot;in&quot;,res=1400)
-Heatmap(t(sbae_target_exp_top), name = &quot;Sex-bias Gene Expression&quot;, 
+Heatmap(t(sbae_target_exp_top), name = &quot;Sex-biased Gene Expression&quot;, 
         col = colors, 
         column_names_gp =gpar(fontsize = 11 , fontface = &quot;bold&quot;),
         row_names_gp =gpar(fontsize = 11 , fontface = &quot;bold&quot;),
@@ -698,6 +699,7 @@ for ( i in 1:84){
 <pre class="r"><code>rownames(sbae_target_core) &lt;- SBAE_drug_targets_v2$name
 colnames(sbae_target_core) &lt;- tissues</code></pre>
 <pre class="r"><code>sbae_target_core_top &lt;- sbae_target_core[rowSums(sbae_target_core == 0, na.rm=TRUE) &lt; ncol(sbae_target_core), ]</code></pre>
+<pre class="r"><code>colnames(sbae_target_core_top)&lt;- gsub(&quot;_&quot;, &quot; &quot;, colnames(sbae_target_core_top), fixed = TRUE)</code></pre>
 <pre class="r"><code>colors&lt;- 1:4
 names(colors)&lt;- c(&quot;-1&quot;, &quot;0&quot;,&quot;1e-15&quot;, &quot;1&quot;)
 colors[1] &lt;- &quot;#21908CFF&quot;
@@ -707,7 +709,7 @@ colors[4] &lt;- &quot;#440154FF&quot;
 
 png(&quot;~/results/FARES_plots/drug_target_sex_bias_core_genes_heatmap.png&quot;,width=15,height=10,units=&quot;in&quot;,res=1400)
 
-core_heatmap &lt;- Heatmap(t(sbae_target_core_top), name = &quot;Sex-bias Core Gene&quot;, col = colors,
+core_heatmap &lt;- Heatmap(t(sbae_target_core_top), name = &quot;Sex-biased Core Gene&quot;, col = colors,
                         column_names_gp =gpar(fontsize = 11 , fontface = &quot;bold&quot;),
                         row_names_gp =gpar(fontsize = 10.9 , fontface = &quot;bold&quot;),
                         heatmap_legend_param = list(at = c(&quot;-1&quot;, &quot;0&quot;,&quot;1e-15&quot;, &quot;1&quot;),

@@ -97,7 +97,7 @@ diff_all_genes_liver<- rbind(data.frame(gene_list =rep( "Drug\nMetabolism", leng
 conduct wilcox test to compare drug genes vs other genes
 ```{r}
 res <- wilcox.test(diff_drug_genes_liver , diff_other_genes_liver  )
-label_tissue <- paste("Wilcoxon signed\nrank test\np-value =\n",  res$p.value, sep = " ")
+label_tissue <- paste("Wilcoxon rank sum test\np-value =\n",  res$p.value, sep = " ")
 ```
 Plot the results
 ```{r}
@@ -149,6 +149,7 @@ sig_drug_gene_set$Tissue_2 <- ifelse(sig_drug_gene_set$neg_log_p > p_value_cut,s
 ```
 
 ```{r eval=FALSE}
+sig_drug_gene_set$Tissue <- gsub("_", " ", sig_drug_gene_set$Tissue, fixed = TRUE)
 sig_drug_gene_set$Tissue<- factor(sig_drug_gene_set$Tissue, levels= sig_drug_gene_set$Tissue[order(sig_drug_gene_set$neg_log_p)])
 ggplot(sig_drug_gene_set, aes(y=Tissue, x= neg_log_p, fill=`Degree Difference` ))+ geom_bar(stat="identity",  color= "black") + scale_fill_gradient2(low= "#21908CFF", mid= "white", high= "#440154FF") +theme(text = element_text(size = 20,  face="bold"))+ geom_vline(xintercept=p_value_cut, linetype="dashed", color = "black")+ xlab("-log(p-value)")
 ggsave("~/results/alpaca/drug_metabolism_genes/230301_differential_degree_drug_genes_wilcox_test.png", height=12, width=10)
