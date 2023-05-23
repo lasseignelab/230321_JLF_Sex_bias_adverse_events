@@ -167,7 +167,7 @@ ggplot(drug_ae_res_filter, aes(x=logROR, y= neg_log_p, fill= color )) + geom_poi
   xlab("log(ROR)") + ylab("-log(adj. p-value)") + geom_hline(yintercept=p_value_cut, linetype="dashed", color = "black") +
   scale_fill_manual(values = c("#440154FF", "#21908CFF" ,"darkgray")) +
   theme(text = element_text(size = 25,  face="bold")) +
-  guides(fill=guide_legend(title="Sex-bias\nDrug-Adverse Event"))
+  guides(fill=guide_legend(title="Sex-biased\nDrug-Adverse Event"))
 
 ggsave("~/results/FARES_plots/230220_fares_volcano_plot.png", width = 16, height= 10)
 ```
@@ -354,7 +354,7 @@ female_drug_counts_top$Var1 <- factor(female_drug_counts_top$Var1, levels= femal
 ggplot(female_drug_counts_top, aes(y= Var1, x= Freq, label=Freq)) +
   geom_bar(stat="identity", fill = "#440154FF", color= "black", alpha=0.7)+ 
   geom_text(size = 10, position = position_stack(vjust = 0.9)) +
-  xlab("Number of female-bias adverse event occuring with drug") +
+  xlab("Number of female-biased adverse event occuring with drug") +
   ylab("Drug") + theme(text = element_text(size = 30,  face="bold"))
 ggsave("~/results/FARES_plots/top_30_female_drug.png", height= 10, width=20)
 ```
@@ -385,7 +385,7 @@ male_drug_counts_top$Var1 <- factor(male_drug_counts_top$Var1, levels= male_drug
 ggplot(male_drug_counts_top, aes(y= Var1, x= Freq, label=Freq)) +
   geom_bar(stat="identity", fill =  "#21908CFF", color= "black", alpha=0.7) + 
   geom_text(size = 10, position = position_stack(vjust = 0.9)) +
-  xlab("Number of male-bias adverse event occuring with drug") +
+  xlab("Number of male-biased adverse event occuring with drug") +
   ylab("Drug") + theme(text = element_text(size = 30,  face="bold"))
 ggsave("~/results/FARES_plots/top_30_male_drug.png", height= 10, width=20)
 ```
@@ -410,7 +410,7 @@ Venn diagram of the overlap of drug and adverse events betweeen the sexes
  myCol <- c("#21908CFF" ,"#440154FF" )
   venn.diagram(
     x = list(unique(as.character(male_drug_counts$Var1)), unique(as.character(female_drug_counts$Var1))),
-    category.names = c("Male\nSex-bias Drugs" , "Female\nSex-bias Drugs"),
+    category.names = c("Male\nSex-biased Drugs" , "Female\nSex-biased Drugs"),
     filename = '~/results/FARES_plots/Sex_bias_drugs_venn_diagram.png',
     output=TRUE,
     
@@ -445,7 +445,7 @@ Venn diagram of the overlap of drug and adverse events betweeen the sexes
 myCol <- c("#21908CFF" ,"#440154FF" )
   venn.diagram(
     x = list(unique(as.character(male_event_counts$Var1)), unique(as.character(female_event_counts$Var1))),
-    category.names = c("Male Sex-bias\nAdverse Event" , "Female Sex-bias\nAdverse Event"),
+    category.names = c("Male Sex-biased\nAdverse Event" , "Female Sex-biased\nAdverse Event"),
     filename = '~/results/FARES_plots/Sex_bias_ae_venn_diagram.png',
     output=TRUE,
     

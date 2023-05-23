@@ -68,7 +68,7 @@ note processed data had the white sapce removed
 tissues_wo_ws <- gsub(" ", "_", tissues, fixed = TRUE)
 ```
 
-```{r}
+```{r eval=FALSE}
 for (j in 1:length(tissues_wo_ws)){
   alpaca_pathway_wrapper(tissues_wo_ws[j], "female")
   alpaca_pathway_wrapper(tissues_wo_ws[j], "male")
@@ -78,39 +78,39 @@ Bad request, response code 503<- might occur this is a server issue
 
 # top pathways
 
-```{r}
+```{r eval=FALSE}
 all_files<- list.files("~/results/alpaca/alpaca_pathway_analysis")
 pathway_files <- all_files[grep("pathways.csv", all_files )]
 ```
 
-```{r}
+```{r eval=FALSE}
 all_pathway_res<- read.csv2(paste0("~/results/alpaca/alpaca_pathway_analysis/", pathway_files[1]))
 for (j in 2:length(pathway_files)){
-  group <- read.csv2(paste0("~/results/alpaca/alpaca_pathway_analysis/", pathway_files[j]))
+  group <- read.csv2(paste0("~/results/alpaca/alpaca_pathway_analysis/", pathway_files[j]), sep = ",")
   all_pathway_res<- rbind(all_pathway_res, group)
 }
 saveRDS(all_pathway_res, "~/results/alpaca/alpaca_pathway_analysis/all_pathways.rds")
 ```
 
-```{r}
+```{r eval=FALSE}
 trim_1<- str_split(all_pathway_res$set, "_female", simplify = TRUE)[,1]
 trim_2<- str_split(trim_1, "_male", simplify = TRUE)[,1]
 all_pathway_res$tissue<- trim_2
 ```
 
-```{r}
+```{r eval=FALSE}
 sex_group<- grepl("female", all_pathway_res$set)
 all_pathway_res$sex <- ifelse(sex_group, "female", "male")
 ```
-```{r}
+```{r eval=FALSE}
 all_pathway_res$comm_number <- as.numeric(gsub(".*?([0-9]+).*", "\\1", all_pathway_res$set))   
 ```
 
-```{r}
+```{r eval=FALSE}
 saveRDS(all_pathway_res, "~/results/alpaca/alpaca_pathway_analysis/all_pathways.rds")
 ```
 
-```{r}
+```{r eval=FALSE}
 all_pathway_res_filter<- cbind(all_pathway_res$term_name,all_pathway_res$source, all_pathway_res$term_id, all_pathway_res$tissue)
 colnames(all_pathway_res_filter)<- c("term_name", "source", "id", "tissue")
 all_pathway_res_filter<- all_pathway_res_filter[!duplicated(all_pathway_res_filter),]
@@ -119,46 +119,46 @@ all_pathway_res_filter_KEGG <- all_pathway_res_filter[all_pathway_res_filter[,2]
 test<- as.data.frame(table(all_pathway_res_filter_KEGG[,3]))
 ```
 
-```{r}
+```{r eval=FALSE}
 go_bp_all_tissues<- test[test$Freq == 43, 1]
 ```
 
-```{r}
+```{r eval=FALSE}
 hsGO <- godata('org.Hs.eg.db', ont="BP")
 ```
 
-```{r}
+```{r eval=FALSE}
 go_sim <- mgoSim(as.character(go_bp_all_tissues), as.character(go_bp_all_tissues), semData=hsGO, measure="Wang", combine=NULL)
 #get the parent terms from rrvgo for the pathways
 res <- reduceSimMatrix(go_sim , threshold = 0.85)
 res_v2<- res[match(colnames(go_sim ), res$go),]
 ```
 
-```{r}
+```{r eval=FALSE}
 sem_res <- as.data.frame(table(res_v2$parentTerm))
 ```
 
-```{r}
+```{r eval=FALSE}
 sem_res$Var1<- factor(sem_res$Var1, levels=sem_res$Var1[order(sem_res$Freq)] )
 ggplot(sem_res, aes(y= Var1, x= Freq, label=Freq)) + geom_bar(stat="identity", fill = "white", color= "black")+ 
     geom_text(size = 10, position = position_stack(vjust = 0.9)) + ylab("Parent BP terms") + xlab("number of GO:BP terms enriched once\nin all tissues" ) +theme(text = element_text(size = 10,  face="bold"))
 ```
 
 look for some drug related pathways
-```{r}
+```{r eval=FALSE}
 all_pathway_res[grep("cytochrome", all_pathway_res$term_name),]
 ```
 
-```{r}
+```{r eval=FALSE}
 all_pathway_res[grep("p450", all_pathway_res$term_name),]
 ```
 
-```{r}
+```{r eval=FALSE}
 all_pathway_res[grep("xenobiotic", all_pathway_res$term_name),]
 ```
 small intestine is interesting. no chromchrome p450 genes
 
-```{r}
+```{r eval=FALSE}
 all_pathway_res[grep("small molecule", all_pathway_res$term_name),]
 ```
 
@@ -169,11 +169,11 @@ Skin_-_Sun_Exposed_(Lower_leg), Skin_-_Not_Sun_Exposed_(Suprapubic), Lung, Adren
 
 Liver, Small_Intestine_-_Terminal_Ileum,  Whole_Blood, Kidney_-_Cortex
 
-```{r}
+```{r eval=FALSE}
 all_pathway_res_drug_tissues<- all_pathway_res[all_pathway_res$tissue %in% c("Liver", "Small_Intestine_-_Terminal_Ileum",  "Whole_Blood", "Kidney_-_Cortex"),]
 ```
 
-```{r}
+```{r eval=FALSE}
 all_pathway_res_filter <- cbind(all_pathway_res_drug_tissues$term_name,all_pathway_res_drug_tissues$source, all_pathway_res_drug_tissues$term_id, all_pathway_res_drug_tissues$tissue)
 colnames(all_pathway_res_filter) <- c("term_name", "source", "id", "tissue")
 all_pathway_res_filter <- all_pathway_res_filter[!duplicated(all_pathway_res_filter),]
@@ -182,11 +182,11 @@ all_pathway_res_filter_KEGG <- all_pathway_res_filter[all_pathway_res_filter[,2]
 test<- as.data.frame(table(all_pathway_res_filter_KEGG[,3]))
 ```
 
-```{r}
+```{r eval=FALSE}
 go_bp_all_tissues <- test[test$Freq == 4, 1]
 ```
 
-```{r}
+```{r eval=FALSE}
 go_sim <- mgoSim(as.character(go_bp_all_tissues), as.character(go_bp_all_tissues), semData=hsGO, measure="Wang", combine=NULL)
 #get the parent terms from rrvgo for the pathways
 res <- reduceSimMatrix(go_sim , threshold = 0.9)
@@ -194,11 +194,11 @@ res_v2 <- res[match(colnames(go_sim ), res$go),]
 ```
 
 
-```{r}
+```{r eval=FALSE}
 sem_res <- as.data.frame(table(res_v2$parentTerm))
 ```
 
-```{r}
+```{r eval=FALSE}
 sem_res$Var1<- factor(sem_res$Var1, levels=sem_res$Var1[order(sem_res$Freq)] )
 ggplot(sem_res, aes(y= Var1, x= Freq, label=Freq)) +
   geom_bar(stat="identity", fill = "white", color= "black") +
@@ -211,7 +211,7 @@ ggplot(sem_res, aes(y= Var1, x= Freq, label=Freq)) +
 
 # drug genes
 KEGG_DRUG_METABOLISM_CYTOCHROME_P450.v2022.1.Hs.gmt contain a list of drug metabolism genes
-```{r}
+```{r eval=FALSE}
 drug_genes <- c("ADH1A"	,"ADH1B", "ADH1C", "ADH4",	"ADH5",	"ADH6",	"ADH7",	
                 "ALDH1A3",	"ALDH3A1",	"ALDH3B1", "ALDH3B2", "AOX1", "CYP1A2",
                 "CYP2A13", "CYP2A6", "CYP2A7",	"CYP2B6",	"CYP2C18",	"CYP2C19",
@@ -224,7 +224,7 @@ drug_genes <- c("ADH1A"	,"ADH1B", "ADH1C", "ADH4",	"ADH5",	"ADH6",	"ADH7",
                 "UGT2B11",	"UGT2B15",	"UGT2B17",	"UGT2B28",	"UGT2B4",	"UGT2B7")
 ```
 
-```{r}
+```{r eval=FALSE}
 test_p<- c()
 test_change <- c()
 for (j in 1:length(tissues_wo_ws)){ #
@@ -234,18 +234,18 @@ for (j in 1:length(tissues_wo_ws)){ #
 }
 ```
 
-```{r}
+```{r eval=FALSE}
 sig_drug_gene_set <- as.data.frame(cbind(tissues_wo_ws, unlist(test_p), as.numeric(unlist(test_change))))
 colnames(sig_drug_gene_set) <- c("Tissue", "p_value", "log2fold_Change")
 ```
 
-```{r}
+```{r eval=FALSE}
 sig_drug_gene_set$neg_log_p <- -log(as.numeric(sig_drug_gene_set$p_value))
 sig_drug_gene_set$log2fold_Change <- as.numeric(sig_drug_gene_set$log2fold_Change)
 ```
 
 volcano plot (not nice looking)
-```{r}
+```{r eval=FALSE}
 p_value_cut <- -log(0.05/43)
 sig_drug_gene_set$Tissue_2 <- ifelse(sig_drug_gene_set$neg_log_p > p_value_cut, sig_drug_gene_set$Tissue, NA )
 
@@ -255,20 +255,21 @@ ggplot(sig_drug_gene_set, aes(x=log2fold_Change, y= neg_log_p, label=Tissue_2)) 
   geom_text(size = 5, position = position_stack(vjust = 0.95)) + xlim(c(-3, 3))
 ```
 
-```{r}
+```{r eval=FALSE}
+sig_drug_gene_set$Tissue <- gsub("_", " ", sig_drug_gene_set$Tissue, fixed = TRUE)
 sig_drug_gene_set$Tissue<- factor(sig_drug_gene_set$Tissue, levels= sig_drug_gene_set$Tissue[order(sig_drug_gene_set$neg_log_p)])
 ggplot(sig_drug_gene_set, aes(y=Tissue, x= neg_log_p, fill= log2fold_Change)) + 
   geom_bar(stat="identity",  color= "black") +
   scale_fill_gradient2(low= "#21908CFF", mid= "white", high= "#440154FF") +
   theme(text = element_text(size = 20,  face="bold")) +
-  geom_vline(xintercept=p_value_cut, linetype="dashed", color = "black") + xlab("-log(p-value)")
+  geom_vline(xintercept=p_value_cut, linetype="dashed", color = "black") + xlab("-log(p-value)") + labs(fill = "log2 fold change")
 ggsave("~/results/alpaca/drug_metabolism_genes/230220_differential_mod_drug_genes_wilcox_test.png", height=12, width=10)
 ```
 
 
 Make a list of genes in each community
 need to apply this to all the communities
-```{r}
+```{r eval=FALSE}
 female_com_list <- list()
 male_com_list<- list()
 for ( i in 1:length(tissues_wo_ws)){
@@ -282,12 +283,12 @@ for ( i in 1:length(tissues_wo_ws)){
 #males
 ```
 
-```{r}
+```{r eval=FALSE}
 all_com_list<- append(female_com_list, male_com_list)
 ```
 
 calculate the jacard similarity for every community
-```{r}
+```{r eval=FALSE}
 res<- matrix(nrow= length(all_com_list), ncol= length(all_com_list))
 for( i in 1:length(all_com_list)){ #i 
   for (j in 1:length(all_com_list)){ #j length(all_com_list)
@@ -298,11 +299,11 @@ rownames(res) <- names(all_com_list)
 colnames(res) <- names(all_com_list)                     
 ```
 look at the similiarty of the liver communities
-```{r}
+```{r eval=FALSE}
 res[grep("Liver",colnames(res)),grep("Liver",colnames(res))]
 ```
 
-```{r}
+```{r eval=FALSE}
 tissue_all <- str_split(rownames(res), "@" , simplify = TRUE)[,1]
 sex_all <- str_split(rownames(res), "@" , simplify = TRUE)[,2]
 com_all <- str_split(rownames(res), "@" , simplify = TRUE)[,3]
@@ -321,7 +322,7 @@ dev.off()
 ```
 
 need to apply this to all the communities but core genes
-```{r}
+```{r eval=FALSE}
 female_core_list <- list()
 male_core_list<- list()
 for ( i in 1:length(tissues_wo_ws)){
@@ -335,11 +336,11 @@ for ( i in 1:length(tissues_wo_ws)){
 #males
 ```
 
-```{r}
+```{r eval=FALSE}
 all_core_list<- append(female_core_list, male_core_list)
 ```
 
-```{r}
+```{r eval=FALSE}
 res_core<- matrix(nrow= length(all_core_list), ncol= length(all_core_list))
 for( i in 1:length(all_core_list)){ #i 
   for (j in 1:length(all_core_list)){ #j length(all_com_list)
@@ -350,7 +351,7 @@ rownames(res_core) <- names(all_core_list)
 colnames(res_core) <- names(all_core_list)                     
 ```
 
-```{r}
+```{r eval=FALSE}
 tissue_all <- str_split(rownames(res_core), "@" , simplify = TRUE)[,1]
 sex_all <- str_split(rownames(res_core), "@" , simplify = TRUE)[,2]
 com_all <- str_split(rownames(res_core), "@" , simplify = TRUE)[,3]
@@ -369,7 +370,7 @@ dev.off()
 
 
 Just look at community number one across communities
-```{r}
+```{r eval=FALSE}
 res_core_1_3 <- res_core[com_all == 1, com_all == 1]
 tissue_1_3 <- str_split(rownames(res_core_1_3), "@" , simplify = TRUE)[,1]
 sex_1_3 <- str_split(rownames(res_core_1_3), "@" , simplify = TRUE)[,2]
@@ -387,7 +388,7 @@ dev.off()
 ```
 
 look at the different brain regions
-```{r}
+```{r eval=FALSE}
 res_core_brain <- res_core_1_3[ grep("Brain", tissue_1_3), grep("Brain", tissue_1_3)]
 tissue_brain<- str_split(rownames(res_core_brain), "@" , simplify = TRUE)[,1]
 sex_brain <- str_split(rownames(res_core_brain), "@" , simplify = TRUE)[,2]
@@ -405,7 +406,7 @@ dev.off()
 ```
 
 try the drug metabolism tissues only
-```{r}
+```{r eval=FALSE}
 res_core_drug_tissues <- res_core[ grep(paste(c("Liver", "Small_Intestine_-_Terminal_Ileum",  "Whole_Blood", "Kidney_-_Cortex"), collapse =  "|"), tissue_all), grep(paste(c("Liver", "Small_Intestine_-_Terminal_Ileum",  "Whole_Blood", "Kidney_-_Cortex"), collapse =  "|"), tissue_all)]
 tissue_drug<- str_split(rownames(res_core_drug_tissues), "@" , simplify = TRUE)[,1]
 sex_drug <- str_split(rownames(res_core_drug_tissues), "@" , simplify = TRUE)[,2]

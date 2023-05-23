@@ -679,7 +679,7 @@ drug_target_diff_analysis<- function(tissue, path){
   diff_all_genes<- rbind(data.frame(gene_list =rep( "Drug\nMetabolism", length(diff_drug_genes)), Gene_Degree_Diff= as.numeric(diff_drug_genes)), data.frame(gene_list =rep( "Other", length(diff_other_genes)), Gene_Degree_Diff= as.numeric(diff_other_genes)))
   
   res <- wilcox.test(diff_drug_genes , diff_other_genes  )
-  label_tissue <- paste("Wilcoxon signed\nrank test\np-value =\n",  res$p.value, sep = " ")
+  label_tissue <- paste("Wilcoxon rank sum test\np-value =\n",  res$p.value, sep = " ")
   title_tissue<- paste("Degree difference of drug metabolismgenes\nbetween", tissue, "sex-specific gene regulatory networks", sep = " ")
   diff_all_genes$gene_list<- factor(diff_all_genes$gene_list, levels= c("Other","Drug\nMetabolism" ))
   
@@ -1148,7 +1148,7 @@ top_drug_target_investigation<- function(drug_target_name){
   ggplot(adverse_event_counts, aes(x= Freq, y= Var1, label= Freq)) +
     geom_bar(stat="identity", fill =  "#21908CFF", color= "black", alpha=0.7) + 
     geom_text(size = 5, position = position_stack(vjust = 0.9)) +
-    xlab("Number of male-bias drug-adverse event pairs with drugs with drug target") +
+    xlab("Number of male-biased drug-adverse event pairs with drugs with drug target") +
     ylab("Adverse event (SOC term)")+ theme(text = element_text(size = 16,  face="bold"))
   
   file_name <- paste0("~/results/FARES_plots/", drug_target_name, "_male_sbae_soc_barplot.png", collapse = "" )
@@ -1162,7 +1162,7 @@ top_drug_target_investigation<- function(drug_target_name){
   ggplot(adverse_event_counts, aes(x= Freq, y= Var1, label= Freq)) +
     geom_bar(stat="identity", fill =  "#21908CFF", color= "black", alpha=0.7)+ 
     geom_text(size = 5, position = position_stack(vjust = 0.9)) +
-    xlab("Number of male-bias drug-adverse event pairs with drugs with drug target") +
+    xlab("Number of male-biased drug-adverse event pairs with drugs with drug target") +
     ylab("Adverse event (PT term)")+ theme(text = element_text(size = 16,  face="bold"))
   
   file_name <- paste0("~/results/FARES_plots/", drug_target_name, "_male_sbae_pt_barplot.png", collapse = "" )
@@ -1179,7 +1179,7 @@ top_drug_target_investigation<- function(drug_target_name){
   ggplot(adverse_event_counts, aes(x= Freq, y= Var1, label= Freq)) +
     geom_bar(stat="identity", fill = "#440154FF", color= "black", alpha=0.6)+ 
     geom_text(size = 5, position = position_stack(vjust = 0.9)) +
-    xlab("Number of female-bias drug-adverse event pairs with drugs with drug target") +
+    xlab("Number of female-biased drug-adverse event pairs with drugs with drug target") +
     ylab("Adverse event (SOC term)")+ theme(text = element_text(size = 16,  face="bold"))
   
   file_name <- paste0("~/results/FARES_plots/", drug_target_name, "_female_sbae_soc_barplot.png", collapse = "" )
@@ -1193,7 +1193,7 @@ top_drug_target_investigation<- function(drug_target_name){
   ggplot(adverse_event_counts, aes(x= Freq, y= Var1, label= Freq)) +
     geom_bar(stat="identity", fill =  "#440154FF", color= "black", alpha=0.6)+ 
     geom_text(size = 5, position = position_stack(vjust = 0.9)) +
-    xlab("Number of female-bias drug-adverse event pairs with drugs with drug target") +
+    xlab("Number of female-biased drug-adverse event pairs with drugs with drug target") +
     ylab("Adverse event (PT term)")+ theme(text = element_text(size = 16,  face="bold"))
   
   file_name <- paste0("~/results/FARES_plots/", drug_target_name, "_female_sbae_pt_barplot.png", collapse = "" )

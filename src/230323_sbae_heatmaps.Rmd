@@ -143,6 +143,11 @@ remove SBAEs with no sex-bias expression
 sbae_target_exp_top <- sbae_target_exp[rowSums(sbae_target_exp==0, na.rm=TRUE) < ncol(sbae_target_exp), ]
 ```
 
+```{r}
+colnames(sbae_target_exp_top)<- gsub("_", " ", colnames(sbae_target_exp_top), fixed = TRUE)
+```
+
+
 plot the heatmap
 ```{r}
 colors<- 1:4
@@ -152,7 +157,7 @@ colors[2]<- "white"
 colors[3]<- "#440154FF"
 
 png("~/results/FARES_plots/drug_target_sex_bias_expression_heatmap.png",width=15,height=10,units="in",res=1400)
-Heatmap(t(sbae_target_exp_top), name = "Sex-bias Gene Expression", 
+Heatmap(t(sbae_target_exp_top), name = "Sex-biased Gene Expression", 
         col = colors, 
         column_names_gp =gpar(fontsize = 11 , fontface = "bold"),
         row_names_gp =gpar(fontsize = 11 , fontface = "bold"),
@@ -236,6 +241,12 @@ sbae_target_core_top <- sbae_target_core[rowSums(sbae_target_core == 0, na.rm=TR
 
 
 ```{r}
+colnames(sbae_target_core_top)<- gsub("_", " ", colnames(sbae_target_core_top), fixed = TRUE)
+```
+
+
+
+```{r}
 colors<- 1:4
 names(colors)<- c("-1", "0","1e-15", "1")
 colors[1] <- "#21908CFF"
@@ -245,7 +256,7 @@ colors[4] <- "#440154FF"
 
 png("~/results/FARES_plots/drug_target_sex_bias_core_genes_heatmap.png",width=15,height=10,units="in",res=1400)
 
-core_heatmap <- Heatmap(t(sbae_target_core_top), name = "Sex-bias Core Gene", col = colors,
+core_heatmap <- Heatmap(t(sbae_target_core_top), name = "Sex-biased Core Gene", col = colors,
                         column_names_gp =gpar(fontsize = 11 , fontface = "bold"),
                         row_names_gp =gpar(fontsize = 10.9 , fontface = "bold"),
                         heatmap_legend_param = list(at = c("-1", "0","1e-15", "1"),
